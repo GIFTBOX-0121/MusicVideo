@@ -23,9 +23,20 @@
       box-sizing: border-box;
     }
 
+    html,
+    body {
+      min-height: 100%;
+    }
+
     body {
       margin: 0;
-      background: #f6f7f9;
+      background:
+        linear-gradient(
+          180deg,
+          #eef0f5 0%,
+          #f6f7f9 35%,
+          #eceef4 100%
+        );
       color: #111;
       font-family:
         -apple-system,
@@ -33,9 +44,74 @@
         "Helvetica Neue",
         Arial,
         sans-serif;
+      overflow-x: hidden;
     }
 
+    /* ========================================
+       星が降る背景
+       ======================================== */
+
+    #star-background {
+      position: fixed;
+      inset: 0;
+      z-index: 0;
+      overflow: hidden;
+      pointer-events: none;
+    }
+
+    .falling-star {
+      position: absolute;
+      top: -40px;
+      color: rgba(255, 255, 255, 0.95);
+      text-shadow:
+        0 0 5px rgba(255, 255, 255, 0.95),
+        0 0 12px rgba(190, 200, 220, 0.8);
+      user-select: none;
+      animation:
+        starFall linear forwards,
+        starTwinkle 1.8s ease-in-out infinite alternate;
+      will-change: transform, opacity;
+    }
+
+    @keyframes starFall {
+      0% {
+        transform:
+          translate3d(0, -40px, 0)
+          rotate(0deg);
+        opacity: 0;
+      }
+
+      8% {
+        opacity: 1;
+      }
+
+      90% {
+        opacity: 0.9;
+      }
+
+      100% {
+        transform:
+          translate3d(35px, 110vh, 0)
+          rotate(180deg);
+        opacity: 0;
+      }
+    }
+
+    @keyframes starTwinkle {
+      from {
+        filter: brightness(0.8);
+      }
+
+      to {
+        filter: brightness(1.5);
+      }
+    }
+
+    /* サイト本体を星より前に表示 */
+
     .container {
+      position: relative;
+      z-index: 1;
       width: min(94%, 760px);
       margin: 0 auto;
       padding: 30px 0 60px;
@@ -65,7 +141,9 @@
     }
 
     .card {
-      background: #fff;
+      background: rgba(255, 255, 255, 0.94);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
       border-radius: 20px;
       padding: 18px;
       box-shadow:
@@ -222,7 +300,9 @@
     .chart-card {
       margin-top: 26px;
       padding: 22px 14px;
-      background: #fff;
+      background: rgba(255, 255, 255, 0.94);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
       border-radius: 20px;
       box-shadow:
         0 4px 18px rgba(0, 0, 0, 0.06);
@@ -287,10 +367,20 @@
         height: 350px;
       }
     }
+
+    @media (prefers-reduced-motion: reduce) {
+      .falling-star {
+        animation: none;
+        display: none;
+      }
+    }
   </style>
 </head>
 
 <body>
+
+  <!-- 星専用レイヤー -->
+  <div id="star-background"></div>
 
   <div class="container">
 
@@ -332,6 +422,7 @@
 
   </div>
 
+
   <script>
 
     const API_URL =
@@ -350,6 +441,115 @@
 
     let historyChart = null;
 
+
+    // ========================================
+    // 🌟 星を降らせる
+    // ========================================
+
+    const starBackground =
+      document.getElementById(
+        "star-background"
+      );
+
+
+    const STAR_SYMBOLS = [
+      "✦",
+      "✧",
+      "⋆",
+      "★",
+      "☆"
+    ];
+
+
+    function createStar() {
+
+      const star =
+        document.createElement("span");
+
+
+      star.className =
+        "falling-star";
+
+
+      star.textContent =
+        STAR_SYMBOLS[
+          Math.floor(
+            Math.random() *
+            STAR_SYMBOLS.length
+          )
+        ];
+
+
+      const size =
+        8 +
+        Math.random() * 13;
+
+
+      const duration =
+        9 +
+        Math.random() * 10;
+
+
+      star.style.left =
+        Math.random() * 100 +
+        "vw";
+
+
+      star.style.fontSize =
+        size +
+        "px";
+
+
+      star.style.animationDuration =
+        duration + "s, " +
+        (
+          1.2 +
+          Math.random() * 2
+        ) +
+        "s";
+
+
+      star.style.opacity =
+        0.45 +
+        Math.random() * 0.5;
+
+
+      starBackground.appendChild(
+        star
+      );
+
+
+      setTimeout(
+        () => {
+          star.remove();
+        },
+        duration * 1000
+      );
+
+    }
+
+
+    // 最初から少し星を出す
+    for (let i = 0; i < 12; i++) {
+
+      setTimeout(
+        createStar,
+        i * 250
+      );
+
+    }
+
+
+    // その後も降り続ける
+    setInterval(
+      createStar,
+      650
+    );
+
+
+    // ========================================
+    // 数字
+    // ========================================
 
     function formatNumber(number) {
       return Number(number || 0)
@@ -379,6 +579,10 @@
     }
 
 
+    // ========================================
+    // 次の目標
+    // ========================================
+
     function getGoal(views) {
 
       const goals = [
@@ -390,6 +594,7 @@
         1000000
       ];
 
+
       for (const goal of goals) {
 
         if (views < goal) {
@@ -397,6 +602,7 @@
         }
 
       }
+
 
       return (
         Math.floor(
@@ -447,11 +653,14 @@
           0
         );
 
+
       const range =
         goal - previousGoal;
 
+
       const progress =
         video.views - previousGoal;
+
 
       const percent =
         Math.max(
@@ -462,10 +671,12 @@
           )
         );
 
+
       const nearGoal =
         percent >= 90
           ? `<span class="goal-near">❤️‍🔥</span>`
           : "";
+
 
       return `
         <div class="goal">
@@ -494,22 +705,34 @@
     }
 
 
+    // ========================================
+    // YouTube
+    // ========================================
+
     function getThumbnail(videoId) {
+
       return (
         "https://i.ytimg.com/vi/" +
         videoId +
         "/hqdefault.jpg"
       );
+
     }
 
 
     function getYouTubeUrl(videoId) {
+
       return (
         "https://www.youtube.com/watch?v=" +
         videoId
       );
+
     }
 
+
+    // ========================================
+    // 急上昇
+    // ========================================
 
     function createTrending(video) {
 
@@ -517,13 +740,19 @@
         return "";
       }
 
+
       return `
         <div class="trending">
           📢 急上昇の音楽 #${video.trending_rank}
         </div>
       `;
+
     }
 
+
+    // ========================================
+    // MVカード
+    // ========================================
 
     function createCard(video) {
 
@@ -552,13 +781,16 @@
               loading="lazy"
             >
 
+
             <div class="video-info">
 
               <h2 class="title">
                 ${video.title}
               </h2>
 
+
               ${createTrending(video)}
+
 
               <div>
 
@@ -580,6 +812,7 @@
 
           <div class="stats">
 
+
             <div class="stat">
 
               <div class="stat-label">
@@ -591,6 +824,7 @@
                   video.views
                 )}
               </div>
+
 
               <div class="changes">
 
@@ -608,6 +842,7 @@
                   </span>
 
                 </div>
+
 
                 <div class="change-row">
 
@@ -641,6 +876,7 @@
                 )}
               </div>
 
+
               <div class="changes">
 
                 <div class="change-row">
@@ -656,6 +892,7 @@
                   </span>
 
                 </div>
+
 
                 <div class="change-row">
 
@@ -677,6 +914,7 @@
 
           </div>
 
+
           ${createGoal(video)}
 
         </article>
@@ -684,10 +922,15 @@
     }
 
 
+    // ========================================
+    // 更新日時
+    // ========================================
+
     function showUpdatedTime(iso) {
 
       const date =
         new Date(iso);
+
 
       const formatter =
         new Intl.DateTimeFormat(
@@ -710,6 +953,7 @@
           }
         );
 
+
       document.getElementById(
         "updated"
       ).textContent =
@@ -717,6 +961,10 @@
         " 時点";
     }
 
+
+    // ========================================
+    // 日別グラフ
+    // ========================================
 
     function drawHistory(history) {
 
@@ -739,6 +987,7 @@
                 item.title === title
             );
 
+
           const values =
             dates.map(date => {
 
@@ -747,6 +996,7 @@
                   item =>
                     item.jst_date === date
                 );
+
 
               return row
                 ? Number(row.views)
@@ -788,16 +1038,19 @@
               datasets: datasets
             },
 
+
             options: {
 
               responsive: true,
 
               maintainAspectRatio: false,
 
+
               interaction: {
                 mode: "index",
                 intersect: false
               },
+
 
               plugins: {
 
@@ -810,6 +1063,7 @@
                   }
                 },
 
+
                 tooltip: {
 
                   callbacks: {
@@ -819,9 +1073,11 @@
                       const value =
                         context.parsed.y;
 
+
                       if (value === null) {
                         return "";
                       }
+
 
                       return (
                         context.dataset.label +
@@ -836,6 +1092,7 @@
                 }
 
               },
+
 
               scales: {
 
@@ -859,6 +1116,7 @@
 
                 },
 
+
                 x: {
 
                   ticks: {
@@ -875,6 +1133,10 @@
         );
     }
 
+
+    // ========================================
+    // データ取得
+    // ========================================
 
     async function loadData() {
 
