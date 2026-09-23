@@ -7,6 +7,11 @@ const VIDEOS = [
   { title: "Good Boys Anthem", id: "jK_uGTE66oo" }
 ];
 
+
+// ========================================
+// YouTubeから現在値を取得
+// ========================================
+
 async function getYouTubeStats(env) {
   const ids = VIDEOS.map(v => v.id).join(",");
 
@@ -42,6 +47,11 @@ async function getYouTubeStats(env) {
   }));
 }
 
+
+// ========================================
+// D1へ保存
+// ========================================
+
 async function saveStats(env, videos) {
   const recordedAt = new Date().toISOString();
 
@@ -63,17 +73,19 @@ async function saveStats(env, videos) {
 }
 
 
-// ===============================
-// 1時間前の基準値
-// ===============================
+// ========================================
+// 約1時間前の記録を取得
+// ========================================
 
 async function getHourlyBase(env, videoId) {
-
   const oneHourAgo =
     new Date(Date.now() - 60 * 60 * 1000).toISOString();
 
   const row = await env.DB.prepare(`
-    SELECT views, likes, recorded_at
+    SELECT
+      views,
+      likes,
+      recorded_at
     FROM video_stats
     WHERE video_id = ?
       AND recorded_at <= ?
@@ -87,49 +99,61 @@ async function getHourlyBase(env, videoId) {
 }
 
 
-// ===============================
-// 今日0:00 JSTの基準値
-// ===============================
+// ========================================
+// 今日0:00 JST付近の記録を取得
+// ========================================
 
 async function getTodayBase(env, videoId) {
-
   const now = new Date();
 
-  const jst = new Date(
-    now.getTime() + 9 * 60 * 60 * 1000
-  );
+  // UTC → JST
+  const jst =
+    new Date(now.getTime() + 9 * 60 * 60 * 1000);
 
   const year = jst.getUTCFullYear();
   const month = jst.getUTCMonth();
   const day = jst.getUTCDate();
 
-  // JST 00:00 → UTCへ変換
+  // 今日 JST 00:00 をUTCへ
   const startUtc = new Date(
     Date.UTC(year, month, day, -9, 0, 0)
   );
 
+  // Cronの多少のズレを考慮して
+  // 00:00〜00:15 JSTの記録だけを基準として認める
+  const limitUtc = new Date(
+    startUtc.getTime() + 15 * 60 * 1000
+  );
+
   const row = await env.DB.prepare(`
-    SELECT views, likes, recorded_at
+    SELECT
+      views,
+      likes,
+      recorded_at
     FROM video_stats
     WHERE video_id = ?
       AND recorded_at >= ?
+      AND recorded_at <= ?
     ORDER BY recorded_at ASC
     LIMIT 1
   `)
-    .bind(videoId, startUtc.toISOString())
+    .bind(
+      videoId,
+      startUtc.toISOString(),
+      limitUtc.toISOString()
+    )
     .first();
 
   return row;
 }
 
 
-// ===============================
+// ========================================
 // 日別推移
-// 各日の最後の記録を採用
-// ===============================
+// 各日の最後の記録を1点として使用
+// ========================================
 
 async function getDailyHistory(env) {
-
   const result = await env.DB.prepare(`
     WITH ranked AS (
       SELECT
@@ -163,6 +187,7 @@ async function getDailyHistory(env) {
       jst_date
 
     FROM ranked
+
     WHERE rn = 1
 
     ORDER BY
@@ -174,16 +199,18 @@ async function getDailyHistory(env) {
 }
 
 
-// ===============================
-// API
-// ===============================
+// ========================================
+// Worker
+// ========================================
 
 export default {
 
+  // --------------------------------------
+  // サイトからアクセスされたとき
+  // --------------------------------------
+
   async fetch(request, env) {
-
     try {
-
       const currentVideos =
         await getYouTubeStats(env);
 
@@ -192,38 +219,54 @@ export default {
       for (const video of currentVideos) {
 
         const hourlyBase =
-          await getHourlyBase(env, video.id);
+          await getHourlyBase(
+            env,
+            video.id
+          );
 
         const todayBase =
-          await getTodayBase(env, video.id);
+          await getTodayBase(
+            env,
+            video.id
+          );
 
 
+        // ------------------------------
         // 1時間比
-        const hourly = hourlyBase
-          ? {
-              views:
-                video.views -
-                Number(hourlyBase.views),
+        // ------------------------------
 
-              likes:
-                video.likes -
-                Number(hourlyBase.likes)
-            }
-          : null;
+        const hourlyChange =
+          hourlyBase
+            ? {
+                views:
+                  video.views -
+                  Number(hourlyBase.views),
+
+                likes:
+                  video.likes -
+                  Number(hourlyBase.likes)
+              }
+            : null;
 
 
+        // ------------------------------
         // 前日比
-        const daily = todayBase
-          ? {
-              views:
-                video.views -
-                Number(todayBase.views),
+        // 今日0:00付近のデータが
+        // 存在するときだけ表示
+        // ------------------------------
 
-              likes:
-                video.likes -
-                Number(todayBase.likes)
-            }
-          : null;
+        const dailyChange =
+          todayBase
+            ? {
+                views:
+                  video.views -
+                  Number(todayBase.views),
+
+                likes:
+                  video.likes -
+                  Number(todayBase.likes)
+              }
+            : null;
 
 
         videos.push({
@@ -233,26 +276,37 @@ export default {
           views: video.views,
           likes: video.likes,
 
-          hourly_change: hourly,
-          daily_change: daily
+          hourly_change:
+            hourlyChange,
+
+          daily_change:
+            dailyChange
         });
       }
 
 
-      const history =
+      // ------------------------------
+      // 6曲の日別推移
+      // ------------------------------
+
+      const dailyHistory =
         await getDailyHistory(env);
+
+
+      const data = {
+        updated_at:
+          new Date().toISOString(),
+
+        videos,
+
+        daily_history:
+          dailyHistory
+      };
 
 
       return new Response(
         JSON.stringify(
-          {
-            updated_at:
-              new Date().toISOString(),
-
-            videos,
-
-            daily_history: history
-          },
+          data,
           null,
           2
         ),
@@ -300,9 +354,10 @@ export default {
   },
 
 
-  // ===============================
-  // 10分ごとの自動記録
-  // ===============================
+  // ======================================
+  // Cron
+  // 10分ごとに自動実行
+  // ======================================
 
   async scheduled(event, env, ctx) {
 
