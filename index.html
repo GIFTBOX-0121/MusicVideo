@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <title>STARGLOW MV SUPPORT</title>
+  <title>STARS BASE</title>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -38,7 +38,15 @@
 
     header h1 {
       margin: 0;
-      font-size: 25px;
+      font-size: 28px;
+      font-weight: 900;
+      letter-spacing: 1.5px;
+    }
+
+    .subtitle {
+      margin-top: 5px;
+      font-size: 12px;
+      color: #888;
       letter-spacing: 1px;
     }
 
@@ -56,17 +64,79 @@
     .card {
       background: #fff;
       border-radius: 20px;
-      padding: 22px 18px;
+      padding: 18px;
       box-shadow:
         0 4px 18px rgba(0, 0, 0, 0.06);
     }
 
+    /* =========================
+       MV上部
+       ========================= */
+
+    .video-header {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .thumbnail {
+      width: 135px;
+      aspect-ratio: 16 / 9;
+      flex-shrink: 0;
+      object-fit: cover;
+      border-radius: 12px;
+      background: #eee;
+    }
+
+    .video-info {
+      min-width: 0;
+      flex: 1;
+    }
+
     .title {
-      margin: 0 0 20px;
-      text-align: center;
-      font-size: 21px;
+      margin: 0 0 10px;
+      font-size: 20px;
+      font-weight: 800;
+      line-height: 1.25;
+    }
+
+    /* 急上昇表示用
+       後からランキング取得を追加したら使用 */
+    .trending {
+      display: inline-block;
+      margin-bottom: 9px;
+      padding: 5px 9px;
+      border: 2px solid #e53935;
+      border-radius: 8px;
+      color: #d32f2f;
+      background: #fff5f5;
+      font-size: 12px;
       font-weight: 800;
     }
+
+    .youtube-button {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 38px;
+      padding: 8px 13px;
+      border-radius: 10px;
+      background: #111;
+      color: #fff;
+      text-decoration: none;
+      font-size: 12px;
+      font-weight: 700;
+    }
+
+    .youtube-button:active {
+      transform: scale(0.98);
+      opacity: 0.8;
+    }
+
+    /* =========================
+       数字
+       ========================= */
 
     .stats {
       display: grid;
@@ -116,6 +186,10 @@
       font-weight: 700;
     }
 
+    /* =========================
+       目標
+       ========================= */
+
     .goal {
       margin-top: 22px;
       padding-top: 18px;
@@ -155,6 +229,10 @@
       font-size: 12px;
       color: #777;
     }
+
+    /* =========================
+       グラフ
+       ========================= */
 
     .chart-card {
       margin-top: 26px;
@@ -196,8 +274,20 @@
       }
 
       .card {
-        padding-left: 13px;
-        padding-right: 13px;
+        padding: 14px;
+      }
+
+      .thumbnail {
+        width: 120px;
+      }
+
+      .title {
+        font-size: 18px;
+      }
+
+      .youtube-button {
+        font-size: 11px;
+        padding: 7px 10px;
       }
 
       .stat-number {
@@ -220,7 +310,12 @@
   <div class="container">
 
     <header>
-      <h1>STARGLOW MV SUPPORT</h1>
+
+      <h1>STARS BASE</h1>
+
+      <div class="subtitle">
+        STARGLOW MV SUPPORT
+      </div>
 
       <div
         id="updated"
@@ -228,7 +323,9 @@
       >
         最新データを取得しています...
       </div>
+
     </header>
+
 
     <main>
 
@@ -241,10 +338,11 @@
         </div>
       </div>
 
+
       <section class="chart-card">
 
         <h2 class="chart-title">
-          MV 再生回数 日別推移
+          📈 MV 再生回数 日別推移
         </h2>
 
         <div class="chart-wrap">
@@ -311,15 +409,7 @@
 
     // ========================================
     // 次の再生目標
-    //
-    // 10万
-    // 20万
-    // 30万
-    // 40万
-    // 50万
-    // 100万
-    // 200万
-    // 300万...
+    // 10 / 20 / 30 / 40 / 50 / 100万～
     // ========================================
 
     function getGoal(views) {
@@ -343,8 +433,6 @@
       }
 
 
-      // 100万以降は100万刻み
-
       return (
         Math.floor(
           views / 1000000
@@ -352,10 +440,6 @@
       ) * 1000000;
     }
 
-
-    // ========================================
-    // 目標表示
-    // ========================================
 
     function goalLabel(goal) {
 
@@ -365,13 +449,6 @@
       "万";
     }
 
-
-    // ========================================
-    // 進捗バー
-    //
-    // 「前の目標 → 次の目標」の
-    // 区間で進捗を計算
-    // ========================================
 
     function getPreviousGoal(goal) {
 
@@ -424,7 +501,6 @@
         );
 
 
-      // 目標まで10%以内
       const nearGoal =
         percent >= 90
           ? `<span class="goal-near">❤️‍🔥</span>`
@@ -459,6 +535,49 @@
 
 
     // ========================================
+    // YouTube
+    // ========================================
+
+    function getThumbnail(videoId) {
+      return (
+        "https://i.ytimg.com/vi/" +
+        videoId +
+        "/hqdefault.jpg"
+      );
+    }
+
+
+    function getYouTubeUrl(videoId) {
+      return (
+        "https://www.youtube.com/watch?v=" +
+        videoId
+      );
+    }
+
+
+    // ========================================
+    // 急上昇表示
+    //
+    // Worker側で trending_rank が取得できるように
+    // なったら自動的に表示される。
+    // 今は値がないので何も表示しない。
+    // ========================================
+
+    function createTrending(video) {
+
+      if (!video.trending_rank) {
+        return "";
+      }
+
+      return `
+        <div class="trending">
+          📢 急上昇の音楽 #${video.trending_rank}
+        </div>
+      `;
+    }
+
+
+    // ========================================
     // MVカード
     // ========================================
 
@@ -480,15 +599,46 @@
       return `
         <article class="card">
 
-          <h2 class="title">
-            ${video.title}
-          </h2>
+          <div class="video-header">
+
+            <img
+              class="thumbnail"
+              src="${getThumbnail(video.id)}"
+              alt="${video.title}"
+              loading="lazy"
+            >
+
+
+            <div class="video-info">
+
+              <h2 class="title">
+                ${video.title}
+              </h2>
+
+
+              ${createTrending(video)}
+
+
+              <div>
+
+                <a
+                  class="youtube-button"
+                  href="${getYouTubeUrl(video.id)}"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                >
+                  ▶ YouTubeでMVを見る
+                </a>
+
+              </div>
+
+            </div>
+
+          </div>
 
 
           <div class="stats">
 
-
-            <!-- 再生回数 -->
 
             <div class="stat">
 
@@ -540,8 +690,6 @@
 
             </div>
 
-
-            <!-- 高評価 -->
 
             <div class="stat">
 
