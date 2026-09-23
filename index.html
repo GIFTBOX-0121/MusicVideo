@@ -6,6 +6,26 @@
 
   <title>STARS BASE</title>
 
+  <!-- リンクプレビュー -->
+  <meta
+    name="description"
+    content="STARGLOWのMV再生回数をチェックできる応援サイト"
+  >
+
+  <meta property="og:title" content="STARS BASE">
+  <meta
+    property="og:description"
+    content="STARGLOWのMV再生回数をチェックできる応援サイト"
+  >
+  <meta property="og:type" content="website">
+
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="STARS BASE">
+  <meta
+    name="twitter:description"
+    content="STARGLOWのMV再生回数をチェックできる応援サイト"
+  >
+
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
   <style>
@@ -41,13 +61,6 @@
       font-size: 28px;
       font-weight: 900;
       letter-spacing: 1.5px;
-    }
-
-    .subtitle {
-      margin-top: 5px;
-      font-size: 12px;
-      color: #888;
-      letter-spacing: 1px;
     }
 
     .updated {
@@ -101,8 +114,7 @@
       line-height: 1.25;
     }
 
-    /* 急上昇表示用
-       後からランキング取得を追加したら使用 */
+    /* 急上昇表示用 */
     .trending {
       display: inline-block;
       margin-bottom: 9px;
@@ -313,10 +325,6 @@
 
       <h1>STARS BASE</h1>
 
-      <div class="subtitle">
-        STARGLOW MV SUPPORT
-      </div>
-
       <div
         id="updated"
         class="updated"
@@ -409,7 +417,6 @@
 
     // ========================================
     // 次の再生目標
-    // 10 / 20 / 30 / 40 / 50 / 100万～
     // ========================================
 
     function getGoal(views) {
@@ -556,11 +563,7 @@
 
 
     // ========================================
-    // 急上昇表示
-    //
-    // Worker側で trending_rank が取得できるように
-    // なったら自動的に表示される。
-    // 今は値がないので何も表示しない。
+    // 急上昇
     // ========================================
 
     function createTrending(video) {
