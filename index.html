@@ -7,24 +7,14 @@
   <title>STARS BASE</title>
 
   <!-- リンクプレビュー -->
-  <meta
-    name="description"
-    content="STARGLOWのMV再生回数をチェックできる応援サイト"
-  >
-
+  <meta name="description" content=" ">
   <meta property="og:title" content="STARS BASE">
-  <meta
-    property="og:description"
-    content="STARGLOWのMV再生回数をチェックできる応援サイト"
-  >
+  <meta property="og:description" content=" ">
   <meta property="og:type" content="website">
 
   <meta name="twitter:card" content="summary">
   <meta name="twitter:title" content="STARS BASE">
-  <meta
-    name="twitter:description"
-    content="STARGLOWのMV再生回数をチェックできる応援サイト"
-  >
+  <meta name="twitter:description" content=" ">
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 
@@ -82,10 +72,6 @@
         0 4px 18px rgba(0, 0, 0, 0.06);
     }
 
-    /* =========================
-       MV上部
-       ========================= */
-
     .video-header {
       display: flex;
       align-items: center;
@@ -114,7 +100,6 @@
       line-height: 1.25;
     }
 
-    /* 急上昇表示用 */
     .trending {
       display: inline-block;
       margin-bottom: 9px;
@@ -145,10 +130,6 @@
       transform: scale(0.98);
       opacity: 0.8;
     }
-
-    /* =========================
-       数字
-       ========================= */
 
     .stats {
       display: grid;
@@ -198,10 +179,6 @@
       font-weight: 700;
     }
 
-    /* =========================
-       目標
-       ========================= */
-
     .goal {
       margin-top: 22px;
       padding-top: 18px;
@@ -241,10 +218,6 @@
       font-size: 12px;
       color: #777;
     }
-
-    /* =========================
-       グラフ
-       ========================= */
 
     .chart-card {
       margin-top: 26px;
@@ -328,12 +301,9 @@
       <div
         id="updated"
         class="updated"
-      >
-        最新データを取得しています...
-      </div>
+      ></div>
 
     </header>
-
 
     <main>
 
@@ -342,10 +312,9 @@
         class="cards"
       >
         <div class="loading">
-          YouTubeの最新データを取得中...
+          データを取得しています...
         </div>
       </div>
-
 
       <section class="chart-card">
 
@@ -362,7 +331,6 @@
     </main>
 
   </div>
-
 
   <script>
 
@@ -382,10 +350,6 @@
 
     let historyChart = null;
 
-
-    // ========================================
-    // 数字
-    // ========================================
 
     function formatNumber(number) {
       return Number(number || 0)
@@ -415,10 +379,6 @@
     }
 
 
-    // ========================================
-    // 次の再生目標
-    // ========================================
-
     function getGoal(views) {
 
       const goals = [
@@ -430,7 +390,6 @@
         1000000
       ];
 
-
       for (const goal of goals) {
 
         if (views < goal) {
@@ -438,7 +397,6 @@
         }
 
       }
-
 
       return (
         Math.floor(
@@ -489,14 +447,11 @@
           0
         );
 
-
       const range =
         goal - previousGoal;
 
-
       const progress =
         video.views - previousGoal;
-
 
       const percent =
         Math.max(
@@ -507,12 +462,10 @@
           )
         );
 
-
       const nearGoal =
         percent >= 90
           ? `<span class="goal-near">❤️‍🔥</span>`
           : "";
-
 
       return `
         <div class="goal">
@@ -541,10 +494,6 @@
     }
 
 
-    // ========================================
-    // YouTube
-    // ========================================
-
     function getThumbnail(videoId) {
       return (
         "https://i.ytimg.com/vi/" +
@@ -562,10 +511,6 @@
     }
 
 
-    // ========================================
-    // 急上昇
-    // ========================================
-
     function createTrending(video) {
 
       if (!video.trending_rank) {
@@ -579,10 +524,6 @@
       `;
     }
 
-
-    // ========================================
-    // MVカード
-    // ========================================
 
     function createCard(video) {
 
@@ -611,16 +552,13 @@
               loading="lazy"
             >
 
-
             <div class="video-info">
 
               <h2 class="title">
                 ${video.title}
               </h2>
 
-
               ${createTrending(video)}
-
 
               <div>
 
@@ -642,7 +580,6 @@
 
           <div class="stats">
 
-
             <div class="stat">
 
               <div class="stat-label">
@@ -654,7 +591,6 @@
                   video.views
                 )}
               </div>
-
 
               <div class="changes">
 
@@ -672,7 +608,6 @@
                   </span>
 
                 </div>
-
 
                 <div class="change-row">
 
@@ -706,7 +641,6 @@
                 )}
               </div>
 
-
               <div class="changes">
 
                 <div class="change-row">
@@ -722,7 +656,6 @@
                   </span>
 
                 </div>
-
 
                 <div class="change-row">
 
@@ -744,7 +677,6 @@
 
           </div>
 
-
           ${createGoal(video)}
 
         </article>
@@ -752,15 +684,10 @@
     }
 
 
-    // ========================================
-    // 更新日時
-    // ========================================
-
     function showUpdatedTime(iso) {
 
       const date =
         new Date(iso);
-
 
       const formatter =
         new Intl.DateTimeFormat(
@@ -783,7 +710,6 @@
           }
         );
 
-
       document.getElementById(
         "updated"
       ).textContent =
@@ -791,10 +717,6 @@
         " 時点";
     }
 
-
-    // ========================================
-    // 6曲まとめた日別グラフ
-    // ========================================
 
     function drawHistory(history) {
 
@@ -817,7 +739,6 @@
                 item.title === title
             );
 
-
           const values =
             dates.map(date => {
 
@@ -826,7 +747,6 @@
                   item =>
                     item.jst_date === date
                 );
-
 
               return row
                 ? Number(row.views)
@@ -868,19 +788,16 @@
               datasets: datasets
             },
 
-
             options: {
 
               responsive: true,
 
               maintainAspectRatio: false,
 
-
               interaction: {
                 mode: "index",
                 intersect: false
               },
-
 
               plugins: {
 
@@ -893,7 +810,6 @@
                   }
                 },
 
-
                 tooltip: {
 
                   callbacks: {
@@ -903,11 +819,9 @@
                       const value =
                         context.parsed.y;
 
-
                       if (value === null) {
                         return "";
                       }
-
 
                       return (
                         context.dataset.label +
@@ -922,7 +836,6 @@
                 }
 
               },
-
 
               scales: {
 
@@ -946,7 +859,6 @@
 
                 },
 
-
                 x: {
 
                   ticks: {
@@ -963,10 +875,6 @@
         );
     }
 
-
-    // ========================================
-    // データ取得
-    // ========================================
 
     async function loadData() {
 
