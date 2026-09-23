@@ -1,7 +1,14 @@
 name: Update YouTube Views
 
 on:
-  push:
+  # 1時間ごとに現在値を更新
+  schedule:
+    - cron: "17 * * * *"
+
+    # 日本時間 23:59 ごろに日次記録
+    - cron: "59 14 * * *"
+
+  # 手動実行用
   workflow_dispatch:
 
 permissions:
@@ -18,6 +25,7 @@ jobs:
       - name: Get YouTube view counts
         env:
           YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+
         run: |
           python3 <<'PY'
           import json
@@ -27,6 +35,9 @@ jobs:
           from datetime import datetime, timezone, timedelta
           from pathlib import Path
 
+          # =========================
+          # MV一覧
+          # =========================
           videos = [
               {"title": "WISHES", "id": "3gsVVVndUKM"},
               {"title": "StarWish", "id": "-Fhuw0VzelM"},
@@ -38,6 +49,12 @@ jobs:
 
           api_key = os.environ["YOUTUBE_API_KEY"]
 
+          JST = timezone(timedelta(hours=9))
+          now = datetime.now(JST)
+
+          # =========================
+          # YouTube API
+          # =========================
           ids = ",".join(video["id"] for video in videos)
 
           params = urllib.parse.urlencode({
@@ -56,10 +73,12 @@ jobs:
               for item in result["items"]
           }
 
-          JST = timezone(timedelta(hours=9))
-          now = datetime.now(JST)
+          Path("data").mkdir(exist_ok=True)
 
-          data = {
+          # =========================
+          # 現在値
+          # =========================
+          current = {
               "updated_at": now.isoformat(timespec="minutes"),
               "videos": [
                   {
@@ -71,30 +90,110 @@ jobs:
               ]
           }
 
-          Path("data").mkdir(exist_ok=True)
+          with open(
+              "data/current.json",
+              "w",
+              encoding="utf-8"
+          ) as f:
+              json.dump(
+                  current,
+                  f,
+                  ensure_ascii=False,
+                  indent=2
+              )
 
-          with open("data/current.json", "w", encoding="utf-8") as f:
-              json.dump(data, f, ensure_ascii=False, indent=2)
+          print("=== YouTube View Counts ===")
 
-          print("YouTube view counts:")
-
-          for video in data["videos"]:
+          for video in current["videos"]:
               print(
                   video["title"],
-                  f'{video["views"]:,}'
+                  "→",
+                  f'{video["views"]:,}',
+                  "views"
               )
+
+          # =========================
+          # 日次記録
+          # =========================
+          #
+          # 23:50〜23:59に実行された時だけ
+          # その日の最終値として history.json に保存
+          #
+          # 9/23 → 初日の基準値
+          # 9/24 → 9/23との差を計算可能
+          #
+
+          if now.hour == 23 and now.minute >= 50:
+
+              history_file = Path("data/history.json")
+
+              if history_file.exists():
+                  with history_file.open(
+                      "r",
+                      encoding="utf-8"
+                  ) as f:
+                      history = json.load(f)
+              else:
+                  history = []
+
+              today = now.strftime("%Y-%m-%d")
+
+              daily_record = {
+                  "date": today,
+                  "videos": [
+                      {
+                          "title": video["title"],
+                          "id": video["id"],
+                          "views": counts.get(video["id"], 0)
+                      }
+                      for video in videos
+                  ]
+              }
+
+              # 同じ日のデータがすでにあれば置き換える
+              history = [
+                  record
+                  for record in history
+                  if record.get("date") != today
+              ]
+
+              history.append(daily_record)
+
+              # 日付順
+              history.sort(
+                  key=lambda record: record["date"]
+              )
+
+              with history_file.open(
+                  "w",
+                  encoding="utf-8"
+              ) as f:
+                  json.dump(
+                      history,
+                      f,
+                      ensure_ascii=False,
+                      indent=2
+                  )
+
+              print("Daily record saved:", today)
+
+          else:
+              print("Current views updated.")
+              print("Daily record not required.")
+
           PY
 
-      - name: Save current view counts
+      - name: Save YouTube view data
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
-          git add data/current.json
+          git add data/
 
           if git diff --cached --quiet; then
             echo "No changes."
           else
-            git commit -m "Update current YouTube views"
+            git commit -m "Update YouTube view data"
+            git pull --rebase
             git push
           fi
