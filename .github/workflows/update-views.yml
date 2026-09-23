@@ -1,9 +1,103 @@
-name: Update YouTube Views
+ name: Update YouTube Views
 
-on: [push]
+on:
+  push:
+  workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
-  test:
+  update:
     runs-on: ubuntu-latest
+
     steps:
-      - run: echo "Workflow works!"
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Get YouTube view counts
+        env:
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+        run: |
+          python3 <<'PY'
+          import json
+          import os
+          import urllib.parse
+          import urllib.request
+          from datetime import datetime, timezone, timedelta
+          from pathlib import Path
+
+          videos = [
+              {"title": "WISHES", "id": "3gsVVVndUKM"},
+              {"title": "StarWish", "id": "-Fhuw0VzelM"},
+              {"title": "USOTSUKI", "id": "Nk3b5KnL4hg"},
+              {"title": "Drivin' My Life", "id": "zbSQaKFjyXI"},
+              {"title": "Green Light", "id": "FKtMzDOV08M"},
+              {"title": "Good Boys Anthem", "id": "jK_uGTE66oo"},
+          ]
+
+          api_key = os.environ["YOUTUBE_API_KEY"]
+
+          ids = ",".join(video["id"] for video in videos)
+
+          params = urllib.parse.urlencode({
+              "part": "statistics",
+              "id": ids,
+              "key": api_key
+          })
+
+          url = "https://www.googleapis.com/youtube/v3/videos?" + params
+
+          with urllib.request.urlopen(url) as response:
+              result = json.load(response)
+
+          counts = {
+              item["id"]: int(item["statistics"]["viewCount"])
+              for item in result["items"]
+          }
+
+          JST = timezone(timedelta(hours=9))
+          now = datetime.now(JST)
+
+          data = {
+              "updated_at": now.isoformat(timespec="minutes"),
+              "videos": [
+                  {
+                      "title": video["title"],
+                      "id": video["id"],
+                      "views": counts.get(video["id"], 0)
+                  }
+                  for video in videos
+              ]
+          }
+
+          Path("data").mkdir(exist_ok=True)
+
+          with open("data/current.json", "w", encoding="utf-8") as f:
+              json.dump(data, f, ensure_ascii=False, indent=2)
+
+          print("=== YouTube View Counts ===")
+
+          for video in data["videos"]:
+              print(
+                  video["title"],
+                  "→",
+                  f'{video["views"]:,}',
+                  "views"
+              )
+
+          PY
+
+      - name: Save current view counts
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add data/current.json
+
+          if git diff --cached --quiet; then
+            echo "No changes."
+          else
+            git commit -m "Update current YouTube views"
+            git push
+          fi
