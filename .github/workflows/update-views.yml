@@ -76,16 +76,13 @@ jobs:
           with open("data/current.json", "w", encoding="utf-8") as f:
               json.dump(data, f, ensure_ascii=False, indent=2)
 
-          print("=== YouTube View Counts ===")
+          print("YouTube view counts:")
 
           for video in data["videos"]:
               print(
                   video["title"],
-                  "→",
-                  f'{video["views"]:,}',
-                  "views"
+                  f'{video["views"]:,}'
               )
-
           PY
 
       - name: Save current view counts
