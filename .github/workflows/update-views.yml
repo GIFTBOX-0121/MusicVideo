@@ -1,11 +1,11 @@
 name: Update YouTube Views
 
-on:
-  # 現在値を1時間ごとに更新
+"on":
   schedule:
+    # 現在値を1時間ごとに更新
     - cron: "17 * * * *"
 
-    # 日本時間23:59ごろに日次記録
+    # 日本時間 23:59 ごろに日次記録
     - cron: "59 14 * * *"
 
   # 手動実行用
@@ -35,9 +35,6 @@ jobs:
           from datetime import datetime, timezone, timedelta
           from pathlib import Path
 
-          # =========================
-          # MV一覧
-          # =========================
           videos = [
               {"title": "WISHES", "id": "3gsVVVndUKM"},
               {"title": "StarWish", "id": "-Fhuw0VzelM"},
@@ -52,9 +49,6 @@ jobs:
 
           api_key = os.environ["YOUTUBE_API_KEY"]
 
-          # =========================
-          # YouTubeから再生数を取得
-          # =========================
           ids = ",".join(video["id"] for video in videos)
 
           params = urllib.parse.urlencode({
@@ -78,9 +72,10 @@ jobs:
 
           Path("data").mkdir(exist_ok=True)
 
-          # =========================
+          # -------------------------
           # 現在値
-          # =========================
+          # -------------------------
+
           current = {
               "updated_at": now.isoformat(timespec="minutes"),
               "videos": [
@@ -105,16 +100,12 @@ jobs:
                   indent=2
               )
 
-          # =========================
+          # -------------------------
           # 日次記録
-          # =========================
-          #
-          # 23:50以降に実行された場合だけ
-          # その日の確定値として保存。
-          #
-          # GitHub Actionsは多少遅れる場合があるため
-          # 23:59ピッタリでなくても記録できるようにする。
-          #
+          # -------------------------
+          # 日本時間23:50以降の実行時だけ保存。
+          # ページ上では時刻は表示しない。
+          # 9/24以降は前日との差をサイト側で計算する。
 
           if now.hour == 23 and now.minute >= 50:
 
@@ -144,7 +135,7 @@ jobs:
                   ]
               }
 
-              # 同じ日付があれば最新値に置き換える
+              # 同じ日の記録がすでにあれば置き換える
               history = [
                   record
                   for record in history
@@ -179,8 +170,7 @@ jobs:
       - name: Commit data
         run: |
           git config user.name "github-actions[bot]"
-          git config user.email \
-            "41898282+github-actions[bot]@users.noreply.github.com"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
 
           git add data/
 
