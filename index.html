@@ -1,1 +1,770 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
+  <title>STARGLOW MV SUPPORT</title>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      background: #f6f7f9;
+      color: #111;
+      font-family:
+        -apple-system,
+        BlinkMacSystemFont,
+        "Helvetica Neue",
+        Arial,
+        sans-serif;
+    }
+
+    .container {
+      width: min(94%, 760px);
+      margin: 0 auto;
+      padding: 30px 0 60px;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+
+    header h1 {
+      margin: 0;
+      font-size: 25px;
+      letter-spacing: 1px;
+    }
+
+    .updated {
+      margin-top: 8px;
+      color: #777;
+      font-size: 12px;
+    }
+
+    .cards {
+      display: grid;
+      gap: 18px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 20px;
+      padding: 22px 18px;
+      box-shadow:
+        0 4px 18px rgba(0, 0, 0, 0.06);
+    }
+
+    .title {
+      margin: 0 0 20px;
+      text-align: center;
+      font-size: 21px;
+      font-weight: 800;
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+    }
+
+    .stat {
+      text-align: center;
+      min-width: 0;
+    }
+
+    .stat + .stat {
+      border-left: 1px solid #e8e8e8;
+    }
+
+    .stat-label {
+      font-size: 12px;
+      color: #777;
+      margin-bottom: 6px;
+    }
+
+    .stat-number {
+      font-size: clamp(20px, 6vw, 30px);
+      font-weight: 800;
+      line-height: 1.15;
+      white-space: nowrap;
+    }
+
+    .changes {
+      margin-top: 12px;
+      font-size: 12px;
+      line-height: 1.8;
+    }
+
+    .change-row {
+      display: flex;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    .change-label {
+      color: #888;
+    }
+
+    .change-number {
+      font-weight: 700;
+    }
+
+    .goal {
+      margin-top: 22px;
+      padding-top: 18px;
+      border-top: 1px solid #eee;
+    }
+
+    .goal-text {
+      text-align: center;
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 1.6;
+    }
+
+    .goal-near {
+      margin-left: 4px;
+    }
+
+    .progress {
+      width: 100%;
+      height: 12px;
+      background: #ececec;
+      border-radius: 999px;
+      overflow: hidden;
+      margin-top: 11px;
+    }
+
+    .progress-bar {
+      height: 100%;
+      background: #111;
+      border-radius: 999px;
+      transition: width .5s ease;
+    }
+
+    .progress-percent {
+      margin-top: 6px;
+      text-align: right;
+      font-size: 12px;
+      color: #777;
+    }
+
+    .chart-card {
+      margin-top: 26px;
+      background: white;
+      border-radius: 20px;
+      padding: 22px 14px;
+      box-shadow:
+        0 4px 18px rgba(0, 0, 0, 0.06);
+    }
+
+    .chart-title {
+      margin: 0 0 20px;
+      text-align: center;
+      font-size: 18px;
+    }
+
+    .chart-wrap {
+      position: relative;
+      height: 390px;
+    }
+
+    .loading {
+      text-align: center;
+      padding: 60px 0;
+      color: #777;
+    }
+
+    .error {
+      text-align: center;
+      background: #fff;
+      border-radius: 18px;
+      padding: 30px 15px;
+      color: #b00020;
+    }
+
+    @media (max-width: 420px) {
+      .container {
+        width: 95%;
+      }
+
+      .card {
+        padding-left: 13px;
+        padding-right: 13px;
+      }
+
+      .stat-number {
+        font-size: 21px;
+      }
+
+      .changes {
+        font-size: 11px;
+      }
+
+      .chart-wrap {
+        height: 350px;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+
+    <header>
+      <h1>STARGLOW MV SUPPORT</h1>
+      <div
+        id="updated"
+        class="updated"
+      >
+        最新データを取得しています...
+      </div>
+    </header>
+
+    <main>
+
+      <div
+        id="cards"
+        class="cards"
+      >
+        <div class="loading">
+          YouTubeの最新データを取得中...
+        </div>
+      </div>
+
+      <section class="chart-card">
+        <h2 class="chart-title">
+          MV 再生回数 日別推移
+        </h2>
+
+        <div class="chart-wrap">
+          <canvas id="historyChart"></canvas>
+        </div>
+      </section>
+
+    </main>
+
+  </div>
+
+
+  <script>
+
+    const API_URL =
+      "https://musicvideo-views.starsx0601.workers.dev";
+
+
+    const VIDEO_ORDER = [
+      "WISHES",
+      "StarWish",
+      "USOTSUKI",
+      "Drivin' My Life",
+      "Green Light",
+      "Good Boys Anthem"
+    ];
+
+
+    let historyChart = null;
+
+
+    // ========================================
+    // 数字表示
+    // ========================================
+
+    function formatNumber(number) {
+      return Number(number || 0).toLocaleString("ja-JP");
+    }
+
+
+    function formatChange(value, unit) {
+
+      if (value === null || value === undefined) {
+        return "―";
+      }
+
+      const sign =
+        value >= 0 ? "+" : "";
+
+      return (
+        sign +
+        formatNumber(value) +
+        unit
+      );
+    }
+
+
+    // ========================================
+    // 次の目標値
+    // ========================================
+
+    function getGoal(views) {
+
+      if (views < 100000) {
+        return 100000;
+      }
+
+      if (views < 500000) {
+        return 500000;
+      }
+
+      if (views < 1000000) {
+        return 1000000;
+      }
+
+      return (
+        Math.floor(views / 1000000) + 1
+      ) * 1000000;
+    }
+
+
+    function goalLabel(goal) {
+
+      if (goal < 1000000) {
+        return (
+          goal / 10000
+        ) + "万";
+      }
+
+      return (
+        goal / 1000000
+      ) + "00万";
+    }
+
+
+    // ========================================
+    // 目標進捗
+    // ========================================
+
+    function createGoal(video) {
+
+      const goal =
+        getGoal(video.views);
+
+      const remaining =
+        Math.max(
+          goal - video.views,
+          0
+        );
+
+      const percent =
+        Math.min(
+          video.views / goal * 100,
+          100
+        );
+
+
+      // 目標まで10%以内なら❤️‍🔥
+      const nearGoal =
+        percent >= 90
+          ? `<span class="goal-near">❤️‍🔥</span>`
+          : "";
+
+
+      return `
+        <div class="goal">
+
+          <div class="goal-text">
+            ${goalLabel(goal)}回再生まで
+            あと${formatNumber(remaining)}回
+            ${nearGoal}
+          </div>
+
+          <div class="progress">
+            <div
+              class="progress-bar"
+              style="width:${percent}%"
+            ></div>
+          </div>
+
+          <div class="progress-percent">
+            ${percent.toFixed(1)}%
+          </div>
+
+        </div>
+      `;
+    }
+
+
+    // ========================================
+    // MVカード
+    // ========================================
+
+    function createCard(video) {
+
+      const hourlyViews =
+        video.hourly_change?.views;
+
+      const hourlyLikes =
+        video.hourly_change?.likes;
+
+      const dailyViews =
+        video.daily_change?.views;
+
+      const dailyLikes =
+        video.daily_change?.likes;
+
+
+      return `
+        <article class="card">
+
+          <h2 class="title">
+            ${video.title}
+          </h2>
+
+
+          <div class="stats">
+
+            <div class="stat">
+
+              <div class="stat-label">
+                ▶ 再生回数
+              </div>
+
+              <div class="stat-number">
+                ${formatNumber(video.views)}
+              </div>
+
+              <div class="changes">
+
+                <div class="change-row">
+                  <span class="change-label">
+                    1時間比
+                  </span>
+
+                  <span class="change-number">
+                    ${formatChange(
+                      hourlyViews,
+                      "回"
+                    )}
+                  </span>
+                </div>
+
+                <div class="change-row">
+                  <span class="change-label">
+                    前日比
+                  </span>
+
+                  <span class="change-number">
+                    ${formatChange(
+                      dailyViews,
+                      "回"
+                    )}
+                  </span>
+                </div>
+
+              </div>
+
+            </div>
+
+
+            <div class="stat">
+
+              <div class="stat-label">
+                👍 高評価
+              </div>
+
+              <div class="stat-number">
+                ${formatNumber(video.likes)}
+              </div>
+
+              <div class="changes">
+
+                <div class="change-row">
+                  <span class="change-label">
+                    1時間比
+                  </span>
+
+                  <span class="change-number">
+                    ${formatChange(
+                      hourlyLikes,
+                      ""
+                    )}
+                  </span>
+                </div>
+
+                <div class="change-row">
+                  <span class="change-label">
+                    前日比
+                  </span>
+
+                  <span class="change-number">
+                    ${formatChange(
+                      dailyLikes,
+                      ""
+                    )}
+                  </span>
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+
+          ${createGoal(video)}
+
+        </article>
+      `;
+    }
+
+
+    // ========================================
+    // 更新日時
+    // ========================================
+
+    function showUpdatedTime(iso) {
+
+      const date =
+        new Date(iso);
+
+      const formatter =
+        new Intl.DateTimeFormat(
+          "ja-JP",
+          {
+            timeZone: "Asia/Tokyo",
+            month: "numeric",
+            day: "numeric",
+            hour: "2-digit",
+            minute: "2-digit"
+          }
+        );
+
+      document.getElementById(
+        "updated"
+      ).textContent =
+        formatter.format(date) +
+        " 時点";
+    }
+
+
+    // ========================================
+    // 日別グラフ
+    // ========================================
+
+    function drawHistory(history) {
+
+      const dates = [
+        ...new Set(
+          history.map(
+            item => item.jst_date
+          )
+        )
+      ];
+
+
+      const datasets =
+        VIDEO_ORDER.map(title => {
+
+          const rows =
+            history.filter(
+              item =>
+                item.title === title
+            );
+
+
+          const data =
+            dates.map(date => {
+
+              const row =
+                rows.find(
+                  item =>
+                    item.jst_date === date
+                );
+
+              return row
+                ? Number(row.views)
+                : null;
+            });
+
+
+          return {
+            label: title,
+            data: data,
+            tension: 0.25,
+            spanGaps: true,
+            borderWidth: 2,
+            pointRadius: 3
+          };
+        });
+
+
+      if (historyChart) {
+        historyChart.destroy();
+      }
+
+
+      const ctx =
+        document.getElementById(
+          "historyChart"
+        );
+
+
+      historyChart =
+        new Chart(
+          ctx,
+          {
+            type: "line",
+
+            data: {
+              labels: dates,
+              datasets: datasets
+            },
+
+            options: {
+
+              responsive: true,
+
+              maintainAspectRatio: false,
+
+              interaction: {
+                mode: "index",
+                intersect: false
+              },
+
+              plugins: {
+
+                legend: {
+                  position: "bottom",
+                  labels: {
+                    boxWidth: 12,
+                    padding: 14
+                  }
+                },
+
+                tooltip: {
+                  callbacks: {
+                    label(context) {
+
+                      const value =
+                        context.parsed.y;
+
+                      return (
+                        context.dataset.label +
+                        "：" +
+                        formatNumber(value) +
+                        "回"
+                      );
+                    }
+                  }
+                }
+              },
+
+              scales: {
+
+                y: {
+                  ticks: {
+                    callback(value) {
+                      return (
+                        Number(value)
+                          .toLocaleString(
+                            "ja-JP",
+                            {
+                              notation:
+                                "compact"
+                            }
+                          )
+                      );
+                    }
+                  }
+                },
+
+                x: {
+                  ticks: {
+                    maxRotation: 0
+                  }
+                }
+              }
+            }
+          }
+        );
+    }
+
+
+    // ========================================
+    // API読み込み
+    // ========================================
+
+    async function loadData() {
+
+      const cards =
+        document.getElementById(
+          "cards"
+        );
+
+      try {
+
+        const response =
+          await fetch(
+            API_URL +
+            "?t=" +
+            Date.now(),
+            {
+              cache: "no-store"
+            }
+          );
+
+
+        if (!response.ok) {
+          throw new Error(
+            "API error"
+          );
+        }
+
+
+        const data =
+          await response.json();
+
+
+        showUpdatedTime(
+          data.updated_at
+        );
+
+
+        const sortedVideos =
+          [...data.videos].sort(
+            (a, b) =>
+              VIDEO_ORDER.indexOf(a.title) -
+              VIDEO_ORDER.indexOf(b.title)
+          );
+
+
+        cards.innerHTML =
+          sortedVideos
+            .map(createCard)
+            .join("");
+
+
+        drawHistory(
+          data.daily_history || []
+        );
+
+
+      } catch (error) {
+
+        console.error(error);
+
+        cards.innerHTML = `
+          <div class="error">
+            データを取得できませんでした。<br>
+            少し時間を置いて再読み込みしてください。
+          </div>
+        `;
+      }
+    }
+
+
+    loadData();
+
+  </script>
+
+</body>
+</html>
