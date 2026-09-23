@@ -1,11 +1,9 @@
 name: Update YouTube Views
 
-on:
-  workflow_dispatch:
+on: [push]
 
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
-      - name: Test
-        run: echo "Workflow works!"
+      - run: echo "Workflow works!"
