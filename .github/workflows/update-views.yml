@@ -1,0 +1,192 @@
+name: Update YouTube Views
+
+on:
+  # 現在値を1時間ごとに更新
+  schedule:
+    - cron: "17 * * * *"
+
+    # 日本時間23:59ごろに日次記録
+    - cron: "59 14 * * *"
+
+  # 手動実行用
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  update:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Get YouTube views
+        env:
+          YOUTUBE_API_KEY: ${{ secrets.YOUTUBE_API_KEY }}
+
+        run: |
+          python3 <<'PY'
+          import json
+          import os
+          import urllib.parse
+          import urllib.request
+          from datetime import datetime, timezone, timedelta
+          from pathlib import Path
+
+          # =========================
+          # MV一覧
+          # =========================
+          videos = [
+              {"title": "WISHES", "id": "3gsVVVndUKM"},
+              {"title": "StarWish", "id": "-Fhuw0VzelM"},
+              {"title": "USOTSUKI", "id": "Nk3b5KnL4hg"},
+              {"title": "Drivin' My Life", "id": "zbSQaKFjyXI"},
+              {"title": "Green Light", "id": "FKtMzDOV08M"},
+              {"title": "Good Boys Anthem", "id": "jK_uGTE66oo"},
+          ]
+
+          JST = timezone(timedelta(hours=9))
+          now = datetime.now(JST)
+
+          api_key = os.environ["YOUTUBE_API_KEY"]
+
+          # =========================
+          # YouTubeから再生数を取得
+          # =========================
+          ids = ",".join(video["id"] for video in videos)
+
+          params = urllib.parse.urlencode({
+              "part": "statistics",
+              "id": ids,
+              "key": api_key
+          })
+
+          url = (
+              "https://www.googleapis.com/youtube/v3/videos?"
+              + params
+          )
+
+          with urllib.request.urlopen(url) as response:
+              result = json.load(response)
+
+          counts = {
+              item["id"]: int(item["statistics"]["viewCount"])
+              for item in result["items"]
+          }
+
+          Path("data").mkdir(exist_ok=True)
+
+          # =========================
+          # 現在値
+          # =========================
+          current = {
+              "updated_at": now.isoformat(timespec="minutes"),
+              "videos": [
+                  {
+                      "title": video["title"],
+                      "id": video["id"],
+                      "views": counts.get(video["id"], 0)
+                  }
+                  for video in videos
+              ]
+          }
+
+          with open(
+              "data/current.json",
+              "w",
+              encoding="utf-8"
+          ) as f:
+              json.dump(
+                  current,
+                  f,
+                  ensure_ascii=False,
+                  indent=2
+              )
+
+          # =========================
+          # 日次記録
+          # =========================
+          #
+          # 23:50以降に実行された場合だけ
+          # その日の確定値として保存。
+          #
+          # GitHub Actionsは多少遅れる場合があるため
+          # 23:59ピッタリでなくても記録できるようにする。
+          #
+
+          if now.hour == 23 and now.minute >= 50:
+
+              history_file = Path("data/history.json")
+
+              if history_file.exists():
+                  with history_file.open(
+                      "r",
+                      encoding="utf-8"
+                  ) as f:
+                      history = json.load(f)
+              else:
+                  history = []
+
+              today = now.strftime("%Y-%m-%d")
+
+              daily_record = {
+                  "date": today,
+                  "recorded_at": now.isoformat(timespec="minutes"),
+                  "videos": [
+                      {
+                          "title": video["title"],
+                          "id": video["id"],
+                          "views": counts.get(video["id"], 0)
+                      }
+                      for video in videos
+                  ]
+              }
+
+              # 同じ日付があれば最新値に置き換える
+              history = [
+                  record
+                  for record in history
+                  if record.get("date") != today
+              ]
+
+              history.append(daily_record)
+
+              history.sort(
+                  key=lambda record: record["date"]
+              )
+
+              with history_file.open(
+                  "w",
+                  encoding="utf-8"
+              ) as f:
+                  json.dump(
+                      history,
+                      f,
+                      ensure_ascii=False,
+                      indent=2
+                  )
+
+              print("Daily record saved:", today)
+
+          else:
+              print("Current views updated.")
+              print("Daily record not required.")
+
+          PY
+
+      - name: Commit data
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email \
+            "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add data/
+
+          if git diff --cached --quiet; then
+            echo "No changes."
+          else
+            git commit -m "Update YouTube view data"
+            git push
+          fi
