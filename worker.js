@@ -38,19 +38,24 @@ export default {
 
       const result = await response.json();
 
-      const counts = Object.fromEntries(
+      const statistics = Object.fromEntries(
         (result.items || []).map(item => [
           item.id,
-          Number(item.statistics.viewCount)
+          {
+            views: Number(item.statistics.viewCount ?? 0),
+            likes: Number(item.statistics.likeCount ?? 0)
+          }
         ])
       );
 
       const data = {
         updated_at: new Date().toISOString(),
+
         videos: VIDEOS.map(video => ({
           title: video.title,
           id: video.id,
-          views: counts[video.id] ?? 0
+          views: statistics[video.id]?.views ?? 0,
+          likes: statistics[video.id]?.likes ?? 0
         }))
       };
 
