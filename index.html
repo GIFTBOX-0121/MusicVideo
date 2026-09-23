@@ -15,7 +15,6 @@
 
     body {
       margin: 0;
-      padding: 0;
       background: #f6f7f9;
       color: #111;
       font-family:
@@ -55,7 +54,7 @@
     }
 
     .card {
-      background: white;
+      background: #fff;
       border-radius: 20px;
       padding: 22px 18px;
       box-shadow:
@@ -85,9 +84,9 @@
     }
 
     .stat-label {
+      margin-bottom: 6px;
       font-size: 12px;
       color: #777;
-      margin-bottom: 6px;
     }
 
     .stat-number {
@@ -137,10 +136,10 @@
     .progress {
       width: 100%;
       height: 12px;
+      margin-top: 11px;
+      overflow: hidden;
       background: #ececec;
       border-radius: 999px;
-      overflow: hidden;
-      margin-top: 11px;
     }
 
     .progress-bar {
@@ -159,9 +158,9 @@
 
     .chart-card {
       margin-top: 26px;
-      background: white;
-      border-radius: 20px;
       padding: 22px 14px;
+      background: #fff;
+      border-radius: 20px;
       box-shadow:
         0 4px 18px rgba(0, 0, 0, 0.06);
     }
@@ -178,17 +177,17 @@
     }
 
     .loading {
-      text-align: center;
       padding: 60px 0;
+      text-align: center;
       color: #777;
     }
 
     .error {
+      padding: 30px 15px;
       text-align: center;
+      color: #b00020;
       background: #fff;
       border-radius: 18px;
-      padding: 30px 15px;
-      color: #b00020;
     }
 
     @media (max-width: 420px) {
@@ -222,6 +221,7 @@
 
     <header>
       <h1>STARGLOW MV SUPPORT</h1>
+
       <div
         id="updated"
         class="updated"
@@ -242,6 +242,7 @@
       </div>
 
       <section class="chart-card">
+
         <h2 class="chart-title">
           MV 再生回数 日別推移
         </h2>
@@ -249,6 +250,7 @@
         <div class="chart-wrap">
           <canvas id="historyChart"></canvas>
         </div>
+
       </section>
 
     </main>
@@ -276,22 +278,28 @@
 
 
     // ========================================
-    // 数字表示
+    // 数字
     // ========================================
 
     function formatNumber(number) {
-      return Number(number || 0).toLocaleString("ja-JP");
+      return Number(number || 0)
+        .toLocaleString("ja-JP");
     }
 
 
-    function formatChange(value, unit) {
+    function formatChange(value, unit = "") {
 
-      if (value === null || value === undefined) {
+      if (
+        value === null ||
+        value === undefined
+      ) {
         return "―";
       }
 
       const sign =
-        value >= 0 ? "+" : "";
+        value >= 0
+          ? "+"
+          : "";
 
       return (
         sign +
@@ -302,51 +310,94 @@
 
 
     // ========================================
-    // 次の目標値
+    // 次の再生目標
+    //
+    // 10万
+    // 20万
+    // 30万
+    // 40万
+    // 50万
+    // 100万
+    // 200万
+    // 300万...
     // ========================================
 
     function getGoal(views) {
 
-      if (views < 100000) {
-        return 100000;
+      const goals = [
+        100000,
+        200000,
+        300000,
+        400000,
+        500000,
+        1000000
+      ];
+
+
+      for (const goal of goals) {
+
+        if (views < goal) {
+          return goal;
+        }
+
       }
 
-      if (views < 500000) {
-        return 500000;
-      }
 
-      if (views < 1000000) {
-        return 1000000;
-      }
+      // 100万以降は100万刻み
 
       return (
-        Math.floor(views / 1000000) + 1
+        Math.floor(
+          views / 1000000
+        ) + 1
       ) * 1000000;
     }
 
 
+    // ========================================
+    // 目標表示
+    // ========================================
+
     function goalLabel(goal) {
 
-      if (goal < 1000000) {
-        return (
-          goal / 10000
-        ) + "万";
-      }
-
       return (
-        goal / 1000000
-      ) + "00万";
+        goal / 10000
+      ).toLocaleString("ja-JP") +
+      "万";
     }
 
 
     // ========================================
-    // 目標進捗
+    // 進捗バー
+    //
+    // 「前の目標 → 次の目標」の
+    // 区間で進捗を計算
     // ========================================
+
+    function getPreviousGoal(goal) {
+
+      if (goal === 100000) {
+        return 0;
+      }
+
+      if (goal <= 500000) {
+        return goal - 100000;
+      }
+
+      if (goal === 1000000) {
+        return 500000;
+      }
+
+      return goal - 1000000;
+    }
+
 
     function createGoal(video) {
 
       const goal =
         getGoal(video.views);
+
+      const previousGoal =
+        getPreviousGoal(goal);
 
       const remaining =
         Math.max(
@@ -354,14 +405,26 @@
           0
         );
 
+
+      const range =
+        goal - previousGoal;
+
+
+      const progress =
+        video.views - previousGoal;
+
+
       const percent =
-        Math.min(
-          video.views / goal * 100,
-          100
+        Math.max(
+          0,
+          Math.min(
+            progress / range * 100,
+            100
+          )
         );
 
 
-      // 目標まで10%以内なら❤️‍🔥
+      // 目標まで10%以内
       const nearGoal =
         percent >= 90
           ? `<span class="goal-near">❤️‍🔥</span>`
@@ -378,10 +441,12 @@
           </div>
 
           <div class="progress">
+
             <div
               class="progress-bar"
               style="width:${percent}%"
             ></div>
+
           </div>
 
           <div class="progress-percent">
@@ -422,6 +487,9 @@
 
           <div class="stats">
 
+
+            <!-- 再生回数 -->
+
             <div class="stat">
 
               <div class="stat-label">
@@ -429,12 +497,16 @@
               </div>
 
               <div class="stat-number">
-                ${formatNumber(video.views)}
+                ${formatNumber(
+                  video.views
+                )}
               </div>
+
 
               <div class="changes">
 
                 <div class="change-row">
+
                   <span class="change-label">
                     1時間比
                   </span>
@@ -445,9 +517,12 @@
                       "回"
                     )}
                   </span>
+
                 </div>
 
+
                 <div class="change-row">
+
                   <span class="change-label">
                     前日比
                   </span>
@@ -458,12 +533,15 @@
                       "回"
                     )}
                   </span>
+
                 </div>
 
               </div>
 
             </div>
 
+
+            <!-- 高評価 -->
 
             <div class="stat">
 
@@ -472,35 +550,41 @@
               </div>
 
               <div class="stat-number">
-                ${formatNumber(video.likes)}
+                ${formatNumber(
+                  video.likes
+                )}
               </div>
+
 
               <div class="changes">
 
                 <div class="change-row">
+
                   <span class="change-label">
                     1時間比
                   </span>
 
                   <span class="change-number">
                     ${formatChange(
-                      hourlyLikes,
-                      ""
+                      hourlyLikes
                     )}
                   </span>
+
                 </div>
 
+
                 <div class="change-row">
+
                   <span class="change-label">
                     前日比
                   </span>
 
                   <span class="change-number">
                     ${formatChange(
-                      dailyLikes,
-                      ""
+                      dailyLikes
                     )}
                   </span>
+
                 </div>
 
               </div>
@@ -526,17 +610,28 @@
       const date =
         new Date(iso);
 
+
       const formatter =
         new Intl.DateTimeFormat(
           "ja-JP",
           {
-            timeZone: "Asia/Tokyo",
-            month: "numeric",
-            day: "numeric",
-            hour: "2-digit",
-            minute: "2-digit"
+            timeZone:
+              "Asia/Tokyo",
+
+            month:
+              "numeric",
+
+            day:
+              "numeric",
+
+            hour:
+              "2-digit",
+
+            minute:
+              "2-digit"
           }
         );
+
 
       document.getElementById(
         "updated"
@@ -547,7 +642,7 @@
 
 
     // ========================================
-    // 日別グラフ
+    // 6曲まとめた日別グラフ
     // ========================================
 
     function drawHistory(history) {
@@ -555,7 +650,8 @@
       const dates = [
         ...new Set(
           history.map(
-            item => item.jst_date
+            item =>
+              item.jst_date
           )
         )
       ];
@@ -571,7 +667,7 @@
             );
 
 
-          const data =
+          const values =
             dates.map(date => {
 
               const row =
@@ -579,6 +675,7 @@
                   item =>
                     item.jst_date === date
                 );
+
 
               return row
                 ? Number(row.views)
@@ -588,7 +685,7 @@
 
           return {
             label: title,
-            data: data,
+            data: values,
             tension: 0.25,
             spanGaps: true,
             borderWidth: 2,
@@ -612,6 +709,7 @@
         new Chart(
           ctx,
           {
+
             type: "line",
 
             data: {
@@ -619,33 +717,46 @@
               datasets: datasets
             },
 
+
             options: {
 
               responsive: true,
 
               maintainAspectRatio: false,
 
+
               interaction: {
                 mode: "index",
                 intersect: false
               },
 
+
               plugins: {
 
                 legend: {
                   position: "bottom",
+
                   labels: {
                     boxWidth: 12,
                     padding: 14
                   }
                 },
 
+
                 tooltip: {
+
                   callbacks: {
+
                     label(context) {
 
                       const value =
                         context.parsed.y;
+
+
+                      if (value === null) {
+                        return "";
+                      }
+
 
                       return (
                         context.dataset.label +
@@ -654,43 +765,56 @@
                         "回"
                       );
                     }
+
                   }
+
                 }
+
               },
+
 
               scales: {
 
                 y: {
+
                   ticks: {
+
                     callback(value) {
-                      return (
-                        Number(value)
-                          .toLocaleString(
-                            "ja-JP",
-                            {
-                              notation:
-                                "compact"
-                            }
-                          )
-                      );
+
+                      return Number(value)
+                        .toLocaleString(
+                          "ja-JP",
+                          {
+                            notation:
+                              "compact"
+                          }
+                        );
                     }
+
                   }
+
                 },
 
+
                 x: {
+
                   ticks: {
                     maxRotation: 0
                   }
+
                 }
+
               }
+
             }
+
           }
         );
     }
 
 
     // ========================================
-    // API読み込み
+    // データ取得
     // ========================================
 
     async function loadData() {
@@ -700,6 +824,7 @@
           "cards"
         );
 
+
       try {
 
         const response =
@@ -708,15 +833,18 @@
             "?t=" +
             Date.now(),
             {
-              cache: "no-store"
+              cache:
+                "no-store"
             }
           );
 
 
         if (!response.ok) {
+
           throw new Error(
             "API error"
           );
+
         }
 
 
@@ -730,16 +858,23 @@
 
 
         const sortedVideos =
-          [...data.videos].sort(
-            (a, b) =>
-              VIDEO_ORDER.indexOf(a.title) -
-              VIDEO_ORDER.indexOf(b.title)
-          );
+          [...data.videos]
+            .sort(
+              (a, b) =>
+                VIDEO_ORDER.indexOf(
+                  a.title
+                ) -
+                VIDEO_ORDER.indexOf(
+                  b.title
+                )
+            );
 
 
         cards.innerHTML =
           sortedVideos
-            .map(createCard)
+            .map(
+              createCard
+            )
             .join("");
 
 
@@ -750,7 +885,10 @@
 
       } catch (error) {
 
-        console.error(error);
+        console.error(
+          error
+        );
+
 
         cards.innerHTML = `
           <div class="error">
@@ -758,7 +896,9 @@
             少し時間を置いて再読み込みしてください。
           </div>
         `;
+
       }
+
     }
 
 
