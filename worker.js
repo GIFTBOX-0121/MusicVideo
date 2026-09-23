@@ -24,12 +24,12 @@ async function getYouTubeStats(env) {
 
   const result = await response.json();
 
-  const statistics = Object.fromEntries(
+  const stats = Object.fromEntries(
     (result.items || []).map(item => [
       item.id,
       {
-        views: Number(item.statistics.viewCount ?? 0),
-        likes: Number(item.statistics.likeCount ?? 0)
+        views: Number(item.statistics?.viewCount ?? 0),
+        likes: Number(item.statistics?.likeCount ?? 0)
       }
     ])
   );
@@ -37,8 +37,8 @@ async function getYouTubeStats(env) {
   return VIDEOS.map(video => ({
     title: video.title,
     id: video.id,
-    views: statistics[video.id]?.views ?? 0,
-    likes: statistics[video.id]?.likes ?? 0
+    views: stats[video.id]?.views ?? 0,
+    likes: stats[video.id]?.likes ?? 0
   }));
 }
 
@@ -48,7 +48,7 @@ async function saveStats(env, videos) {
   const statements = videos.map(video =>
     env.DB.prepare(`
       INSERT INTO video_stats
-      (video_id, title, views, likes, recorded_at)
+        (video_id, title, views, likes, recorded_at)
       VALUES (?, ?, ?, ?, ?)
     `).bind(
       video.id,
@@ -60,53 +60,263 @@ async function saveStats(env, videos) {
   );
 
   await env.DB.batch(statements);
-
-  return recordedAt;
 }
+
+
+// ===============================
+// 1時間前の基準値
+// ===============================
+
+async function getHourlyBase(env, videoId) {
+
+  const oneHourAgo =
+    new Date(Date.now() - 60 * 60 * 1000).toISOString();
+
+  const row = await env.DB.prepare(`
+    SELECT views, likes, recorded_at
+    FROM video_stats
+    WHERE video_id = ?
+      AND recorded_at <= ?
+    ORDER BY recorded_at DESC
+    LIMIT 1
+  `)
+    .bind(videoId, oneHourAgo)
+    .first();
+
+  return row;
+}
+
+
+// ===============================
+// 今日0:00 JSTの基準値
+// ===============================
+
+async function getTodayBase(env, videoId) {
+
+  const now = new Date();
+
+  const jst = new Date(
+    now.getTime() + 9 * 60 * 60 * 1000
+  );
+
+  const year = jst.getUTCFullYear();
+  const month = jst.getUTCMonth();
+  const day = jst.getUTCDate();
+
+  // JST 00:00 → UTCへ変換
+  const startUtc = new Date(
+    Date.UTC(year, month, day, -9, 0, 0)
+  );
+
+  const row = await env.DB.prepare(`
+    SELECT views, likes, recorded_at
+    FROM video_stats
+    WHERE video_id = ?
+      AND recorded_at >= ?
+    ORDER BY recorded_at ASC
+    LIMIT 1
+  `)
+    .bind(videoId, startUtc.toISOString())
+    .first();
+
+  return row;
+}
+
+
+// ===============================
+// 日別推移
+// 各日の最後の記録を採用
+// ===============================
+
+async function getDailyHistory(env) {
+
+  const result = await env.DB.prepare(`
+    WITH ranked AS (
+      SELECT
+        video_id,
+        title,
+        views,
+        likes,
+        recorded_at,
+
+        date(
+          recorded_at,
+          '+9 hours'
+        ) AS jst_date,
+
+        ROW_NUMBER() OVER (
+          PARTITION BY
+            video_id,
+            date(recorded_at, '+9 hours')
+          ORDER BY recorded_at DESC
+        ) AS rn
+
+      FROM video_stats
+    )
+
+    SELECT
+      video_id,
+      title,
+      views,
+      likes,
+      recorded_at,
+      jst_date
+
+    FROM ranked
+    WHERE rn = 1
+
+    ORDER BY
+      jst_date ASC,
+      video_id ASC
+  `).all();
+
+  return result.results || [];
+}
+
+
+// ===============================
+// API
+// ===============================
 
 export default {
 
-  // ブラウザ・サイトから呼ばれた時
   async fetch(request, env) {
+
     try {
-      const videos = await getYouTubeStats(env);
+
+      const currentVideos =
+        await getYouTubeStats(env);
+
+      const videos = [];
+
+      for (const video of currentVideos) {
+
+        const hourlyBase =
+          await getHourlyBase(env, video.id);
+
+        const todayBase =
+          await getTodayBase(env, video.id);
+
+
+        // 1時間比
+        const hourly = hourlyBase
+          ? {
+              views:
+                video.views -
+                Number(hourlyBase.views),
+
+              likes:
+                video.likes -
+                Number(hourlyBase.likes)
+            }
+          : null;
+
+
+        // 前日比
+        const daily = todayBase
+          ? {
+              views:
+                video.views -
+                Number(todayBase.views),
+
+              likes:
+                video.likes -
+                Number(todayBase.likes)
+            }
+          : null;
+
+
+        videos.push({
+          title: video.title,
+          id: video.id,
+
+          views: video.views,
+          likes: video.likes,
+
+          hourly_change: hourly,
+          daily_change: daily
+        });
+      }
+
+
+      const history =
+        await getDailyHistory(env);
+
 
       return new Response(
-        JSON.stringify({
-          updated_at: new Date().toISOString(),
-          videos
-        }, null, 2),
+        JSON.stringify(
+          {
+            updated_at:
+              new Date().toISOString(),
+
+            videos,
+
+            daily_history: history
+          },
+          null,
+          2
+        ),
         {
           headers: {
-            "content-type": "application/json; charset=UTF-8",
-            "access-control-allow-origin": "*",
-            "cache-control": "no-store"
+            "content-type":
+              "application/json; charset=UTF-8",
+
+            "access-control-allow-origin":
+              "*",
+
+            "cache-control":
+              "no-store"
           }
         }
       );
 
     } catch (error) {
+
       return new Response(
-        JSON.stringify({
-          error: "Failed to fetch YouTube data"
-        }),
+        JSON.stringify(
+          {
+            error:
+              "Failed to load statistics",
+
+            message:
+              error.message
+          },
+          null,
+          2
+        ),
         {
           status: 500,
+
           headers: {
-            "content-type": "application/json; charset=UTF-8",
-            "access-control-allow-origin": "*"
+            "content-type":
+              "application/json; charset=UTF-8",
+
+            "access-control-allow-origin":
+              "*"
           }
         }
       );
     }
   },
 
-  // Cronから自動実行された時
+
+  // ===============================
+  // 10分ごとの自動記録
+  // ===============================
+
   async scheduled(event, env, ctx) {
+
     ctx.waitUntil(
       (async () => {
-        const videos = await getYouTubeStats(env);
-        await saveStats(env, videos);
+
+        const videos =
+          await getYouTubeStats(env);
+
+        await saveStats(
+          env,
+          videos
+        );
+
       })()
     );
   }
