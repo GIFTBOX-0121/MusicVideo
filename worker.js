@@ -100,30 +100,52 @@ async function getHourlyBase(env, videoId) {
 
 
 // ========================================
-// 今日0:00 JST付近の記録を取得
+// 指定したJSTの日付の0:00付近を取得
+// daysAgo = 0 → 今日0:00
+// daysAgo = 1 → 昨日0:00
 // ========================================
 
-async function getTodayBase(env, videoId) {
+async function getJstMidnightBase(env, videoId, daysAgo) {
   const now = new Date();
 
-  // UTC → JST
-  const jst =
-    new Date(now.getTime() + 9 * 60 * 60 * 1000);
+  const jstNow =
+    new Date(
+      now.getTime() +
+      9 * 60 * 60 * 1000
+    );
 
-  const year = jst.getUTCFullYear();
-  const month = jst.getUTCMonth();
-  const day = jst.getUTCDate();
+  const year =
+    jstNow.getUTCFullYear();
 
-  // 今日 JST 00:00 をUTCへ
-  const startUtc = new Date(
-    Date.UTC(year, month, day, -9, 0, 0)
-  );
+  const month =
+    jstNow.getUTCMonth();
 
-  // Cronの多少のズレを考慮して
-  // 00:00〜00:15 JSTの記録だけを基準として認める
-  const limitUtc = new Date(
-    startUtc.getTime() + 15 * 60 * 1000
-  );
+  const day =
+    jstNow.getUTCDate() - daysAgo;
+
+
+  // JST 00:00 → UTC
+  const midnightUtc =
+    new Date(
+      Date.UTC(
+        year,
+        month,
+        day,
+        -9,
+        0,
+        0
+      )
+    );
+
+
+  // 10分Cronの多少のズレを考慮
+  // 00:00〜00:20 JSTの最初の記録を使用
+  const limitUtc =
+    new Date(
+      midnightUtc.getTime() +
+      20 * 60 * 1000
+    );
+
 
   const row = await env.DB.prepare(`
     SELECT
@@ -139,12 +161,52 @@ async function getTodayBase(env, videoId) {
   `)
     .bind(
       videoId,
-      startUtc.toISOString(),
+      midnightUtc.toISOString(),
       limitUtc.toISOString()
     )
     .first();
 
   return row;
+}
+
+
+// ========================================
+// 昨日1日で増えた数
+//
+// 昨日0:00 → 今日0:00
+// ========================================
+
+async function getPreviousDayChange(env, videoId) {
+
+  const yesterdayBase =
+    await getJstMidnightBase(
+      env,
+      videoId,
+      1
+    );
+
+  const todayBase =
+    await getJstMidnightBase(
+      env,
+      videoId,
+      0
+    );
+
+
+  if (!yesterdayBase || !todayBase) {
+    return null;
+  }
+
+
+  return {
+    views:
+      Number(todayBase.views) -
+      Number(yesterdayBase.views),
+
+    likes:
+      Number(todayBase.likes) -
+      Number(yesterdayBase.likes)
+  };
 }
 
 
@@ -205,27 +267,23 @@ async function getDailyHistory(env) {
 
 export default {
 
-  // --------------------------------------
+  // ======================================
   // サイトからアクセスされたとき
-  // --------------------------------------
+  // ======================================
 
   async fetch(request, env) {
     try {
+
       const currentVideos =
         await getYouTubeStats(env);
 
       const videos = [];
 
+
       for (const video of currentVideos) {
 
         const hourlyBase =
           await getHourlyBase(
-            env,
-            video.id
-          );
-
-        const todayBase =
-          await getTodayBase(
             env,
             video.id
           );
@@ -250,23 +308,15 @@ export default {
 
 
         // ------------------------------
-        // 前日比
-        // 今日0:00付近のデータが
-        // 存在するときだけ表示
+        // 前日1日分
+        // 昨日0:00 → 今日0:00
         // ------------------------------
 
-        const dailyChange =
-          todayBase
-            ? {
-                views:
-                  video.views -
-                  Number(todayBase.views),
-
-                likes:
-                  video.likes -
-                  Number(todayBase.likes)
-              }
-            : null;
+        const previousDayChange =
+          await getPreviousDayChange(
+            env,
+            video.id
+          );
 
 
         videos.push({
@@ -279,8 +329,10 @@ export default {
           hourly_change:
             hourlyChange,
 
+          // index.htmlを変更しなくて済むよう
+          // daily_changeという名前は維持
           daily_change:
-            dailyChange
+            previousDayChange
         });
       }
 
@@ -356,7 +408,7 @@ export default {
 
   // ======================================
   // Cron
-  // 10分ごとに自動実行
+  // 10分ごとに自動保存
   // ======================================
 
   async scheduled(event, env, ctx) {
