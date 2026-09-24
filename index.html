@@ -141,8 +141,17 @@
     }
 
     header {
-      text-align: center;
       margin-bottom: 28px;
+    }
+
+    .header-main {
+      position: relative;
+
+      min-height: 56px;
+
+      display: flex;
+      align-items: flex-start;
+      justify-content: center;
     }
 
     header h1 {
@@ -154,6 +163,8 @@
 
       color: #fff;
 
+      text-align: center;
+
       text-shadow:
         0 2px 12px rgba(0, 0, 0, 0.22);
     }
@@ -164,6 +175,47 @@
       color: rgba(255, 255, 255, 0.74);
 
       font-size: 12px;
+
+      text-align: center;
+    }
+
+
+    /* ========================================
+       最新のMV再生
+       ======================================== */
+
+    .recent-plays {
+      position: absolute;
+
+      top: 0;
+      right: 0;
+
+      width: 170px;
+
+      color: rgba(255, 255, 255, 0.70);
+
+      font-size: 9px;
+      font-weight: 600;
+      line-height: 1.45;
+
+      text-align: left;
+
+      pointer-events: none;
+    }
+
+    .recent-play {
+      overflow: hidden;
+
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .recent-play-time {
+      display: inline-block;
+
+      width: 34px;
+
+      color: rgba(255, 255, 255, 0.55);
     }
 
 
@@ -569,6 +621,28 @@
         width: 95%;
       }
 
+      .header-main {
+        min-height: 52px;
+      }
+
+      header h1 {
+        font-size: 25px;
+      }
+
+      .recent-plays {
+        width: 112px;
+
+        top: 0;
+        right: 0;
+
+        font-size: 8px;
+        line-height: 1.45;
+      }
+
+      .recent-play-time {
+        width: 30px;
+      }
+
       .milestone-alert {
         padding: 6px 6px 6px 8px;
       }
@@ -641,9 +715,18 @@
 
     <header>
 
-      <h1>
-        STARS BASE
-      </h1>
+      <div class="header-main">
+
+        <h1>
+          STARS BASE
+        </h1>
+
+        <div
+          id="recentPlays"
+          class="recent-plays"
+        ></div>
+
+      </div>
 
       <div
         id="updated"
@@ -1124,12 +1207,6 @@
 
     // ========================================
     // キリ番80%以上のお知らせ
-    //
-    // 10万 → 20万 → 30万 → 40万 → 50万
-    // → 100万 → 200万 → 300万 → …
-    //
-    // 前のキリ番から次のキリ番までの
-    // 区間を80%以上進んだら表示
     // ========================================
 
     function createMilestoneAlerts(videos) {
@@ -1179,6 +1256,7 @@
                 <a
                   class="milestone-play"
                   href="${getYouTubeUrl(video.id)}"
+                  data-video-id="${video.id}"
                 >
                   MV再生 ▶
                 </a>
@@ -1293,6 +1371,7 @@
                   href="${getYouTubeUrl(video.id)}"
                   target="_blank"
                   rel="noopener noreferrer"
+                  data-video-id="${video.id}"
                 >
                   ▶ YouTubeでMVを見る
                 </a>
@@ -1425,6 +1504,210 @@
 
         </article>
       `;
+
+    }
+
+
+    // ========================================
+    // ★ 再生クリックを記録
+    // ========================================
+
+    function recordPlay(videoId) {
+
+      fetch(
+        API_URL + "/play",
+        {
+          method:
+            "POST",
+
+          headers: {
+            "Content-Type":
+              "application/json"
+          },
+
+          body:
+            JSON.stringify({
+              video_id:
+                videoId
+            }),
+
+          keepalive:
+            true
+        }
+      )
+        .then(() => {
+          loadRecentPlays();
+        })
+        .catch(error => {
+          console.error(
+            "Play record error:",
+            error
+          );
+        });
+
+    }
+
+
+    // ========================================
+    // ★ 再生ボタンのクリック監視
+    //
+    // 動的に生成されるボタンにも対応
+    // ========================================
+
+    document.addEventListener(
+      "click",
+      event => {
+
+        const button =
+          event.target.closest(
+            "[data-video-id]"
+          );
+
+
+        if (!button) {
+          return;
+        }
+
+
+        const videoId =
+          button.dataset.videoId;
+
+
+        if (!videoId) {
+          return;
+        }
+
+
+        recordPlay(
+          videoId
+        );
+
+      }
+    );
+
+
+    // ========================================
+    // ★ JSTの時刻表示
+    // ========================================
+
+    function formatPlayTime(iso) {
+
+      const date =
+        new Date(iso);
+
+
+      return new Intl.DateTimeFormat(
+        "ja-JP",
+        {
+          timeZone:
+            "Asia/Tokyo",
+
+          hour:
+            "2-digit",
+
+          minute:
+            "2-digit",
+
+          hour12:
+            false
+        }
+      ).format(date);
+
+    }
+
+
+    // ========================================
+    // ★ 最新3件の再生を表示
+    // ========================================
+
+    function showRecentPlays(plays) {
+
+      const target =
+        document.getElementById(
+          "recentPlays"
+        );
+
+
+      if (
+        !Array.isArray(plays) ||
+        plays.length === 0
+      ) {
+
+        target.innerHTML = "";
+        return;
+
+      }
+
+
+      target.innerHTML =
+        plays
+          .slice(0, 3)
+          .map(play => {
+
+            return `
+              <div class="recent-play">
+
+                <span class="recent-play-time">
+                  ${formatPlayTime(
+                    play.clicked_at
+                  )}
+                </span>
+
+                <span>
+                  ${play.title}
+                </span>
+
+              </div>
+            `;
+
+          })
+          .join("");
+
+    }
+
+
+    // ========================================
+    // ★ 最新3件を取得
+    // ========================================
+
+    async function loadRecentPlays() {
+
+      try {
+
+        const response =
+          await fetch(
+            API_URL +
+            "/recent-plays?t=" +
+            Date.now(),
+            {
+              cache:
+                "no-store"
+            }
+          );
+
+
+        if (!response.ok) {
+          return;
+        }
+
+
+        const data =
+          await response.json();
+
+
+        showRecentPlays(
+          data.plays || []
+        );
+
+
+      } catch (error) {
+
+        console.error(
+          "Recent plays error:",
+          error
+        );
+
+      }
 
     }
 
@@ -1743,7 +2026,23 @@
     }
 
 
+    // ========================================
+    // 初回読み込み
+    // ========================================
+
     loadData();
+
+    loadRecentPlays();
+
+
+    // ========================================
+    // ★ 最新再生を5秒ごとに更新
+    // ========================================
+
+    setInterval(
+      loadRecentPlays,
+      5000
+    );
 
   </script>
 
