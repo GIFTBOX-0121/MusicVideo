@@ -62,10 +62,10 @@
     .falling-star {
       position: absolute;
       top: -40px;
-      color: rgba(255, 255, 255, 0.95);
+      color: rgba(255, 210, 45, 0.98);
       text-shadow:
-        0 0 5px rgba(255, 255, 255, 0.95),
-        0 0 12px rgba(190, 200, 220, 0.8);
+        0 0 5px rgba(255, 220, 70, 0.95),
+        0 0 12px rgba(255, 190, 30, 0.75);
       user-select: none;
       animation:
         starFall linear forwards,
@@ -530,11 +530,11 @@
 
 
     // 最初から少し星を出す
-    for (let i = 0; i < 12; i++) {
+    for (let i = 0; i < 20; i++) {
 
       setTimeout(
         createStar,
-        i * 250
+        i * 180
       );
 
     }
@@ -543,7 +543,7 @@
     // その後も降り続ける
     setInterval(
       createStar,
-      650
+      450
     );
 
 
