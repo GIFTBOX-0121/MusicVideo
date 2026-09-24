@@ -30,22 +30,35 @@
 
     body {
       margin: 0;
+
+      /* 🌙 夜空グラデーション */
       background:
+        radial-gradient(
+          circle at 50% 0%,
+          rgba(72, 98, 160, 0.30) 0%,
+          rgba(72, 98, 160, 0) 42%
+        ),
         linear-gradient(
           180deg,
-          #eef0f5 0%,
-          #f6f7f9 35%,
-          #eceef4 100%
+          #0d1b3d 0%,
+          #142b55 42%,
+          #202550 100%
         );
+
+      background-attachment: fixed;
+
       color: #111;
+
       font-family:
         -apple-system,
         BlinkMacSystemFont,
         "Helvetica Neue",
         Arial,
         sans-serif;
+
       overflow-x: hidden;
     }
+
 
     /* ========================================
        星が降る背景
@@ -62,14 +75,20 @@
     .falling-star {
       position: absolute;
       top: -40px;
-      color: rgba(255, 210, 45, 0.98);
+
+      /* 🌟 黄色い星 */
+      color: rgba(255, 221, 87, 0.98);
+
       text-shadow:
-        0 0 5px rgba(255, 220, 70, 0.95),
-        0 0 12px rgba(255, 190, 30, 0.75);
+        0 0 5px rgba(255, 226, 105, 0.95),
+        0 0 12px rgba(255, 202, 40, 0.72);
+
       user-select: none;
+
       animation:
         starFall linear forwards,
         starTwinkle 1.8s ease-in-out infinite alternate;
+
       will-change: transform, opacity;
     }
 
@@ -78,6 +97,7 @@
         transform:
           translate3d(0, -40px, 0)
           rotate(0deg);
+
         opacity: 0;
       }
 
@@ -93,6 +113,7 @@
         transform:
           translate3d(35px, 110vh, 0)
           rotate(180deg);
+
         opacity: 0;
       }
     }
@@ -107,13 +128,18 @@
       }
     }
 
-    /* サイト本体を星より前に表示 */
+
+    /* ========================================
+       サイト本体
+       ======================================== */
 
     .container {
       position: relative;
       z-index: 1;
+
       width: min(94%, 760px);
       margin: 0 auto;
+
       padding: 30px 0 60px;
     }
 
@@ -124,16 +150,31 @@
 
     header h1 {
       margin: 0;
+
       font-size: 28px;
       font-weight: 900;
       letter-spacing: 1.5px;
+
+      /* 🌙 夜空用 */
+      color: #fff;
+
+      text-shadow:
+        0 2px 12px rgba(0, 0, 0, 0.22);
     }
 
     .updated {
       margin-top: 8px;
-      color: #777;
+
+      /* 🌙 少し透けた白 */
+      color: rgba(255, 255, 255, 0.74);
+
       font-size: 12px;
     }
+
+
+    /* ========================================
+       MVカード
+       ======================================== */
 
     .cards {
       display: grid;
@@ -142,17 +183,21 @@
 
     .card {
       background: rgba(255, 255, 255, 0.94);
+
       backdrop-filter: blur(4px);
       -webkit-backdrop-filter: blur(4px);
+
       border-radius: 20px;
       padding: 18px;
+
       box-shadow:
-        0 4px 18px rgba(0, 0, 0, 0.06);
+        0 4px 18px rgba(0, 0, 0, 0.10);
     }
 
     .video-header {
       display: flex;
       align-items: center;
+
       gap: 14px;
       margin-bottom: 18px;
     }
@@ -160,9 +205,13 @@
     .thumbnail {
       width: 135px;
       aspect-ratio: 16 / 9;
+
       flex-shrink: 0;
+
       object-fit: cover;
+
       border-radius: 12px;
+
       background: #eee;
     }
 
@@ -173,33 +222,57 @@
 
     .title {
       margin: 0 0 10px;
+
       font-size: 20px;
       font-weight: 800;
       line-height: 1.25;
     }
 
+
+    /* ========================================
+       急上昇
+       ======================================== */
+
     .trending {
       display: inline-block;
+
       margin-bottom: 9px;
+
       padding: 5px 9px;
+
       border: 2px solid #e53935;
       border-radius: 8px;
+
       color: #d32f2f;
+
       background: #fff5f5;
+
       font-size: 12px;
       font-weight: 800;
     }
 
+
+    /* ========================================
+       YouTubeボタン
+       ======================================== */
+
     .youtube-button {
       display: inline-flex;
+
       align-items: center;
       justify-content: center;
+
       min-height: 38px;
+
       padding: 8px 13px;
+
       border-radius: 10px;
+
       background: #111;
       color: #fff;
+
       text-decoration: none;
+
       font-size: 12px;
       font-weight: 700;
     }
@@ -209,9 +282,15 @@
       opacity: 0.8;
     }
 
+
+    /* ========================================
+       再生回数・高評価
+       ======================================== */
+
     .stats {
       display: grid;
       grid-template-columns: 1fr 1fr;
+
       gap: 10px;
     }
 
@@ -226,26 +305,32 @@
 
     .stat-label {
       margin-bottom: 6px;
+
       font-size: 12px;
       color: #777;
     }
 
     .stat-number {
       font-size: clamp(20px, 6vw, 30px);
+
       font-weight: 800;
       line-height: 1.15;
+
       white-space: nowrap;
     }
 
     .changes {
       margin-top: 12px;
+
       font-size: 12px;
       line-height: 1.8;
     }
 
     .change-row {
       display: flex;
+
       justify-content: center;
+
       gap: 6px;
     }
 
@@ -257,14 +342,22 @@
       font-weight: 700;
     }
 
+
+    /* ========================================
+       目標
+       ======================================== */
+
     .goal {
       margin-top: 22px;
+
       padding-top: 18px;
+
       border-top: 1px solid #eee;
     }
 
     .goal-text {
       text-align: center;
+
       font-size: 14px;
       font-weight: 700;
       line-height: 1.6;
@@ -277,40 +370,61 @@
     .progress {
       width: 100%;
       height: 12px;
+
       margin-top: 11px;
+
       overflow: hidden;
+
       background: #ececec;
+
       border-radius: 999px;
     }
 
     .progress-bar {
       height: 100%;
+
       background: #111;
+
       border-radius: 999px;
+
       transition: width .5s ease;
     }
 
     .progress-percent {
       margin-top: 6px;
+
       text-align: right;
+
       font-size: 12px;
       color: #777;
     }
 
+
+    /* ========================================
+       グラフ
+       ======================================== */
+
     .chart-card {
       margin-top: 26px;
+
       padding: 22px 14px;
+
       background: rgba(255, 255, 255, 0.94);
+
       backdrop-filter: blur(4px);
       -webkit-backdrop-filter: blur(4px);
+
       border-radius: 20px;
+
       box-shadow:
-        0 4px 18px rgba(0, 0, 0, 0.06);
+        0 4px 18px rgba(0, 0, 0, 0.10);
     }
 
     .chart-title {
       margin: 0 0 20px;
+
       text-align: center;
+
       font-size: 18px;
     }
 
@@ -321,19 +435,30 @@
 
     .loading {
       padding: 60px 0;
+
       text-align: center;
-      color: #777;
+
+      color: rgba(255, 255, 255, 0.75);
     }
 
     .error {
       padding: 30px 15px;
+
       text-align: center;
+
       color: #b00020;
       background: #fff;
+
       border-radius: 18px;
     }
 
+
+    /* ========================================
+       スマホ
+       ======================================== */
+
     @media (max-width: 420px) {
+
       .container {
         width: 95%;
       }
@@ -368,25 +493,32 @@
       }
     }
 
+
     @media (prefers-reduced-motion: reduce) {
+
       .falling-star {
         animation: none;
         display: none;
       }
     }
+
   </style>
 </head>
+
 
 <body>
 
   <!-- 星専用レイヤー -->
   <div id="star-background"></div>
 
+
   <div class="container">
 
     <header>
 
-      <h1>STARS BASE</h1>
+      <h1>
+        STARS BASE
+      </h1>
 
       <div
         id="updated"
@@ -395,16 +527,20 @@
 
     </header>
 
+
     <main>
 
       <div
         id="cards"
         class="cards"
       >
+
         <div class="loading">
           データを取得しています...
         </div>
+
       </div>
+
 
       <section class="chart-card">
 
@@ -413,7 +549,11 @@
         </h2>
 
         <div class="chart-wrap">
-          <canvas id="historyChart"></canvas>
+
+          <canvas
+            id="historyChart"
+          ></canvas>
+
         </div>
 
       </section>
@@ -529,7 +669,7 @@
     }
 
 
-    // 最初から少し星を出す
+    // 🌟 最初から少し多めに星を出す
     for (let i = 0; i < 20; i++) {
 
       setTimeout(
@@ -540,7 +680,7 @@
     }
 
 
-    // その後も降り続ける
+    // 🌟 その後も少し多めに降り続ける
     setInterval(
       createStar,
       450
@@ -552,30 +692,40 @@
     // ========================================
 
     function formatNumber(number) {
+
       return Number(number || 0)
         .toLocaleString("ja-JP");
+
     }
 
 
-    function formatChange(value, unit = "") {
+    function formatChange(
+      value,
+      unit = ""
+    ) {
 
       if (
         value === null ||
         value === undefined
       ) {
+
         return "―";
+
       }
+
 
       const sign =
         value >= 0
           ? "+"
           : "";
 
+
       return (
         sign +
         formatNumber(value) +
         unit
       );
+
     }
 
 
@@ -609,6 +759,7 @@
           views / 1000000
         ) + 1
       ) * 1000000;
+
     }
 
 
@@ -618,6 +769,7 @@
         goal / 10000
       ).toLocaleString("ja-JP") +
       "万";
+
     }
 
 
@@ -636,6 +788,7 @@
       }
 
       return goal - 1000000;
+
     }
 
 
@@ -644,8 +797,10 @@
       const goal =
         getGoal(video.views);
 
+
       const previousGoal =
         getPreviousGoal(goal);
+
 
       const remaining =
         Math.max(
@@ -702,6 +857,7 @@
 
         </div>
       `;
+
     }
 
 
@@ -759,11 +915,14 @@
       const hourlyViews =
         video.hourly_change?.views;
 
+
       const hourlyLikes =
         video.hourly_change?.likes;
 
+
       const dailyViews =
         video.daily_change?.views;
+
 
       const dailyLikes =
         video.daily_change?.likes;
@@ -919,6 +1078,7 @@
 
         </article>
       `;
+
     }
 
 
@@ -936,6 +1096,7 @@
         new Intl.DateTimeFormat(
           "ja-JP",
           {
+
             timeZone:
               "Asia/Tokyo",
 
@@ -950,6 +1111,7 @@
 
             minute:
               "2-digit"
+
           }
         );
 
@@ -959,6 +1121,7 @@
       ).textContent =
         formatter.format(date) +
         " 時点";
+
     }
 
 
@@ -1001,6 +1164,7 @@
               return row
                 ? Number(row.views)
                 : null;
+
             });
 
 
@@ -1012,6 +1176,7 @@
             borderWidth: 2,
             pointRadius: 3
           };
+
         });
 
 
@@ -1085,6 +1250,7 @@
                         formatNumber(value) +
                         "回"
                       );
+
                     }
 
                   }
@@ -1110,6 +1276,7 @@
                               "compact"
                           }
                         );
+
                     }
 
                   }
@@ -1131,6 +1298,7 @@
 
           }
         );
+
     }
 
 
