@@ -49,6 +49,67 @@ async function getYouTubeStats(env) {
 
 
 // ========================================
+// 日本の「音楽」急上昇ランキングを取得
+//
+// regionCode = JP
+// videoCategoryId = 10 → Music
+// chart = mostPopular
+//
+// 戻り値:
+// {
+//   "動画ID": 1,
+//   "動画ID": 2,
+//   ...
+// }
+// ========================================
+
+async function getTrendingRanks(env) {
+  const url =
+    "https://www.googleapis.com/youtube/v3/videos" +
+    "?part=id" +
+    "&chart=mostPopular" +
+    "&regionCode=JP" +
+    "&videoCategoryId=10" +
+    "&maxResults=50" +
+    "&key=" + encodeURIComponent(env.YOUTUBE_API_KEY);
+
+  try {
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      console.error(
+        `Trending API error: ${response.status}`
+      );
+
+      return {};
+    }
+
+    const result = await response.json();
+
+    const ranks = {};
+
+    (result.items || []).forEach(
+      (item, index) => {
+        ranks[item.id] = index + 1;
+      }
+    );
+
+    return ranks;
+
+  } catch (error) {
+    // 急上昇取得だけ失敗しても
+    // 再生回数サイト全体は止めない
+    console.error(
+      "Failed to get trending ranking:",
+      error
+    );
+
+    return {};
+  }
+}
+
+
+// ========================================
 // D1へ保存
 // ========================================
 
@@ -105,7 +166,11 @@ async function getHourlyBase(env, videoId) {
 // daysAgo = 1 → 昨日0:00
 // ========================================
 
-async function getJstMidnightBase(env, videoId, daysAgo) {
+async function getJstMidnightBase(
+  env,
+  videoId,
+  daysAgo
+) {
   const now = new Date();
 
   const jstNow =
@@ -176,7 +241,10 @@ async function getJstMidnightBase(env, videoId, daysAgo) {
 // 昨日0:00 → 今日0:00
 // ========================================
 
-async function getPreviousDayChange(env, videoId) {
+async function getPreviousDayChange(
+  env,
+  videoId
+) {
 
   const yesterdayBase =
     await getJstMidnightBase(
@@ -274,8 +342,18 @@ export default {
   async fetch(request, env) {
     try {
 
-      const currentVideos =
-        await getYouTubeStats(env);
+      // 現在の再生数など
+      // ＋
+      // 日本の音楽急上昇
+      // を同時に取得
+      const [
+        currentVideos,
+        trendingRanks
+      ] = await Promise.all([
+        getYouTubeStats(env),
+        getTrendingRanks(env)
+      ]);
+
 
       const videos = [];
 
@@ -332,7 +410,16 @@ export default {
           // index.htmlを変更しなくて済むよう
           // daily_changeという名前は維持
           daily_change:
-            previousDayChange
+            previousDayChange,
+
+          // ----------------------------
+          // 日本・音楽 急上昇順位
+          //
+          // ランクイン → 1〜50
+          // ランク外 → null
+          // ----------------------------
+          trending_rank:
+            trendingRanks[video.id] ?? null
         });
       }
 
