@@ -9,6 +9,23 @@ const VIDEOS = [
 
 
 // ========================================
+// JSTの日付を取得
+// ========================================
+
+function getJstDate(date = new Date()) {
+  return new Intl.DateTimeFormat(
+    "en-CA",
+    {
+      timeZone: "Asia/Tokyo",
+      year: "numeric",
+      month: "2-digit",
+      day: "2-digit"
+    }
+  ).format(date);
+}
+
+
+// ========================================
 // YouTubeから現在値を取得
 // ========================================
 
@@ -24,7 +41,9 @@ async function getYouTubeStats(env) {
   const response = await fetch(url);
 
   if (!response.ok) {
-    throw new Error(`YouTube API error: ${response.status}`);
+    throw new Error(
+      `YouTube API error: ${response.status}`
+    );
   }
 
   const result = await response.json();
@@ -33,8 +52,11 @@ async function getYouTubeStats(env) {
     (result.items || []).map(item => [
       item.id,
       {
-        views: Number(item.statistics?.viewCount ?? 0),
-        likes: Number(item.statistics?.likeCount ?? 0)
+        views:
+          Number(item.statistics?.viewCount ?? 0),
+
+        likes:
+          Number(item.statistics?.likeCount ?? 0)
       }
     ])
   );
@@ -42,75 +64,18 @@ async function getYouTubeStats(env) {
   return VIDEOS.map(video => ({
     title: video.title,
     id: video.id,
-    views: stats[video.id]?.views ?? 0,
-    likes: stats[video.id]?.likes ?? 0
+
+    views:
+      stats[video.id]?.views ?? 0,
+
+    likes:
+      stats[video.id]?.likes ?? 0
   }));
 }
 
 
 // ========================================
-// 日本の「音楽」急上昇ランキングを取得
-//
-// regionCode = JP
-// videoCategoryId = 10 → Music
-// chart = mostPopular
-//
-// 戻り値:
-// {
-//   "動画ID": 1,
-//   "動画ID": 2,
-//   ...
-// }
-// ========================================
-
-async function getTrendingRanks(env) {
-  const url =
-    "https://www.googleapis.com/youtube/v3/videos" +
-    "?part=id" +
-    "&chart=mostPopular" +
-    "&regionCode=JP" +
-    "&videoCategoryId=10" +
-    "&maxResults=50" +
-    "&key=" + encodeURIComponent(env.YOUTUBE_API_KEY);
-
-  try {
-    const response = await fetch(url);
-
-    if (!response.ok) {
-      console.error(
-        `Trending API error: ${response.status}`
-      );
-
-      return {};
-    }
-
-    const result = await response.json();
-
-    const ranks = {};
-
-    (result.items || []).forEach(
-      (item, index) => {
-        ranks[item.id] = index + 1;
-      }
-    );
-
-    return ranks;
-
-  } catch (error) {
-    // 急上昇取得だけ失敗しても
-    // 再生回数サイト全体は止めない
-    console.error(
-      "Failed to get trending ranking:",
-      error
-    );
-
-    return {};
-  }
-}
-
-
-// ========================================
-// D1へ保存
+// 10分ごとの現在値をvideo_statsへ保存
 // ========================================
 
 async function saveStats(env, videos) {
@@ -119,7 +84,14 @@ async function saveStats(env, videos) {
   const statements = videos.map(video =>
     env.DB.prepare(`
       INSERT INTO video_stats
-        (video_id, title, views, likes, recorded_at)
+        (
+          video_id,
+          title,
+          views,
+          likes,
+          recorded_at
+        )
+
       VALUES (?, ?, ?, ?, ?)
     `).bind(
       video.id,
@@ -135,157 +107,159 @@ async function saveStats(env, videos) {
 
 
 // ========================================
-// 約1時間前の記録を取得
+// 約1時間前の記録
 // ========================================
 
-async function getHourlyBase(env, videoId) {
-  const oneHourAgo =
-    new Date(Date.now() - 60 * 60 * 1000).toISOString();
-
-  const row = await env.DB.prepare(`
-    SELECT
-      views,
-      likes,
-      recorded_at
-    FROM video_stats
-    WHERE video_id = ?
-      AND recorded_at <= ?
-    ORDER BY recorded_at DESC
-    LIMIT 1
-  `)
-    .bind(videoId, oneHourAgo)
-    .first();
-
-  return row;
-}
-
-
-// ========================================
-// 指定したJSTの日付の0:00付近を取得
-// daysAgo = 0 → 今日0:00
-// daysAgo = 1 → 昨日0:00
-// ========================================
-
-async function getJstMidnightBase(
+async function getHourlyBase(
   env,
-  videoId,
-  daysAgo
+  videoId
 ) {
-  const now = new Date();
-
-  const jstNow =
+  const oneHourAgo =
     new Date(
-      now.getTime() +
-      9 * 60 * 60 * 1000
-    );
+      Date.now() -
+      60 * 60 * 1000
+    ).toISOString();
 
-  const year =
-    jstNow.getUTCFullYear();
-
-  const month =
-    jstNow.getUTCMonth();
-
-  const day =
-    jstNow.getUTCDate() - daysAgo;
-
-
-  // JST 00:00 → UTC
-  const midnightUtc =
-    new Date(
-      Date.UTC(
-        year,
-        month,
-        day,
-        -9,
-        0,
-        0
-      )
-    );
-
-
-  // 10分Cronの多少のズレを考慮
-  // 00:00〜00:20 JSTの最初の記録を使用
-  const limitUtc =
-    new Date(
-      midnightUtc.getTime() +
-      20 * 60 * 1000
-    );
-
-
-  const row = await env.DB.prepare(`
+  return await env.DB.prepare(`
     SELECT
       views,
       likes,
       recorded_at
+
     FROM video_stats
+
     WHERE video_id = ?
-      AND recorded_at >= ?
       AND recorded_at <= ?
-    ORDER BY recorded_at ASC
+
+    ORDER BY recorded_at DESC
+
     LIMIT 1
   `)
     .bind(
       videoId,
-      midnightUtc.toISOString(),
-      limitUtc.toISOString()
+      oneHourAgo
     )
     .first();
-
-  return row;
 }
 
 
 // ========================================
-// 昨日1日で増えた数
+// 今日の最初の記録
 //
-// 昨日0:00 → 今日0:00
+// TODAYの増加数を出すために使用
 // ========================================
 
-async function getPreviousDayChange(
+async function getTodayFirstRecord(
   env,
   videoId
 ) {
+  const today =
+    getJstDate();
 
-  const yesterdayBase =
-    await getJstMidnightBase(
-      env,
+  return await env.DB.prepare(`
+    SELECT
+      views,
+      likes,
+      recorded_at
+
+    FROM video_stats
+
+    WHERE video_id = ?
+      AND date(
+        recorded_at,
+        '+9 hours'
+      ) = ?
+
+    ORDER BY recorded_at ASC
+
+    LIMIT 1
+  `)
+    .bind(
       videoId,
-      1
-    );
-
-  const todayBase =
-    await getJstMidnightBase(
-      env,
-      videoId,
-      0
-    );
-
-
-  if (!yesterdayBase || !todayBase) {
-    return null;
-  }
-
-
-  return {
-    views:
-      Number(todayBase.views) -
-      Number(yesterdayBase.views),
-
-    likes:
-      Number(todayBase.likes) -
-      Number(yesterdayBase.likes)
-  };
+      today
+    )
+    .first();
 }
 
 
 // ========================================
-// 日別推移
-// 各日の最後の記録を1点として使用
+// 前日の日次データを取得
+// ========================================
+
+async function getPreviousDailyStat(
+  env,
+  videoId
+) {
+  return await env.DB.prepare(`
+    SELECT
+      jst_date,
+      start_views,
+      end_views,
+      views_change,
+      start_likes,
+      end_likes,
+      likes_change
+
+    FROM daily_stats
+
+    WHERE video_id = ?
+
+    ORDER BY jst_date DESC
+
+    LIMIT 1
+  `)
+    .bind(videoId)
+    .first();
+}
+
+
+// ========================================
+// 過去の日別履歴
+//
+// ★ daily_statsだけを読む
+// ★ 10分履歴全体を集計しない
 // ========================================
 
 async function getDailyHistory(env) {
   const result = await env.DB.prepare(`
-    WITH ranked AS (
+    SELECT
+      video_id,
+      title,
+      jst_date,
+      start_views,
+      end_views,
+      views_change,
+      start_likes,
+      end_likes,
+      likes_change
+
+    FROM daily_stats
+
+    ORDER BY
+      jst_date ASC,
+      video_id ASC
+  `).all();
+
+  return result.results || [];
+}
+
+
+// ========================================
+// 終了した日のデータをdaily_statsへ確定
+//
+// 今日より前で、まだdaily_statsに存在しない日を
+// video_statsから日次データへ圧縮
+//
+// ※この段階ではvideo_statsを削除しない
+// ========================================
+
+async function finalizePastDays(env) {
+  const today =
+    getJstDate();
+
+  const result = await env.DB.prepare(`
+    WITH raw AS (
+
       SELECT
         video_id,
         title,
@@ -296,36 +270,168 @@ async function getDailyHistory(env) {
         date(
           recorded_at,
           '+9 hours'
-        ) AS jst_date,
+        ) AS jst_date
+
+      FROM video_stats
+
+      WHERE date(
+        recorded_at,
+        '+9 hours'
+      ) < ?
+    ),
+
+    ranked AS (
+
+      SELECT
+        video_id,
+        title,
+        views,
+        likes,
+        recorded_at,
+        jst_date,
 
         ROW_NUMBER() OVER (
           PARTITION BY
             video_id,
-            date(recorded_at, '+9 hours')
-          ORDER BY recorded_at DESC
-        ) AS rn
+            jst_date
 
-      FROM video_stats
+          ORDER BY
+            recorded_at ASC
+        ) AS first_rn,
+
+        ROW_NUMBER() OVER (
+          PARTITION BY
+            video_id,
+            jst_date
+
+          ORDER BY
+            recorded_at DESC
+        ) AS last_rn
+
+      FROM raw
+    ),
+
+    daily AS (
+
+      SELECT
+        video_id,
+
+        MAX(title) AS title,
+
+        jst_date,
+
+        MAX(
+          CASE
+            WHEN first_rn = 1
+            THEN views
+          END
+        ) AS start_views,
+
+        MAX(
+          CASE
+            WHEN last_rn = 1
+            THEN views
+          END
+        ) AS end_views,
+
+        MAX(
+          CASE
+            WHEN first_rn = 1
+            THEN likes
+          END
+        ) AS start_likes,
+
+        MAX(
+          CASE
+            WHEN last_rn = 1
+            THEN likes
+          END
+        ) AS end_likes
+
+      FROM ranked
+
+      GROUP BY
+        video_id,
+        jst_date
     )
 
     SELECT
       video_id,
       title,
-      views,
-      likes,
-      recorded_at,
-      jst_date
+      jst_date,
+      start_views,
+      end_views,
+      start_likes,
+      end_likes
 
-    FROM ranked
-
-    WHERE rn = 1
+    FROM daily
 
     ORDER BY
       jst_date ASC,
       video_id ASC
-  `).all();
+  `)
+    .bind(today)
+    .all();
 
-  return result.results || [];
+
+  const rows =
+    result.results || [];
+
+
+  if (rows.length === 0) {
+    return;
+  }
+
+
+  const statements =
+    rows.map(row =>
+      env.DB.prepare(`
+        INSERT OR IGNORE INTO daily_stats
+          (
+            video_id,
+            title,
+            jst_date,
+
+            start_views,
+            end_views,
+            views_change,
+
+            start_likes,
+            end_likes,
+            likes_change,
+
+            created_at
+          )
+
+        VALUES (
+          ?, ?, ?,
+          ?, ?, ?,
+          ?, ?, ?,
+          ?
+        )
+      `).bind(
+        row.video_id,
+        row.title,
+        row.jst_date,
+
+        Number(row.start_views),
+        Number(row.end_views),
+
+        Number(row.end_views) -
+        Number(row.start_views),
+
+        Number(row.start_likes),
+        Number(row.end_likes),
+
+        Number(row.end_likes) -
+        Number(row.start_likes),
+
+        new Date().toISOString()
+      )
+    );
+
+
+  await env.DB.batch(statements);
 }
 
 
@@ -342,23 +448,17 @@ export default {
   async fetch(request, env) {
     try {
 
-      // 現在の再生数など
-      // ＋
-      // 日本の音楽急上昇
-      // を同時に取得
-      const [
-        currentVideos,
-        trendingRanks
-      ] = await Promise.all([
-        getYouTubeStats(env),
-        getTrendingRanks(env)
-      ]);
-
+      const currentVideos =
+        await getYouTubeStats(env);
 
       const videos = [];
 
 
       for (const video of currentVideos) {
+
+        // ------------------------------
+        // 1時間比
+        // ------------------------------
 
         const hourlyBase =
           await getHourlyBase(
@@ -366,10 +466,6 @@ export default {
             video.id
           );
 
-
-        // ------------------------------
-        // 1時間比
-        // ------------------------------
 
         const hourlyChange =
           hourlyBase
@@ -386,46 +482,92 @@ export default {
 
 
         // ------------------------------
-        // 前日1日分
-        // 昨日0:00 → 今日0:00
+        // TODAY
+        //
+        // 今日最初の記録 →
+        // 現在値
         // ------------------------------
 
-        const previousDayChange =
-          await getPreviousDayChange(
+        const todayBase =
+          await getTodayFirstRecord(
             env,
             video.id
           );
 
 
-        videos.push({
-          title: video.title,
-          id: video.id,
+        const todayChange =
+          todayBase
+            ? {
+                views:
+                  video.views -
+                  Number(todayBase.views),
 
-          views: video.views,
-          likes: video.likes,
+                likes:
+                  video.likes -
+                  Number(todayBase.likes)
+              }
+            : null;
+
+
+        // ------------------------------
+        // 前日の確定値
+        // ------------------------------
+
+        const previousDay =
+          await getPreviousDailyStat(
+            env,
+            video.id
+          );
+
+
+        const previousDayChange =
+          previousDay
+            ? {
+                views:
+                  Number(
+                    previousDay.views_change
+                  ),
+
+                likes:
+                  Number(
+                    previousDay.likes_change
+                  )
+              }
+            : null;
+
+
+        videos.push({
+          title:
+            video.title,
+
+          id:
+            video.id,
+
+          views:
+            video.views,
+
+          likes:
+            video.likes,
 
           hourly_change:
             hourlyChange,
 
-          // index.htmlを変更しなくて済むよう
-          // daily_changeという名前は維持
+          // 既存index.htmlとの互換性
+          // 「前日増加数」
           daily_change:
             previousDayChange,
 
-          // ----------------------------
-          // 日本・音楽 急上昇順位
-          //
-          // ランクイン → 1〜50
-          // ランク外 → null
-          // ----------------------------
-          trending_rank:
-            trendingRanks[video.id] ?? null
+          // 将来TODAY表示にも使える
+          today_change:
+            todayChange
         });
       }
 
 
       // ------------------------------
-      // 6曲の日別推移
+      // 過去の日別履歴
+      //
+      // daily_statsだけを読む
       // ------------------------------
 
       const dailyHistory =
@@ -433,6 +575,7 @@ export default {
 
 
       const data = {
+
         updated_at:
           new Date().toISOString(),
 
@@ -451,6 +594,7 @@ export default {
         ),
         {
           headers: {
+
             "content-type":
               "application/json; charset=UTF-8",
 
@@ -462,6 +606,7 @@ export default {
           }
         }
       );
+
 
     } catch (error) {
 
@@ -481,6 +626,7 @@ export default {
           status: 500,
 
           headers: {
+
             "content-type":
               "application/json; charset=UTF-8",
 
@@ -495,7 +641,8 @@ export default {
 
   // ======================================
   // Cron
-  // 10分ごとに自動保存
+  //
+  // 10分ごと
   // ======================================
 
   async scheduled(event, env, ctx) {
@@ -503,13 +650,32 @@ export default {
     ctx.waitUntil(
       (async () => {
 
+        // ------------------------------
+        // ① YouTube現在値取得
+        // ------------------------------
+
         const videos =
           await getYouTubeStats(env);
+
+
+        // ------------------------------
+        // ② 現在値を10分履歴へ保存
+        // ------------------------------
 
         await saveStats(
           env,
           videos
         );
+
+
+        // ------------------------------
+        // ③ 終了済みの日を
+        // daily_statsへ確定
+        //
+        // ※まだ古い10分履歴は削除しない
+        // ------------------------------
+
+        await finalizePastDays(env);
 
       })()
     );
