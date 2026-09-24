@@ -75,6 +75,73 @@ async function getYouTubeStats(env) {
 
 
 // ========================================
+// YouTube 急上昇の音楽ランキング
+//
+// 日本 / 音楽カテゴリ / mostPopular
+// 上位50件から対象MVを探す
+// ========================================
+
+async function getTrendingRanks(env) {
+
+  const url =
+    "https://www.googleapis.com/youtube/v3/videos" +
+    "?part=id" +
+    "&chart=mostPopular" +
+    "&regionCode=JP" +
+    "&videoCategoryId=10" +
+    "&maxResults=50" +
+    "&key=" + encodeURIComponent(env.YOUTUBE_API_KEY);
+
+
+  try {
+
+    const response = await fetch(url);
+
+    if (!response.ok) {
+      console.error(
+        `YouTube trending API error: ${response.status}`
+      );
+
+      // 急上昇取得だけ失敗しても
+      // STARS BASE本体は止めない
+      return {};
+    }
+
+
+    const result =
+      await response.json();
+
+
+    const ranks = {};
+
+
+    (result.items || []).forEach(
+      (item, index) => {
+
+        ranks[item.id] =
+          index + 1;
+
+      }
+    );
+
+
+    return ranks;
+
+  } catch (error) {
+
+    console.error(
+      "Trending fetch failed:",
+      error
+    );
+
+    // 急上昇取得だけ失敗しても
+    // 他のデータは通常表示
+    return {};
+  }
+}
+
+
+// ========================================
 // 10分ごとの現在値をvideo_statsへ保存
 // ========================================
 
@@ -216,8 +283,7 @@ async function getPreviousDailyStat(
 // ========================================
 // 過去の日別履歴
 //
-// ★ daily_statsだけを読む
-// ★ 10分履歴全体を集計しない
+// daily_statsだけを読む
 // ========================================
 
 async function getDailyHistory(env) {
@@ -250,7 +316,7 @@ async function getDailyHistory(env) {
 // 今日より前で、まだdaily_statsに存在しない日を
 // video_statsから日次データへ圧縮
 //
-// ※この段階ではvideo_statsを削除しない
+// ※まだvideo_statsは削除しない
 // ========================================
 
 async function finalizePastDays(env) {
@@ -448,8 +514,15 @@ export default {
   async fetch(request, env) {
     try {
 
-      const currentVideos =
-        await getYouTubeStats(env);
+      // 現在値と急上昇を並行取得
+      const [
+        currentVideos,
+        trendingRanks
+      ] = await Promise.all([
+        getYouTubeStats(env),
+        getTrendingRanks(env)
+      ]);
+
 
       const videos = [];
 
@@ -483,9 +556,6 @@ export default {
 
         // ------------------------------
         // TODAY
-        //
-        // 今日最初の記録 →
-        // 現在値
         // ------------------------------
 
         const todayBase =
@@ -536,6 +606,16 @@ export default {
             : null;
 
 
+        // ------------------------------
+        // 急上昇順位
+        //
+        // ランク外なら null
+        // ------------------------------
+
+        const trendingRank =
+          trendingRanks[video.id] ?? null;
+
+
         videos.push({
           title:
             video.title,
@@ -549,15 +629,18 @@ export default {
           likes:
             video.likes,
 
+          // ★ 急上昇を復活
+          // index.htmlがこの名前を見ている
+          trending_rank:
+            trendingRank,
+
           hourly_change:
             hourlyChange,
 
           // 既存index.htmlとの互換性
-          // 「前日増加数」
           daily_change:
             previousDayChange,
 
-          // 将来TODAY表示にも使える
           today_change:
             todayChange
         });
@@ -566,8 +649,6 @@ export default {
 
       // ------------------------------
       // 過去の日別履歴
-      //
-      // daily_statsだけを読む
       // ------------------------------
 
       const dailyHistory =
@@ -672,7 +753,7 @@ export default {
         // ③ 終了済みの日を
         // daily_statsへ確定
         //
-        // ※まだ古い10分履歴は削除しない
+        // ※古い10分履歴はまだ削除しない
         // ------------------------------
 
         await finalizePastDays(env);
