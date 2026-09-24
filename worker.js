@@ -9,6 +9,17 @@ const VIDEOS = [
 
 
 // ========================================
+// 集計開始日
+//
+// 9/23以前の途中データは
+// 「前日比」には使用しない
+// ========================================
+
+const TRACKING_START_DATE =
+  "2026-09-24";
+
+
+// ========================================
 // JSTの日付を取得
 // ========================================
 
@@ -213,7 +224,9 @@ async function getHourlyBase(
 // ========================================
 // 今日の最初の記録
 //
-// TODAYの増加数を出すために使用
+// 今日0:00以降の最初の保存値
+// → 現在値との差で
+// 「今日のトータル」を出す
 // ========================================
 
 async function getTodayFirstRecord(
@@ -250,13 +263,22 @@ async function getTodayFirstRecord(
 
 
 // ========================================
-// 前日の日次データを取得
+// 前日の正式な日次データを取得
+//
+// ★ 2026-09-24以降だけを対象にする
+//
+// これにより9/23の途中データは
+// 前日比に絶対使用しない
 // ========================================
 
 async function getPreviousDailyStat(
   env,
   videoId
 ) {
+
+  const today =
+    getJstDate();
+
   return await env.DB.prepare(`
     SELECT
       jst_date,
@@ -270,12 +292,18 @@ async function getPreviousDailyStat(
     FROM daily_stats
 
     WHERE video_id = ?
+      AND jst_date >= ?
+      AND jst_date < ?
 
     ORDER BY jst_date DESC
 
     LIMIT 1
   `)
-    .bind(videoId)
+    .bind(
+      videoId,
+      TRACKING_START_DATE,
+      today
+    )
     .first();
 }
 
@@ -283,7 +311,7 @@ async function getPreviousDailyStat(
 // ========================================
 // 過去の日別履歴
 //
-// daily_statsだけを読む
+// ★ 9/24以降のみ返す
 // ========================================
 
 async function getDailyHistory(env) {
@@ -301,10 +329,16 @@ async function getDailyHistory(env) {
 
     FROM daily_stats
 
+    WHERE jst_date >= ?
+
     ORDER BY
       jst_date ASC,
       video_id ASC
-  `).all();
+  `)
+    .bind(
+      TRACKING_START_DATE
+    )
+    .all();
 
   return result.results || [];
 }
@@ -313,10 +347,12 @@ async function getDailyHistory(env) {
 // ========================================
 // 終了した日のデータをdaily_statsへ確定
 //
+// ★ 9/24以降だけを日次データ化
+//
 // 今日より前で、まだdaily_statsに存在しない日を
 // video_statsから日次データへ圧縮
 //
-// ※まだvideo_statsは削除しない
+// ※video_statsは削除しない
 // ========================================
 
 async function finalizePastDays(env) {
@@ -340,10 +376,18 @@ async function finalizePastDays(env) {
 
       FROM video_stats
 
-      WHERE date(
-        recorded_at,
-        '+9 hours'
-      ) < ?
+      WHERE
+        date(
+          recorded_at,
+          '+9 hours'
+        ) >= ?
+
+        AND
+
+        date(
+          recorded_at,
+          '+9 hours'
+        ) < ?
     ),
 
     ranked AS (
@@ -436,7 +480,10 @@ async function finalizePastDays(env) {
       jst_date ASC,
       video_id ASC
   `)
-    .bind(today)
+    .bind(
+      TRACKING_START_DATE,
+      today
+    )
     .all();
 
 
@@ -555,7 +602,9 @@ export default {
 
 
         // ------------------------------
-        // TODAY
+        // 今日トータル
+        //
+        // 今日最初の保存値 → 現在値
         // ------------------------------
 
         const todayBase =
@@ -580,7 +629,9 @@ export default {
 
 
         // ------------------------------
-        // 前日の確定値
+        // 前日の正式な日次データ
+        //
+        // 9/24以降のみ
         // ------------------------------
 
         const previousDay =
@@ -590,9 +641,52 @@ export default {
           );
 
 
-        const previousDayChange =
+        // ------------------------------
+        // 前日比
+        //
+        // 今日ここまでの増加数
+        // －
+        // 昨日1日の増加数
+        //
+        // 9/24はpreviousDayが存在しないので
+        // null → 表示は「－」
+        // ------------------------------
+
+        const previousDayComparison =
+          (
+            todayChange &&
+            previousDay
+          )
+            ? {
+                views:
+                  Number(todayChange.views) -
+                  Number(
+                    previousDay.views_change
+                  ),
+
+                likes:
+                  Number(todayChange.likes) -
+                  Number(
+                    previousDay.likes_change
+                  )
+              }
+            : null;
+
+
+        // ------------------------------
+        // 前日の実績
+        //
+        // index.htmlで
+        // 「9/24 ○回再生」
+        // の枠を表示するために返す
+        // ------------------------------
+
+        const previousDayTotal =
           previousDay
             ? {
+                date:
+                  previousDay.jst_date,
+
                 views:
                   Number(
                     previousDay.views_change
@@ -629,20 +723,25 @@ export default {
           likes:
             video.likes,
 
-          // ★ 急上昇を復活
-          // index.htmlがこの名前を見ている
+          // ★ 急上昇
           trending_rank:
             trendingRank,
 
+          // ★ 1時間比
           hourly_change:
             hourlyChange,
 
-          // 既存index.htmlとの互換性
-          daily_change:
-            previousDayChange,
-
+          // ★ 今日トータル
           today_change:
-            todayChange
+            todayChange,
+
+          // ★ 前日比
+          daily_change:
+            previousDayComparison,
+
+          // ★ 前日の実績
+          previous_day_total:
+            previousDayTotal
         });
       }
 
@@ -750,10 +849,10 @@ export default {
 
 
         // ------------------------------
-        // ③ 終了済みの日を
+        // ③ 9/24以降の終了済みの日を
         // daily_statsへ確定
         //
-        // ※古い10分履歴はまだ削除しない
+        // ※古い10分履歴は削除しない
         // ------------------------------
 
         await finalizePastDays(env);
