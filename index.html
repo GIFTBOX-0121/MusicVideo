@@ -179,13 +179,12 @@
     }
 
     .milestone-alert {
-      display: block;
+      display: flex;
+      align-items: center;
 
       width: 100%;
 
-      padding: 9px 10px;
-
-      overflow: hidden;
+      padding: 7px 7px 7px 10px;
 
       border: 2px solid #e53935;
       border-radius: 10px;
@@ -193,10 +192,13 @@
       background: rgba(255, 245, 245, 0.97);
 
       color: #d32f2f;
+    }
 
-      text-decoration: none;
+    .milestone-message {
+      flex: 1;
+      min-width: 0;
 
-      text-align: center;
+      overflow: hidden;
 
       font-size: 12px;
       font-weight: 900;
@@ -206,9 +208,28 @@
       text-overflow: ellipsis;
     }
 
-    .milestone-alert:active {
-      transform: scale(0.99);
-      opacity: 0.85;
+    .milestone-play {
+      flex-shrink: 0;
+
+      margin-left: 7px;
+      padding: 6px 8px;
+
+      border-radius: 7px;
+
+      background: #e53935;
+      color: #fff;
+
+      text-decoration: none;
+
+      font-size: 10px;
+      font-weight: 900;
+
+      white-space: nowrap;
+    }
+
+    .milestone-play:active {
+      transform: scale(0.97);
+      opacity: 0.82;
     }
 
 
@@ -549,8 +570,17 @@
       }
 
       .milestone-alert {
-        padding: 8px 7px;
-        font-size: 11px;
+        padding: 6px 6px 6px 8px;
+      }
+
+      .milestone-message {
+        font-size: 10.5px;
+      }
+
+      .milestone-play {
+        margin-left: 5px;
+        padding: 6px 7px;
+        font-size: 9px;
       }
 
       .card {
@@ -1095,7 +1125,6 @@
     // ========================================
     // キリ番80%以上のお知らせ
     //
-    // キリ番：
     // 10万 → 20万 → 30万 → 40万 → 50万
     // → 100万 → 200万 → 300万 → …
     //
@@ -1141,12 +1170,20 @@
 
 
             return `
-              <a
-                class="milestone-alert"
-                href="${getYouTubeUrl(video.id)}"
-              >
-                📣 ${video.title} ${goalLabel(goal)}回再生間近❤️‍🔥❤️‍🔥
-              </a>
+              <div class="milestone-alert">
+
+                <div class="milestone-message">
+                  📣 ${video.title} ${goalLabel(goal)}回再生間近❤️‍🔥❤️‍🔥
+                </div>
+
+                <a
+                  class="milestone-play"
+                  href="${getYouTubeUrl(video.id)}"
+                >
+                  MV再生 ▶
+                </a>
+
+              </div>
             `;
 
           })
