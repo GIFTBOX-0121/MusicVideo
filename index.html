@@ -140,18 +140,25 @@
       padding: 30px 0 40px;
     }
 
+
+    /* ========================================
+       ヘッダー
+       ======================================== */
+
     header {
-      margin-bottom: 28px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      align-items: start;
+      gap: 14px;
+
+      margin-bottom: 22px;
+
+      color: #fff;
     }
 
-    .header-main {
-      position: relative;
-
-      min-height: 56px;
-
-      display: flex;
-      align-items: flex-start;
-      justify-content: center;
+    .header-left {
+      padding-top: 5px;
+      text-align: left;
     }
 
     header h1 {
@@ -163,7 +170,7 @@
 
       color: #fff;
 
-      text-align: center;
+      white-space: nowrap;
 
       text-shadow:
         0 2px 12px rgba(0, 0, 0, 0.22);
@@ -175,47 +182,56 @@
       color: rgba(255, 255, 255, 0.74);
 
       font-size: 12px;
-
-      text-align: center;
     }
 
 
     /* ========================================
-       最新のMV再生
+       リアルタイム再生履歴
        ======================================== */
 
-    .recent-plays {
-      position: absolute;
-
-      top: 0;
-      right: 0;
-
-      width: 170px;
-
-      color: rgba(255, 255, 255, 0.70);
-
-      font-size: 9px;
-      font-weight: 600;
-      line-height: 1.45;
+    .realtime {
+      min-width: 0;
 
       text-align: left;
 
-      pointer-events: none;
+      color: rgba(255, 255, 255, 0.88);
     }
 
-    .recent-play {
+    .realtime-title {
+      margin-bottom: 4px;
+
+      text-align: center;
+
+      font-size: 10px;
+      font-weight: 800;
+
+      color: rgba(255, 255, 255, 0.92);
+
+      white-space: nowrap;
+    }
+
+    .realtime-list {
+      display: grid;
+      gap: 1px;
+    }
+
+    .realtime-item {
       overflow: hidden;
+
+      font-size: 9px;
+      font-weight: 600;
+      line-height: 1.25;
 
       white-space: nowrap;
       text-overflow: ellipsis;
+
+      color: rgba(255, 255, 255, 0.74);
     }
 
-    .recent-play-time {
-      display: inline-block;
-
-      width: 34px;
-
-      color: rgba(255, 255, 255, 0.55);
+    .realtime-empty {
+      font-size: 9px;
+      color: rgba(255, 255, 255, 0.48);
+      text-align: center;
     }
 
 
@@ -590,7 +606,6 @@
       color: rgba(255, 255, 255, 0.55);
     }
 
-
     .loading {
       padding: 60px 0;
 
@@ -621,26 +636,26 @@
         width: 95%;
       }
 
-      .header-main {
-        min-height: 52px;
+      header {
+        grid-template-columns: 46% 54%;
+        gap: 5px;
       }
 
       header h1 {
-        font-size: 25px;
+        font-size: 22px;
+        letter-spacing: 0.7px;
       }
 
-      .recent-plays {
-        width: 112px;
-
-        top: 0;
-        right: 0;
-
-        font-size: 8px;
-        line-height: 1.45;
+      .updated {
+        font-size: 10px;
       }
 
-      .recent-play-time {
-        width: 30px;
+      .realtime-title {
+        font-size: 9px;
+      }
+
+      .realtime-item {
+        font-size: 8.5px;
       }
 
       .milestone-alert {
@@ -715,23 +730,38 @@
 
     <header>
 
-      <div class="header-main">
+      <div class="header-left">
 
         <h1>
           STARS BASE
         </h1>
 
         <div
-          id="recentPlays"
-          class="recent-plays"
+          id="updated"
+          class="updated"
         ></div>
 
       </div>
 
-      <div
-        id="updated"
-        class="updated"
-      ></div>
+
+      <div class="realtime">
+
+        <div class="realtime-title">
+          ⭐︎ リアルタイム ⭐︎
+        </div>
+
+        <div
+          id="realtimeList"
+          class="realtime-list"
+        >
+
+          <div class="realtime-empty">
+            再生履歴を取得中...
+          </div>
+
+        </div>
+
+      </div>
 
     </header>
 
@@ -825,10 +855,8 @@
       const star =
         document.createElement("span");
 
-
       star.className =
         "falling-star";
-
 
       star.textContent =
         STAR_SYMBOLS[
@@ -838,26 +866,21 @@
           )
         ];
 
-
       const size =
         8 +
         Math.random() * 13;
-
 
       const duration =
         9 +
         Math.random() * 10;
 
-
       star.style.left =
         Math.random() * 100 +
         "vw";
 
-
       star.style.fontSize =
         size +
         "px";
-
 
       star.style.animationDuration =
         duration + "s, " +
@@ -867,16 +890,13 @@
         ) +
         "s";
 
-
       star.style.opacity =
         0.45 +
         Math.random() * 0.5;
 
-
       starBackground.appendChild(
         star
       );
-
 
       setTimeout(
         () => {
@@ -925,17 +945,13 @@
         value === null ||
         value === undefined
       ) {
-
         return "―";
-
       }
-
 
       const sign =
         value >= 0
           ? "+"
           : "";
-
 
       return (
         sign +
@@ -956,21 +972,151 @@
         return "";
       }
 
-
       const parts =
         dateString.split("-");
-
 
       if (parts.length !== 3) {
         return dateString;
       }
-
 
       return (
         Number(parts[1]) +
         "/" +
         Number(parts[2])
       );
+
+    }
+
+
+    // ========================================
+    // リアルタイム再生履歴
+    // ========================================
+
+    function formatPlayTime(iso) {
+
+      const date =
+        new Date(iso);
+
+      return new Intl.DateTimeFormat(
+        "ja-JP",
+        {
+          timeZone: "Asia/Tokyo",
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: false
+        }
+      ).format(date);
+
+    }
+
+
+    async function loadRecentPlays() {
+
+      const target =
+        document.getElementById(
+          "realtimeList"
+        );
+
+      try {
+
+        const response =
+          await fetch(
+            API_URL +
+            "/recent-plays?t=" +
+            Date.now(),
+            {
+              cache: "no-store"
+            }
+          );
+
+        if (!response.ok) {
+          throw new Error(
+            "recent plays error"
+          );
+        }
+
+        const data =
+          await response.json();
+
+        const plays =
+          data.plays || [];
+
+        if (plays.length === 0) {
+
+          target.innerHTML = `
+            <div class="realtime-empty">
+              まだ再生履歴はありません
+            </div>
+          `;
+
+          return;
+        }
+
+        target.innerHTML =
+          plays
+            .slice(0, 6)
+            .map(play => `
+              <div class="realtime-item">
+                ${formatPlayTime(play.clicked_at)}
+                ${play.title}
+              </div>
+            `)
+            .join("");
+
+      } catch (error) {
+
+        console.error(
+          "Recent plays:",
+          error
+        );
+
+      }
+
+    }
+
+
+    async function recordPlay(videoId) {
+
+      try {
+
+        await fetch(
+          API_URL + "/play",
+          {
+            method: "POST",
+
+            headers: {
+              "Content-Type":
+                "application/json"
+            },
+
+            body:
+              JSON.stringify({
+                video_id:
+                  videoId
+              })
+          }
+        );
+
+        loadRecentPlays();
+
+      } catch (error) {
+
+        console.error(
+          "Play record:",
+          error
+        );
+
+      }
+
+    }
+
+
+    function handlePlayClick(
+      event,
+      videoId
+    ) {
+
+      recordPlay(videoId);
 
     }
 
@@ -984,14 +1130,12 @@
       const value =
         video.today_change?.views;
 
-
       if (
         value === null ||
         value === undefined
       ) {
         return "";
       }
-
 
       return `
         <div class="change-box">
@@ -1008,14 +1152,12 @@
       const value =
         video.today_change?.likes;
 
-
       if (
         value === null ||
         value === undefined
       ) {
         return "";
       }
-
 
       return `
         <div class="change-box">
@@ -1036,11 +1178,9 @@
       const previous =
         video.previous_day_total;
 
-
       if (!previous) {
         return "";
       }
-
 
       return `
         <div class="change-box">
@@ -1057,11 +1197,9 @@
       const previous =
         video.previous_day_total;
 
-
       if (!previous) {
         return "";
       }
-
 
       return `
         <div class="change-box">
@@ -1088,7 +1226,6 @@
         1000000
       ];
 
-
       for (const goal of goals) {
 
         if (views < goal) {
@@ -1096,7 +1233,6 @@
         }
 
       }
-
 
       return (
         Math.floor(
@@ -1141,10 +1277,8 @@
       const goal =
         getGoal(video.views);
 
-
       const previousGoal =
         getPreviousGoal(goal);
-
 
       const remaining =
         Math.max(
@@ -1152,14 +1286,11 @@
           0
         );
 
-
       const range =
         goal - previousGoal;
 
-
       const progress =
         video.views - previousGoal;
-
 
       const percent =
         Math.max(
@@ -1170,12 +1301,10 @@
           )
         );
 
-
       const nearGoal =
         percent >= 90
           ? `<span class="goal-near">❤️‍🔥</span>`
           : "";
-
 
       return `
         <div class="goal">
@@ -1206,75 +1335,6 @@
 
 
     // ========================================
-    // キリ番80%以上のお知らせ
-    // ========================================
-
-    function createMilestoneAlerts(videos) {
-
-      const target =
-        document.getElementById(
-          "milestoneAlerts"
-        );
-
-
-      const alerts =
-        videos
-          .map(video => {
-
-            const goal =
-              getGoal(video.views);
-
-
-            const previousGoal =
-              getPreviousGoal(goal);
-
-
-            const range =
-              goal - previousGoal;
-
-
-            const progress =
-              video.views - previousGoal;
-
-
-            const rate =
-              progress / range;
-
-
-            if (rate < 0.8) {
-              return "";
-            }
-
-
-            return `
-              <div class="milestone-alert">
-
-                <div class="milestone-message">
-                  📣 ${video.title} ${goalLabel(goal)}回再生間近❤️‍🔥❤️‍🔥
-                </div>
-
-                <a
-                  class="milestone-play"
-                  href="${getYouTubeUrl(video.id)}"
-                  data-video-id="${video.id}"
-                >
-                  MV再生 ▶
-                </a>
-
-              </div>
-            `;
-
-          })
-          .filter(Boolean);
-
-
-      target.innerHTML =
-        alerts.join("");
-
-    }
-
-
-    // ========================================
     // YouTube
     // ========================================
 
@@ -1300,6 +1360,67 @@
 
 
     // ========================================
+    // キリ番80%以上のお知らせ
+    // ========================================
+
+    function createMilestoneAlerts(videos) {
+
+      const target =
+        document.getElementById(
+          "milestoneAlerts"
+        );
+
+      const alerts =
+        videos
+          .map(video => {
+
+            const goal =
+              getGoal(video.views);
+
+            const previousGoal =
+              getPreviousGoal(goal);
+
+            const range =
+              goal - previousGoal;
+
+            const progress =
+              video.views - previousGoal;
+
+            const rate =
+              progress / range;
+
+            if (rate < 0.8) {
+              return "";
+            }
+
+            return `
+              <div class="milestone-alert">
+
+                <div class="milestone-message">
+                  📣 ${video.title} ${goalLabel(goal)}回再生間近❤️‍🔥❤️‍🔥
+                </div>
+
+                <a
+                  class="milestone-play"
+                  href="${getYouTubeUrl(video.id)}"
+                  onclick="handlePlayClick(event, '${video.id}')"
+                >
+                  MV再生 ▶
+                </a>
+
+              </div>
+            `;
+
+          })
+          .filter(Boolean);
+
+      target.innerHTML =
+        alerts.join("");
+
+    }
+
+
+    // ========================================
     // 急上昇
     // ========================================
 
@@ -1308,7 +1429,6 @@
       if (!video.trending_rank) {
         return "";
       }
-
 
       return `
         <div class="trending">
@@ -1328,18 +1448,14 @@
       const hourlyViews =
         video.hourly_change?.views;
 
-
       const hourlyLikes =
         video.hourly_change?.likes;
-
 
       const dailyViews =
         video.daily_change?.views;
 
-
       const dailyLikes =
         video.daily_change?.likes;
-
 
       return `
         <article class="card">
@@ -1353,16 +1469,13 @@
               loading="lazy"
             >
 
-
             <div class="video-info">
 
               <h2 class="title">
                 ${video.title}
               </h2>
 
-
               ${createTrending(video)}
-
 
               <div>
 
@@ -1371,7 +1484,7 @@
                   href="${getYouTubeUrl(video.id)}"
                   target="_blank"
                   rel="noopener noreferrer"
-                  data-video-id="${video.id}"
+                  onclick="handlePlayClick(event, '${video.id}')"
                 >
                   ▶ YouTubeでMVを見る
                 </a>
@@ -1385,7 +1498,6 @@
 
           <div class="stats">
 
-
             <div class="stat">
 
               <div class="stat-label">
@@ -1393,11 +1505,8 @@
               </div>
 
               <div class="stat-number">
-                ${formatNumber(
-                  video.views
-                )}
+                ${formatNumber(video.views)}
               </div>
-
 
               <div class="changes">
 
@@ -1416,9 +1525,7 @@
 
                 </div>
 
-
                 ${createTodayViewsBox(video)}
-
 
                 <div class="change-row">
 
@@ -1435,7 +1542,6 @@
 
                 </div>
 
-
                 ${createPreviousViewsBox(video)}
 
               </div>
@@ -1450,11 +1556,8 @@
               </div>
 
               <div class="stat-number">
-                ${formatNumber(
-                  video.likes
-                )}
+                ${formatNumber(video.likes)}
               </div>
-
 
               <div class="changes">
 
@@ -1465,16 +1568,12 @@
                   </span>
 
                   <span class="change-number">
-                    ${formatChange(
-                      hourlyLikes
-                    )}
+                    ${formatChange(hourlyLikes)}
                   </span>
 
                 </div>
 
-
                 ${createTodayLikesBox(video)}
-
 
                 <div class="change-row">
 
@@ -1483,13 +1582,10 @@
                   </span>
 
                   <span class="change-number">
-                    ${formatChange(
-                      dailyLikes
-                    )}
+                    ${formatChange(dailyLikes)}
                   </span>
 
                 </div>
-
 
                 ${createPreviousLikesBox(video)}
 
@@ -1499,215 +1595,10 @@
 
           </div>
 
-
           ${createGoal(video)}
 
         </article>
       `;
-
-    }
-
-
-    // ========================================
-    // ★ 再生クリックを記録
-    // ========================================
-
-    function recordPlay(videoId) {
-
-      fetch(
-        API_URL + "/play",
-        {
-          method:
-            "POST",
-
-          headers: {
-            "Content-Type":
-              "application/json"
-          },
-
-          body:
-            JSON.stringify({
-              video_id:
-                videoId
-            }),
-
-          keepalive:
-            true
-        }
-      )
-        .then(() => {
-          loadRecentPlays();
-        })
-        .catch(error => {
-          console.error(
-            "Play record error:",
-            error
-          );
-        });
-
-    }
-
-
-    // ========================================
-    // ★ 再生ボタンのクリック監視
-    //
-    // 動的に生成されるボタンにも対応
-    // ========================================
-
-    document.addEventListener(
-      "click",
-      event => {
-
-        const button =
-          event.target.closest(
-            "[data-video-id]"
-          );
-
-
-        if (!button) {
-          return;
-        }
-
-
-        const videoId =
-          button.dataset.videoId;
-
-
-        if (!videoId) {
-          return;
-        }
-
-
-        recordPlay(
-          videoId
-        );
-
-      }
-    );
-
-
-    // ========================================
-    // ★ JSTの時刻表示
-    // ========================================
-
-    function formatPlayTime(iso) {
-
-      const date =
-        new Date(iso);
-
-
-      return new Intl.DateTimeFormat(
-        "ja-JP",
-        {
-          timeZone:
-            "Asia/Tokyo",
-
-          hour:
-            "2-digit",
-
-          minute:
-            "2-digit",
-
-          hour12:
-            false
-        }
-      ).format(date);
-
-    }
-
-
-    // ========================================
-    // ★ 最新3件の再生を表示
-    // ========================================
-
-    function showRecentPlays(plays) {
-
-      const target =
-        document.getElementById(
-          "recentPlays"
-        );
-
-
-      if (
-        !Array.isArray(plays) ||
-        plays.length === 0
-      ) {
-
-        target.innerHTML = "";
-        return;
-
-      }
-
-
-      target.innerHTML =
-        plays
-          .slice(0, 3)
-          .map(play => {
-
-            return `
-              <div class="recent-play">
-
-                <span class="recent-play-time">
-                  ${formatPlayTime(
-                    play.clicked_at
-                  )}
-                </span>
-
-                <span>
-                  ${play.title}
-                </span>
-
-              </div>
-            `;
-
-          })
-          .join("");
-
-    }
-
-
-    // ========================================
-    // ★ 最新3件を取得
-    // ========================================
-
-    async function loadRecentPlays() {
-
-      try {
-
-        const response =
-          await fetch(
-            API_URL +
-            "/recent-plays?t=" +
-            Date.now(),
-            {
-              cache:
-                "no-store"
-            }
-          );
-
-
-        if (!response.ok) {
-          return;
-        }
-
-
-        const data =
-          await response.json();
-
-
-        showRecentPlays(
-          data.plays || []
-        );
-
-
-      } catch (error) {
-
-        console.error(
-          "Recent plays error:",
-          error
-        );
-
-      }
 
     }
 
@@ -1721,12 +1612,10 @@
       const date =
         new Date(iso);
 
-
       const formatter =
         new Intl.DateTimeFormat(
           "ja-JP",
           {
-
             timeZone:
               "Asia/Tokyo",
 
@@ -1741,10 +1630,8 @@
 
             minute:
               "2-digit"
-
           }
         );
-
 
       document.getElementById(
         "updated"
@@ -1780,7 +1667,6 @@
                 item.title === title
             );
 
-
           const values =
             dates.map(date => {
 
@@ -1789,7 +1675,6 @@
                   item =>
                     item.jst_date === date
                 );
-
 
               return row
                 ? Number(row.end_views)
@@ -1833,19 +1718,16 @@
               datasets: datasets
             },
 
-
             options: {
 
               responsive: true,
 
               maintainAspectRatio: false,
 
-
               interaction: {
                 mode: "index",
                 intersect: false
               },
-
 
               plugins: {
 
@@ -1858,7 +1740,6 @@
                   }
                 },
 
-
                 tooltip: {
 
                   callbacks: {
@@ -1868,11 +1749,9 @@
                       const value =
                         context.parsed.y;
 
-
                       if (value === null) {
                         return "";
                       }
-
 
                       return (
                         context.dataset.label +
@@ -1888,7 +1767,6 @@
                 }
 
               },
-
 
               scales: {
 
@@ -1912,7 +1790,6 @@
                   }
 
                 },
-
 
                 x: {
 
@@ -1943,7 +1820,6 @@
           "cards"
         );
 
-
       try {
 
         const response =
@@ -1957,7 +1833,6 @@
             }
           );
 
-
         if (!response.ok) {
 
           throw new Error(
@@ -1966,15 +1841,12 @@
 
         }
 
-
         const data =
           await response.json();
-
 
         showUpdatedTime(
           data.updated_at
         );
-
 
         const sortedVideos =
           [...data.videos]
@@ -1988,11 +1860,9 @@
                 )
             );
 
-
         createMilestoneAlerts(
           sortedVideos
         );
-
 
         cards.innerHTML =
           sortedVideos
@@ -2001,18 +1871,15 @@
             )
             .join("");
 
-
         drawHistory(
           data.daily_history || []
         );
-
 
       } catch (error) {
 
         console.error(
           error
         );
-
 
         cards.innerHTML = `
           <div class="error">
@@ -2027,21 +1894,17 @@
 
 
     // ========================================
-    // 初回読み込み
+    // 起動
     // ========================================
 
     loadData();
-
     loadRecentPlays();
 
 
-    // ========================================
-    // ★ 最新再生を5秒ごとに更新
-    // ========================================
-
+    // リアルタイム欄だけ10秒ごとに更新
     setInterval(
       loadRecentPlays,
-      5000
+      10000
     );
 
   </script>
