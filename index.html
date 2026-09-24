@@ -1095,10 +1095,12 @@
     // ========================================
     // キリ番80%以上のお知らせ
     //
-    // 「目標そのもの」に対して80%以上
-    // 例：
-    // 200万目標 → 160万から表示
-    // 300万目標 → 240万から表示
+    // キリ番：
+    // 10万 → 20万 → 30万 → 40万 → 50万
+    // → 100万 → 200万 → 300万 → …
+    //
+    // 前のキリ番から次のキリ番までの
+    // 区間を80%以上進んだら表示
     // ========================================
 
     function createMilestoneAlerts(videos) {
@@ -1117,8 +1119,20 @@
               getGoal(video.views);
 
 
+            const previousGoal =
+              getPreviousGoal(goal);
+
+
+            const range =
+              goal - previousGoal;
+
+
+            const progress =
+              video.views - previousGoal;
+
+
             const rate =
-              video.views / goal;
+              progress / range;
 
 
             if (rate < 0.8) {
@@ -1131,8 +1145,7 @@
                 class="milestone-alert"
                 href="${getYouTubeUrl(video.id)}"
               >
-                📣 ${video.title}
-                ${goalLabel(goal)}回再生間近❤️‍🔥❤️‍🔥
+                📣 ${video.title} ${goalLabel(goal)}回再生間近❤️‍🔥❤️‍🔥
               </a>
             `;
 
