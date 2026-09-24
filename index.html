@@ -339,6 +339,32 @@
 
 
     /* ========================================
+       トータル・前日実績の枠
+       ======================================== */
+
+    .change-box {
+      width: 92%;
+      margin: 5px auto 9px;
+
+      padding: 5px 6px;
+
+      border: 1px solid #dddddd;
+      border-radius: 8px;
+
+      background: #f8f8f8;
+
+      color: #555;
+
+      font-size: 10px;
+      font-weight: 700;
+
+      line-height: 1.4;
+
+      text-align: center;
+    }
+
+
+    /* ========================================
        目標
        ======================================== */
 
@@ -500,6 +526,12 @@
 
       .changes {
         font-size: 11px;
+      }
+
+      .change-box {
+        width: 96%;
+        font-size: 9.5px;
+        padding: 5px 4px;
       }
 
       .chart-wrap {
@@ -741,6 +773,136 @@
         formatNumber(value) +
         unit
       );
+
+    }
+
+
+    // ========================================
+    // 日付表示
+    // ========================================
+
+    function formatShortDate(dateString) {
+
+      if (!dateString) {
+        return "";
+      }
+
+
+      const parts =
+        dateString.split("-");
+
+
+      if (parts.length !== 3) {
+        return dateString;
+      }
+
+
+      return (
+        Number(parts[1]) +
+        "/" +
+        Number(parts[2])
+      );
+
+    }
+
+
+    // ========================================
+    // トータル表示
+    // ========================================
+
+    function createTodayViewsBox(video) {
+
+      const value =
+        video.today_change?.views;
+
+
+      if (
+        value === null ||
+        value === undefined
+      ) {
+        return "";
+      }
+
+
+      return `
+        <div class="change-box">
+          トータル
+          ${formatNumber(value)}回再生中
+        </div>
+      `;
+
+    }
+
+
+    function createTodayLikesBox(video) {
+
+      const value =
+        video.today_change?.likes;
+
+
+      if (
+        value === null ||
+        value === undefined
+      ) {
+        return "";
+      }
+
+
+      return `
+        <div class="change-box">
+          トータル
+          ${formatChange(value)}
+        </div>
+      `;
+
+    }
+
+
+    // ========================================
+    // 前日の実績表示
+    //
+    // 今日9/24はデータがないので
+    // 何も表示しない
+    // ========================================
+
+    function createPreviousViewsBox(video) {
+
+      const previous =
+        video.previous_day_total;
+
+
+      if (!previous) {
+        return "";
+      }
+
+
+      return `
+        <div class="change-box">
+          ${formatShortDate(previous.date)}
+          ${formatNumber(previous.views)}回再生
+        </div>
+      `;
+
+    }
+
+
+    function createPreviousLikesBox(video) {
+
+      const previous =
+        video.previous_day_total;
+
+
+      if (!previous) {
+        return "";
+      }
+
+
+      return `
+        <div class="change-box">
+          ${formatShortDate(previous.date)}
+          ${formatChange(previous.likes)}
+        </div>
+      `;
 
     }
 
@@ -988,6 +1150,8 @@
           <div class="stats">
 
 
+            <!-- 再生回数 -->
+
             <div class="stat">
 
               <div class="stat-label">
@@ -1012,11 +1176,14 @@
                   <span class="change-number">
                     ${formatChange(
                       hourlyViews,
-                      "回"
+                      "回再生"
                     )}
                   </span>
 
                 </div>
+
+
+                ${createTodayViewsBox(video)}
 
 
                 <div class="change-row">
@@ -1028,16 +1195,21 @@
                   <span class="change-number">
                     ${formatChange(
                       dailyViews,
-                      "回"
+                      "回再生"
                     )}
                   </span>
 
                 </div>
 
+
+                ${createPreviousViewsBox(video)}
+
               </div>
 
             </div>
 
+
+            <!-- 高評価 -->
 
             <div class="stat">
 
@@ -1069,6 +1241,9 @@
                 </div>
 
 
+                ${createTodayLikesBox(video)}
+
+
                 <div class="change-row">
 
                   <span class="change-label">
@@ -1082,6 +1257,9 @@
                   </span>
 
                 </div>
+
+
+                ${createPreviousLikesBox(video)}
 
               </div>
 
