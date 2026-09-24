@@ -37,6 +37,30 @@ function getJstDate(date = new Date()) {
 
 
 // ========================================
+// 共通レスポンスヘッダー
+// ========================================
+
+function getCorsHeaders() {
+  return {
+    "content-type":
+      "application/json; charset=UTF-8",
+
+    "access-control-allow-origin":
+      "*",
+
+    "access-control-allow-methods":
+      "GET, POST, OPTIONS",
+
+    "access-control-allow-headers":
+      "Content-Type",
+
+    "cache-control":
+      "no-store"
+  };
+}
+
+
+// ========================================
 // YouTubeから現在値を取得
 // ========================================
 
@@ -345,6 +369,99 @@ async function getDailyHistory(env) {
 
 
 // ========================================
+// 再生クリックを記録
+//
+// ★ 新規追加
+//
+// index.htmlからvideo_idだけ受け取り、
+// 曲名はWorker側のVIDEOSから確定する。
+// ========================================
+
+async function savePlayClick(
+  env,
+  videoId
+) {
+
+  const video =
+    VIDEOS.find(
+      item =>
+        item.id === videoId
+    );
+
+
+  if (!video) {
+    throw new Error(
+      "Invalid video ID"
+    );
+  }
+
+
+  const clickedAt =
+    new Date().toISOString();
+
+
+  await env.DB.prepare(`
+    INSERT INTO play_clicks
+      (
+        video_id,
+        title,
+        clicked_at
+      )
+
+    VALUES (?, ?, ?)
+  `)
+    .bind(
+      video.id,
+      video.title,
+      clickedAt
+    )
+    .run();
+
+
+  return {
+    video_id:
+      video.id,
+
+    title:
+      video.title,
+
+    clicked_at:
+      clickedAt
+  };
+}
+
+
+// ========================================
+// 最新の再生クリック3件を取得
+//
+// ★ 新規追加
+// ========================================
+
+async function getRecentPlayClicks(env) {
+
+  const result =
+    await env.DB.prepare(`
+      SELECT
+        id,
+        video_id,
+        title,
+        clicked_at
+
+      FROM play_clicks
+
+      ORDER BY
+        clicked_at DESC,
+        id DESC
+
+      LIMIT 3
+    `).all();
+
+
+  return result.results || [];
+}
+
+
+// ========================================
 // 終了した日のデータをdaily_statsへ確定
 //
 // ★ 9/24以降だけを日次データ化
@@ -559,6 +676,186 @@ export default {
   // ======================================
 
   async fetch(request, env) {
+
+    const url =
+      new URL(request.url);
+
+
+    // ======================================
+    // CORS
+    // ======================================
+
+    if (request.method === "OPTIONS") {
+
+      return new Response(
+        null,
+        {
+          status: 204,
+
+          headers:
+            getCorsHeaders()
+        }
+      );
+    }
+
+
+    // ======================================
+    // ★ 再生クリック記録
+    //
+    // POST /play
+    // body:
+    // {
+    //   "video_id": "..."
+    // }
+    // ======================================
+
+    if (
+      url.pathname === "/play" &&
+      request.method === "POST"
+    ) {
+
+      try {
+
+        const body =
+          await request.json();
+
+
+        const videoId =
+          body?.video_id;
+
+
+        if (!videoId) {
+
+          return new Response(
+            JSON.stringify(
+              {
+                error:
+                  "video_id is required"
+              },
+              null,
+              2
+            ),
+            {
+              status: 400,
+
+              headers:
+                getCorsHeaders()
+            }
+          );
+        }
+
+
+        const play =
+          await savePlayClick(
+            env,
+            videoId
+          );
+
+
+        return new Response(
+          JSON.stringify(
+            {
+              success: true,
+              play
+            },
+            null,
+            2
+          ),
+          {
+            headers:
+              getCorsHeaders()
+          }
+        );
+
+
+      } catch (error) {
+
+        return new Response(
+          JSON.stringify(
+            {
+              error:
+                "Failed to save play click",
+
+              message:
+                error.message
+            },
+            null,
+            2
+          ),
+          {
+            status: 400,
+
+            headers:
+              getCorsHeaders()
+          }
+        );
+      }
+    }
+
+
+    // ======================================
+    // ★ 最新の再生クリック3件
+    //
+    // GET /recent-plays
+    // ======================================
+
+    if (
+      url.pathname === "/recent-plays" &&
+      request.method === "GET"
+    ) {
+
+      try {
+
+        const plays =
+          await getRecentPlayClicks(
+            env
+          );
+
+
+        return new Response(
+          JSON.stringify(
+            {
+              plays
+            },
+            null,
+            2
+          ),
+          {
+            headers:
+              getCorsHeaders()
+          }
+        );
+
+
+      } catch (error) {
+
+        return new Response(
+          JSON.stringify(
+            {
+              error:
+                "Failed to load recent plays",
+
+              message:
+                error.message
+            },
+            null,
+            2
+          ),
+          {
+            status: 500,
+
+            headers:
+              getCorsHeaders()
+          }
+        );
+      }
+    }
+
+
+    // ======================================
+    // ここから既存の統計API
+    // ======================================
+
     try {
 
       // 現在値と急上昇を並行取得
@@ -773,17 +1070,8 @@ export default {
           2
         ),
         {
-          headers: {
-
-            "content-type":
-              "application/json; charset=UTF-8",
-
-            "access-control-allow-origin":
-              "*",
-
-            "cache-control":
-              "no-store"
-          }
+          headers:
+            getCorsHeaders()
         }
       );
 
@@ -805,14 +1093,8 @@ export default {
         {
           status: 500,
 
-          headers: {
-
-            "content-type":
-              "application/json; charset=UTF-8",
-
-            "access-control-allow-origin":
-              "*"
-          }
+          headers:
+            getCorsHeaders()
         }
       );
     }
