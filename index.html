@@ -168,6 +168,51 @@
 
 
     /* ========================================
+       キリ番間近のお知らせ
+       ======================================== */
+
+    .milestone-alerts {
+      display: grid;
+      gap: 7px;
+
+      margin-bottom: 18px;
+    }
+
+    .milestone-alert {
+      display: block;
+
+      width: 100%;
+
+      padding: 9px 10px;
+
+      overflow: hidden;
+
+      border: 2px solid #e53935;
+      border-radius: 10px;
+
+      background: rgba(255, 245, 245, 0.97);
+
+      color: #d32f2f;
+
+      text-decoration: none;
+
+      text-align: center;
+
+      font-size: 12px;
+      font-weight: 900;
+      line-height: 1.2;
+
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .milestone-alert:active {
+      transform: scale(0.99);
+      opacity: 0.85;
+    }
+
+
+    /* ========================================
        MVカード
        ======================================== */
 
@@ -503,6 +548,11 @@
         width: 95%;
       }
 
+      .milestone-alert {
+        padding: 8px 7px;
+        font-size: 11px;
+      }
+
       .card {
         padding: 14px;
       }
@@ -574,6 +624,12 @@
 
 
     <main>
+
+      <div
+        id="milestoneAlerts"
+        class="milestone-alerts"
+      ></div>
+
 
       <div
         id="cards"
@@ -860,9 +916,6 @@
 
     // ========================================
     // 前日の実績表示
-    //
-    // 今日9/24はデータがないので
-    // 何も表示しない
     // ========================================
 
     function createPreviousViewsBox(video) {
@@ -1040,6 +1093,60 @@
 
 
     // ========================================
+    // キリ番80%以上のお知らせ
+    //
+    // 「目標そのもの」に対して80%以上
+    // 例：
+    // 200万目標 → 160万から表示
+    // 300万目標 → 240万から表示
+    // ========================================
+
+    function createMilestoneAlerts(videos) {
+
+      const target =
+        document.getElementById(
+          "milestoneAlerts"
+        );
+
+
+      const alerts =
+        videos
+          .map(video => {
+
+            const goal =
+              getGoal(video.views);
+
+
+            const rate =
+              video.views / goal;
+
+
+            if (rate < 0.8) {
+              return "";
+            }
+
+
+            return `
+              <a
+                class="milestone-alert"
+                href="${getYouTubeUrl(video.id)}"
+              >
+                📣 ${video.title}
+                ${goalLabel(goal)}回再生間近❤️‍🔥❤️‍🔥
+              </a>
+            `;
+
+          })
+          .filter(Boolean);
+
+
+      target.innerHTML =
+        alerts.join("");
+
+    }
+
+
+    // ========================================
     // YouTube
     // ========================================
 
@@ -1150,8 +1257,6 @@
           <div class="stats">
 
 
-            <!-- 再生回数 -->
-
             <div class="stat">
 
               <div class="stat-label">
@@ -1208,8 +1313,6 @@
 
             </div>
 
-
-            <!-- 高評価 -->
 
             <div class="stat">
 
@@ -1356,7 +1459,7 @@
 
 
               return row
-                ? Number(row.views)
+                ? Number(row.end_views)
                 : null;
 
             });
@@ -1551,6 +1654,11 @@
                   b.title
                 )
             );
+
+
+        createMilestoneAlerts(
+          sortedVideos
+        );
 
 
         cards.innerHTML =
