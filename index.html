@@ -44,6 +44,7 @@
         );
 
       background-attachment: fixed;
+
       color: #111;
 
       font-family:
@@ -159,6 +160,7 @@
       letter-spacing: 1.5px;
 
       color: #fff;
+
       white-space: nowrap;
 
       text-shadow:
@@ -274,27 +276,30 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 13px;
+      gap: 10px;
 
       width: 100%;
-      margin: 0 0 14px;
-      padding: 8px 12px;
+      margin: 0 0 16px;
+      padding: 9px 12px;
 
-      border: 1px solid rgba(255, 255, 255, 0.25);
+      border: 1px solid rgba(255, 255, 255, 0.20);
       border-radius: 12px;
 
       background: rgba(255, 255, 255, 0.08);
+
       backdrop-filter: blur(4px);
       -webkit-backdrop-filter: blur(4px);
 
       color: #fff;
     }
 
-    .random-video-title {
+    .random-label {
       flex-shrink: 0;
-      font-size: 10px;
+
+      font-size: 11px;
       font-weight: 900;
-      letter-spacing: 1px;
+      letter-spacing: 0.7px;
+
       white-space: nowrap;
     }
 
@@ -302,7 +307,7 @@
       display: flex;
       align-items: center;
       justify-content: center;
-      gap: 8px;
+      gap: 7px;
     }
 
     .random-star {
@@ -320,39 +325,25 @@
       border: 0;
       background: transparent;
 
-      color: #ffe26b;
+      color: #ffe45c;
 
-      font-family:
-        Georgia,
-        "Times New Roman",
-        serif;
-
-      font-size: 27px;
+      font-size: 24px;
       line-height: 1;
 
       cursor: pointer;
 
       text-shadow:
-        0 0 5px rgba(255, 226, 105, 0.65),
-        0 0 10px rgba(255, 202, 40, 0.38);
+        0 0 5px rgba(255, 226, 105, 0.75),
+        0 0 10px rgba(255, 202, 40, 0.45);
 
       transition:
-        transform .15s ease,
-        filter .15s ease;
-    }
-
-    .random-star:hover {
-      transform: scale(1.18);
-      filter: brightness(1.25);
+        transform 0.15s ease,
+        filter 0.15s ease;
     }
 
     .random-star:active {
-      transform: scale(0.88);
-    }
-
-    .random-star:disabled {
-      opacity: 0.45;
-      cursor: wait;
+      transform: scale(0.78);
+      filter: brightness(1.5);
     }
 
     /* ========================================
@@ -723,23 +714,23 @@
       }
 
       .random-video {
-        gap: 8px;
-        padding: 7px 8px;
+        gap: 6px;
+        padding: 8px 7px;
       }
 
-      .random-video-title {
-        font-size: 9px;
-        letter-spacing: 0.6px;
+      .random-label {
+        font-size: 9.5px;
+        letter-spacing: 0.3px;
       }
 
       .random-stars {
-        gap: 5px;
+        gap: 3px;
       }
 
       .random-star {
-        width: 24px;
-        height: 24px;
-        font-size: 24px;
+        width: 25px;
+        height: 25px;
+        font-size: 22px;
       }
 
       .card {
@@ -845,13 +836,13 @@
       ※各楽曲の達成予測は、直近6時間の平均再生ペースをもとに算出しています※
     </div>
 
-    <!-- =====================================
+    <!-- ====================================
          RANDOM VIDEO
-         ===================================== -->
+         ==================================== -->
 
     <div class="random-video">
 
-      <div class="random-video-title">
+      <div class="random-label">
         RANDOM VIDEO
       </div>
 
@@ -860,43 +851,43 @@
         <button
           class="random-star"
           type="button"
+          onclick="openRandomVideo()"
           aria-label="ランダム動画を再生"
-          onclick="openRandomVideo(this)"
         >★</button>
 
         <button
           class="random-star"
           type="button"
+          onclick="openRandomVideo()"
           aria-label="ランダム動画を再生"
-          onclick="openRandomVideo(this)"
         >★</button>
 
         <button
           class="random-star"
           type="button"
+          onclick="openRandomVideo()"
           aria-label="ランダム動画を再生"
-          onclick="openRandomVideo(this)"
         >★</button>
 
         <button
           class="random-star"
           type="button"
+          onclick="openRandomVideo()"
           aria-label="ランダム動画を再生"
-          onclick="openRandomVideo(this)"
         >★</button>
 
         <button
           class="random-star"
           type="button"
+          onclick="openRandomVideo()"
           aria-label="ランダム動画を再生"
-          onclick="openRandomVideo(this)"
         >★</button>
 
         <button
           class="random-star"
           type="button"
+          onclick="openRandomVideo()"
           aria-label="ランダム動画を再生"
-          onclick="openRandomVideo(this)"
         >★</button>
 
       </div>
@@ -938,10 +929,6 @@ const API_URL =
   "https://musicvideo-views.starsx0601.workers.dev";
 
 
-/*
-  ★ここは現在の並び順をそのまま維持
-*/
-
 const VIDEO_ORDER = [
   "WISHES",
   "StarWish",
@@ -959,43 +946,151 @@ let historyChart = null;
 
 /* ========================================
    RANDOM VIDEO
-
-   Workerの /random から
-   STARGLOW公式動画を1本取得
-
-   RANDOM VIDEOは
-   /playには送らないので
-   リアルタイム再生履歴には入らない
    ======================================== */
 
-async function openRandomVideo(button) {
+async function openRandomVideo() {
 
   /*
-    Safari / iPhoneの
-    ポップアップブロック対策。
-
-    ユーザーが星を押した瞬間に
-    先に空タブを作っておく。
+    iPhoneで非同期処理後の
+    window.openがブロックされないよう
+    タップした瞬間に新規画面を確保
   */
 
-  const newWindow =
+  const randomWindow =
     window.open(
-      "about:blank",
+      "",
       "_blank"
     );
 
 
-  const buttons =
-    document.querySelectorAll(
-      ".random-star"
+  if (!randomWindow) {
+
+    alert(
+      "新しい画面を開けませんでした。ポップアップの設定を確認してください。"
     );
 
+    return;
+  }
 
-  buttons.forEach(
-    item => {
-      item.disabled = true;
-    }
-  );
+
+  /*
+    YouTubeのURLが返るまで
+    STARS BASE風の待機画面を表示
+  */
+
+  randomWindow.document.open();
+
+  randomWindow.document.write(`
+    <!DOCTYPE html>
+    <html lang="ja">
+
+    <head>
+
+      <meta charset="UTF-8">
+
+      <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0"
+      >
+
+      <title>RANDOM VIDEO</title>
+
+      <style>
+
+        * {
+          box-sizing: border-box;
+        }
+
+        html,
+        body {
+          width: 100%;
+          height: 100%;
+          margin: 0;
+        }
+
+        body {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+
+          background:
+            radial-gradient(
+              circle at 50% 35%,
+              rgba(72, 98, 160, 0.38) 0%,
+              rgba(72, 98, 160, 0) 48%
+            ),
+            linear-gradient(
+              180deg,
+              #0d1b3d 0%,
+              #142b55 48%,
+              #202550 100%
+            );
+
+          color: #fff;
+
+          font-family:
+            -apple-system,
+            BlinkMacSystemFont,
+            "Helvetica Neue",
+            Arial,
+            sans-serif;
+
+          overflow: hidden;
+        }
+
+        .random-start {
+          text-align: center;
+
+          padding: 30px;
+
+          font-size: 18px;
+          font-weight: 900;
+          letter-spacing: 1px;
+
+          text-shadow:
+            0 0 8px rgba(255, 255, 255, 0.20);
+
+          animation:
+            randomPulse
+            1.1s
+            ease-in-out
+            infinite alternate;
+        }
+
+        @keyframes randomPulse {
+
+          from {
+            opacity: 0.48;
+
+            transform:
+              scale(0.97);
+          }
+
+          to {
+            opacity: 1;
+
+            transform:
+              scale(1.03);
+          }
+
+        }
+
+      </style>
+
+    </head>
+
+    <body>
+
+      <div class="random-start">
+        ✦ RANDOM VIDEO SELECTING... ✦
+      </div>
+
+    </body>
+
+    </html>
+  `);
+
+  randomWindow.document.close();
 
 
   try {
@@ -1014,7 +1109,7 @@ async function openRandomVideo(button) {
     if (!response.ok) {
 
       throw new Error(
-        "random video error"
+        "Random video API error"
       );
 
     }
@@ -1027,28 +1122,21 @@ async function openRandomVideo(button) {
     if (!data.url) {
 
       throw new Error(
-        "random video URL not found"
+        "Random video URL not found"
       );
 
     }
 
 
-    if (newWindow) {
+    /*
+      ランダム動画取得完了
+      ↓
+      待機画面と同じタブでYouTubeへ
+    */
 
-      newWindow.location.href =
-        data.url;
-
-    } else {
-
-      /*
-        万一ブラウザ側で
-        新規タブが拒否された場合
-      */
-
-      window.location.href =
-        data.url;
-
-    }
+    randomWindow.location.replace(
+      data.url
+    );
 
 
   } catch (error) {
@@ -1059,23 +1147,43 @@ async function openRandomVideo(button) {
     );
 
 
-    if (newWindow) {
-      newWindow.close();
-    }
+    randomWindow.document.body.innerHTML = `
+      <div
+        style="
+          width:100%;
+          padding:30px;
+          text-align:center;
+          color:#fff;
+          font-family:
+            -apple-system,
+            BlinkMacSystemFont,
+            'Helvetica Neue',
+            Arial,
+            sans-serif;
+        "
+      >
 
+        <div
+          style="
+            font-size:16px;
+            font-weight:800;
+          "
+        >
+          動画を取得できませんでした
+        </div>
 
-    alert(
-      "動画を取得できませんでした。もう一度お試しください。"
-    );
+        <div
+          style="
+            margin-top:12px;
+            font-size:11px;
+            opacity:.65;
+          "
+        >
+          この画面を閉じて、もう一度★を押してください
+        </div>
 
-
-  } finally {
-
-    buttons.forEach(
-      item => {
-        item.disabled = false;
-      }
-    );
+      </div>
+    `;
 
   }
 
@@ -1524,7 +1632,6 @@ function getPreviousGoal(goal) {
 
 /* ========================================
    達成予測
-   ★直近6時間平均を使用
    ======================================== */
 
 function formatPredictionDate(date) {
