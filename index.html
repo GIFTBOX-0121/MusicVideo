@@ -57,7 +57,6 @@
       overflow-x: hidden;
     }
 
-
     /* ========================================
        星が降る背景
        ======================================== */
@@ -91,9 +90,7 @@
 
     @keyframes starFall {
       0% {
-        transform:
-          translate3d(0, -40px, 0)
-          rotate(0deg);
+        transform: translate3d(0, -40px, 0) rotate(0deg);
         opacity: 0;
       }
 
@@ -106,9 +103,7 @@
       }
 
       100% {
-        transform:
-          translate3d(35px, 110vh, 0)
-          rotate(180deg);
+        transform: translate3d(35px, 110vh, 0) rotate(180deg);
         opacity: 0;
       }
     }
@@ -123,7 +118,6 @@
       }
     }
 
-
     /* ========================================
        サイト本体
        ======================================== */
@@ -137,7 +131,6 @@
 
       padding: 30px 0 40px;
     }
-
 
     /* ========================================
        ヘッダー
@@ -167,6 +160,7 @@
       letter-spacing: 1.5px;
 
       color: #fff;
+
       white-space: nowrap;
 
       text-shadow:
@@ -181,29 +175,22 @@
       font-size: 12px;
     }
 
-
     /* ========================================
        リアルタイム再生履歴
        ======================================== */
 
     .realtime {
       min-width: 0;
-
       text-align: left;
-
       color: rgba(255, 255, 255, 0.88);
     }
 
     .realtime-title {
       margin-bottom: 4px;
-
       text-align: center;
-
       font-size: 10px;
       font-weight: 800;
-
       color: rgba(255, 255, 255, 0.92);
-
       white-space: nowrap;
     }
 
@@ -214,14 +201,11 @@
 
     .realtime-item {
       overflow: hidden;
-
       font-size: 9px;
       font-weight: 600;
       line-height: 1.25;
-
       white-space: nowrap;
       text-overflow: ellipsis;
-
       color: rgba(255, 255, 255, 0.74);
     }
 
@@ -231,89 +215,58 @@
       text-align: center;
     }
 
-
     /* ========================================
-       キリ番間近のお知らせ
+       キリ番間近
        ======================================== */
 
     .milestone-alerts {
       display: grid;
       gap: 7px;
-
       margin-bottom: 18px;
     }
 
     .milestone-alert {
       display: flex;
       align-items: center;
-
       width: 100%;
-
       padding: 7px 7px 7px 10px;
-
       border: 2px solid #e53935;
       border-radius: 10px;
-
       background: rgba(255, 245, 245, 0.97);
-
       color: #d32f2f;
     }
 
     .milestone-message {
       flex: 1;
       min-width: 0;
-
       overflow: hidden;
-
       font-size: 12px;
       font-weight: 900;
       line-height: 1.2;
-
       white-space: nowrap;
       text-overflow: ellipsis;
     }
 
     .milestone-play {
       flex-shrink: 0;
-
       margin-left: 7px;
       padding: 6px 8px;
-
       border-radius: 7px;
-
       background: #e53935;
       color: #fff;
-
       text-decoration: none;
-
       font-size: 10px;
       font-weight: 900;
-
       white-space: nowrap;
     }
 
-    .milestone-play:active {
-      transform: scale(0.97);
-      opacity: 0.82;
-    }
-
-
-    /* ========================================
-       達成予測についての注釈
-       ======================================== */
-
     .prediction-note {
-      margin: 5px 4px 17px;
-
-      color: rgba(255, 255, 255, 0.70);
-
+      margin: 24px 0 14px;
       text-align: center;
-
-      font-size: 9.5px;
-      font-weight: 500;
+      color: rgba(255, 255, 255, 0.72);
+      font-size: 10px;
       line-height: 1.5;
     }
-
 
     /* ========================================
        MVカード
@@ -326,21 +279,16 @@
 
     .card {
       background: rgba(255, 255, 255, 0.94);
-
       backdrop-filter: blur(4px);
       -webkit-backdrop-filter: blur(4px);
-
       border-radius: 20px;
       padding: 18px;
-
-      box-shadow:
-        0 4px 18px rgba(0, 0, 0, 0.10);
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.10);
     }
 
     .video-header {
       display: flex;
       align-items: center;
-
       gap: 14px;
       margin-bottom: 18px;
     }
@@ -348,13 +296,9 @@
     .thumbnail {
       width: 135px;
       aspect-ratio: 16 / 9;
-
       flex-shrink: 0;
-
       object-fit: cover;
-
       border-radius: 12px;
-
       background: #eee;
     }
 
@@ -365,66 +309,36 @@
 
     .title {
       margin: 0 0 10px;
-
       font-size: 20px;
       font-weight: 800;
       line-height: 1.25;
     }
 
-
-    /* ========================================
-       急上昇
-       ======================================== */
-
     .trending {
       display: inline-block;
-
       margin-bottom: 9px;
-
       padding: 5px 9px;
-
       border: 2px solid #e53935;
       border-radius: 8px;
-
       color: #d32f2f;
-
       background: #fff5f5;
-
       font-size: 12px;
       font-weight: 800;
     }
 
-
-    /* ========================================
-       YouTubeボタン
-       ======================================== */
-
     .youtube-button {
       display: inline-flex;
-
       align-items: center;
       justify-content: center;
-
       min-height: 38px;
-
       padding: 8px 13px;
-
       border-radius: 10px;
-
       background: #111;
       color: #fff;
-
       text-decoration: none;
-
       font-size: 12px;
       font-weight: 700;
     }
-
-    .youtube-button:active {
-      transform: scale(0.98);
-      opacity: 0.8;
-    }
-
 
     /* ========================================
        再生回数・高評価
@@ -433,7 +347,6 @@
     .stats {
       display: grid;
       grid-template-columns: 1fr 1fr;
-
       gap: 10px;
     }
 
@@ -448,32 +361,26 @@
 
     .stat-label {
       margin-bottom: 6px;
-
       font-size: 12px;
       color: #777;
     }
 
     .stat-number {
       font-size: clamp(20px, 6vw, 30px);
-
       font-weight: 800;
       line-height: 1.15;
-
       white-space: nowrap;
     }
 
     .changes {
       margin-top: 12px;
-
       font-size: 12px;
       line-height: 1.8;
     }
 
     .change-row {
       display: flex;
-
       justify-content: center;
-
       gap: 6px;
     }
 
@@ -485,32 +392,19 @@
       font-weight: 700;
     }
 
-
-    /* ========================================
-       トータル・前日実績の枠
-       ======================================== */
-
     .change-box {
       width: 92%;
       margin: 5px auto 9px;
-
       padding: 5px 6px;
-
       border: 1px solid #dddddd;
       border-radius: 8px;
-
       background: #f8f8f8;
-
       color: #555;
-
       font-size: 10px;
       font-weight: 700;
-
       line-height: 1.4;
-
       text-align: center;
     }
-
 
     /* ========================================
        目標
@@ -518,15 +412,12 @@
 
     .goal {
       margin-top: 22px;
-
       padding-top: 18px;
-
       border-top: 1px solid #eee;
     }
 
     .goal-text {
       text-align: center;
-
       font-size: 14px;
       font-weight: 700;
       line-height: 1.6;
@@ -536,214 +427,121 @@
       margin-left: 4px;
     }
 
-
     /* ========================================
        達成予測
        ======================================== */
 
     .pace-box {
       position: relative;
-
-      width: min(94%, 430px);
-
-      margin: 9px auto 0;
-      padding: 7px 10px;
-
       overflow: hidden;
 
-      border: 1.5px solid;
+      margin: 10px auto 4px;
+      padding: 7px 10px;
+
+      border: 2px solid;
       border-radius: 9px;
+
+      text-align: center;
+    }
+
+    .pace-up {
+      border-color: #e53935;
+      background: #fff5f5;
+      color: #c62828;
+    }
+
+    .pace-steady {
+      border-color: #43a047;
+      background: #f3fff4;
+      color: #2e7d32;
+    }
+
+    .pace-down {
+      border-color: #1e88e5;
+      background: #f3f8ff;
+      color: #1565c0;
+    }
+
+    .pace-calculating {
+      border-color: #999;
+      background: #f8f8f8;
+      color: #666;
+    }
+
+    .pace-arrow-bg {
+      position: absolute;
+      inset: 0;
+
+      display: flex;
+      align-items: center;
+
+      width: max-content;
+
+      opacity: 0.09;
+
+      font-size: 25px;
+      font-weight: 900;
+      letter-spacing: 7px;
+
+      white-space: nowrap;
+
+      animation: paceMove 4s linear infinite;
+    }
+
+    @keyframes paceMove {
+      from {
+        transform: translateX(-10%);
+      }
+
+      to {
+        transform: translateX(10%);
+      }
     }
 
     .pace-content {
       position: relative;
-      z-index: 2;
+      z-index: 1;
 
       display: flex;
       align-items: center;
       justify-content: center;
       flex-wrap: wrap;
 
-      gap: 3px 8px;
+      gap: 4px 9px;
     }
 
     .pace-status {
-      font-size: 10px;
+      font-size: 11px;
       font-weight: 900;
-
-      white-space: nowrap;
     }
 
     .pace-prediction {
-      font-size: 9px;
+      font-size: 9.5px;
       font-weight: 700;
-
-      white-space: nowrap;
     }
-
-    .pace-arrow-bg {
-      position: absolute;
-      z-index: 1;
-
-      pointer-events: none;
-      user-select: none;
-
-      font-size: 22px;
-      font-weight: 900;
-      letter-spacing: 5px;
-
-      white-space: nowrap;
-
-      opacity: 0.10;
-    }
-
-
-    /* アップ */
-
-    .pace-box.pace-up {
-      border-color: #e53935;
-      background: rgba(255, 238, 238, 0.97);
-      color: #c62828;
-    }
-
-    .pace-up .pace-arrow-bg {
-      left: 0;
-      right: 0;
-      bottom: -18px;
-
-      text-align: center;
-
-      color: #e53935;
-
-      animation:
-        paceArrowUp 2.3s linear infinite;
-    }
-
-    @keyframes paceArrowUp {
-      0% {
-        transform: translateY(16px);
-      }
-
-      100% {
-        transform: translateY(-28px);
-      }
-    }
-
-
-    /* 維持 */
-
-    .pace-box.pace-steady {
-      border-color: #2e9d57;
-      background: rgba(238, 250, 241, 0.97);
-      color: #217a42;
-    }
-
-    .pace-steady .pace-arrow-bg {
-      top: 50%;
-      left: -50px;
-
-      color: #2e9d57;
-
-      transform: translateY(-50%);
-
-      animation:
-        paceArrowRight 3s linear infinite;
-    }
-
-    @keyframes paceArrowRight {
-      0% {
-        transform:
-          translate(-45px, -50%);
-      }
-
-      100% {
-        transform:
-          translate(110px, -50%);
-      }
-    }
-
-
-    /* ダウン */
-
-    .pace-box.pace-down {
-      border-color: #3284d6;
-      background: rgba(237, 246, 255, 0.97);
-      color: #2168ad;
-    }
-
-    .pace-down .pace-arrow-bg {
-      left: 0;
-      right: 0;
-      top: -18px;
-
-      text-align: center;
-
-      color: #3284d6;
-
-      animation:
-        paceArrowDown 2.3s linear infinite;
-    }
-
-    @keyframes paceArrowDown {
-      0% {
-        transform: translateY(-15px);
-      }
-
-      100% {
-        transform: translateY(28px);
-      }
-    }
-
-
-    /* 算出中 */
-
-    .pace-box.pace-calculating {
-      border-color: #9e9e9e;
-      background: rgba(248, 248, 248, 0.97);
-      color: #666;
-    }
-
-    .pace-calculating .pace-arrow-bg {
-      display: none;
-    }
-
-
-    /* ========================================
-       進捗バー
-       ======================================== */
 
     .progress {
       width: 100%;
       height: 12px;
-
       margin-top: 11px;
-
       overflow: hidden;
-
       background: #ececec;
-
       border-radius: 999px;
     }
 
     .progress-bar {
       height: 100%;
-
       background: #111;
-
       border-radius: 999px;
-
       transition: width .5s ease;
     }
 
     .progress-percent {
       margin-top: 6px;
-
       text-align: right;
-
       font-size: 12px;
       color: #777;
     }
-
 
     /* ========================================
        グラフ
@@ -751,25 +549,17 @@
 
     .chart-card {
       margin-top: 26px;
-
       padding: 22px 14px;
-
       background: rgba(255, 255, 255, 0.94);
-
       backdrop-filter: blur(4px);
       -webkit-backdrop-filter: blur(4px);
-
       border-radius: 20px;
-
-      box-shadow:
-        0 4px 18px rgba(0, 0, 0, 0.10);
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.10);
     }
 
     .chart-title {
       margin: 0 0 20px;
-
       text-align: center;
-
       font-size: 18px;
     }
 
@@ -778,47 +568,29 @@
       height: 390px;
     }
 
-
-    /* ========================================
-       その他
-       ======================================== */
-
     .footer {
       margin-top: 34px;
       padding-bottom: 8px;
-
       text-align: center;
-
       font-size: 11px;
       font-weight: 500;
       letter-spacing: 0.5px;
-
       color: rgba(255, 255, 255, 0.55);
     }
 
     .loading {
       padding: 60px 0;
-
       text-align: center;
-
       color: rgba(255, 255, 255, 0.75);
     }
 
     .error {
       padding: 30px 15px;
-
       text-align: center;
-
       color: #b00020;
       background: #fff;
-
       border-radius: 18px;
     }
-
-
-    /* ========================================
-       スマホ
-       ======================================== */
 
     @media (max-width: 420px) {
 
@@ -848,10 +620,6 @@
         font-size: 8.5px;
       }
 
-      .milestone-alert {
-        padding: 6px 6px 6px 8px;
-      }
-
       .milestone-message {
         font-size: 10.5px;
       }
@@ -863,6 +631,7 @@
       }
 
       .prediction-note {
+        margin-top: 22px;
         font-size: 9px;
       }
 
@@ -897,17 +666,12 @@
         padding: 5px 4px;
       }
 
-      .pace-box {
-        width: 98%;
-        padding: 6px 7px;
-      }
-
       .pace-status {
-        font-size: 9.5px;
+        font-size: 10px;
       }
 
       .pace-prediction {
-        font-size: 8.5px;
+        font-size: 9px;
       }
 
       .chart-wrap {
@@ -915,1312 +679,1394 @@
       }
     }
 
-
     @media (prefers-reduced-motion: reduce) {
-
-      .falling-star {
-        animation: none;
-        display: none;
-      }
-
+      .falling-star,
       .pace-arrow-bg {
-        animation: none !important;
+        animation: none;
       }
     }
 
   </style>
 </head>
 
-
 <body>
 
-  <div id="star-background"></div>
+<div id="star-background"></div>
+
+<div class="container">
+
+  <header>
+
+    <div class="header-left">
+
+      <h1>STARS BASE</h1>
+
+      <div
+        id="updated"
+        class="updated"
+      ></div>
+
+    </div>
+
+    <div class="realtime">
+
+      <div class="realtime-title">
+        ⭐︎ リアルタイム ⭐︎
+      </div>
+
+      <div
+        id="realtimeList"
+        class="realtime-list"
+      >
+        <div class="realtime-empty">
+          再生履歴を取得中...
+        </div>
+      </div>
+
+    </div>
+
+  </header>
+
+  <main>
+
+    <div
+      id="milestoneAlerts"
+      class="milestone-alerts"
+    ></div>
+
+    <div class="prediction-note">
+      ※各楽曲の達成予測は、直近6時間の平均再生ペースをもとに算出しています※
+    </div>
+
+    <div
+      id="cards"
+      class="cards"
+    >
+      <div class="loading">
+        データを取得しています...
+      </div>
+    </div>
+
+    <section class="chart-card">
+
+      <h2 class="chart-title">
+        📈 MV 再生回数 日別推移
+      </h2>
+
+      <div class="chart-wrap">
+        <canvas id="historyChart"></canvas>
+      </div>
+
+    </section>
+
+  </main>
+
+  <footer class="footer">
+    非公式ファンサイト
+  </footer>
+
+</div>
+
+<script>
+
+const API_URL =
+  "https://musicvideo-views.starsx0601.workers.dev";
 
 
-  <div class="container">
+const VIDEO_ORDER = [
+  "WISHES",
+  "StarWish",
+  "USOTSUKI",
+  "Drivin' My Life",
+  "Green Light",
+  "Good Boys Anthem"
+];
 
-    <header>
 
-      <div class="header-left">
+let historyChart = null;
 
-        <h1>
-          STARS BASE
-        </h1>
+
+/* ========================================
+   星
+   ======================================== */
+
+const starBackground =
+  document.getElementById(
+    "star-background"
+  );
+
+
+const STAR_SYMBOLS = [
+  "✦",
+  "✧",
+  "⋆",
+  "★",
+  "☆"
+];
+
+
+function createStar() {
+
+  const star =
+    document.createElement("span");
+
+  star.className =
+    "falling-star";
+
+  star.textContent =
+    STAR_SYMBOLS[
+      Math.floor(
+        Math.random() *
+        STAR_SYMBOLS.length
+      )
+    ];
+
+  const size =
+    8 +
+    Math.random() * 13;
+
+  const duration =
+    9 +
+    Math.random() * 10;
+
+  star.style.left =
+    Math.random() * 100 +
+    "vw";
+
+  star.style.fontSize =
+    size + "px";
+
+  star.style.animationDuration =
+    duration + "s, " +
+    (
+      1.2 +
+      Math.random() * 2
+    ) +
+    "s";
+
+  starBackground.appendChild(
+    star
+  );
+
+  setTimeout(
+    () => star.remove(),
+    duration * 1000
+  );
+
+}
+
+
+for (
+  let i = 0;
+  i < 20;
+  i++
+) {
+
+  setTimeout(
+    createStar,
+    i * 180
+  );
+
+}
+
+
+setInterval(
+  createStar,
+  450
+);
+
+
+/* ========================================
+   数字
+   ======================================== */
+
+function formatNumber(number) {
+
+  return Number(
+    number || 0
+  ).toLocaleString(
+    "ja-JP"
+  );
+
+}
+
+
+function formatChange(
+  value,
+  unit = ""
+) {
+
+  if (
+    value === null ||
+    value === undefined
+  ) {
+    return "―";
+  }
+
+  const sign =
+    value >= 0
+      ? "+"
+      : "";
+
+  return (
+    sign +
+    formatNumber(value) +
+    unit
+  );
+
+}
+
+
+/* ========================================
+   日付
+   ======================================== */
+
+function formatShortDate(dateString) {
+
+  if (!dateString) {
+    return "";
+  }
+
+  const parts =
+    dateString.split("-");
+
+  if (parts.length !== 3) {
+    return dateString;
+  }
+
+  return (
+    Number(parts[1]) +
+    "/" +
+    Number(parts[2])
+  );
+
+}
+
+
+/* ========================================
+   リアルタイム
+   ======================================== */
+
+function formatPlayTime(iso) {
+
+  return new Intl.DateTimeFormat(
+    "ja-JP",
+    {
+      timeZone: "Asia/Tokyo",
+      hour: "2-digit",
+      minute: "2-digit",
+      hour12: false
+    }
+  ).format(
+    new Date(iso)
+  );
+
+}
+
+
+async function loadRecentPlays() {
+
+  const target =
+    document.getElementById(
+      "realtimeList"
+    );
+
+  try {
+
+    const response =
+      await fetch(
+        API_URL +
+        "/recent-plays?t=" +
+        Date.now(),
+        {
+          cache: "no-store"
+        }
+      );
+
+    if (!response.ok) {
+      throw new Error(
+        "recent plays error"
+      );
+    }
+
+    const data =
+      await response.json();
+
+    const plays =
+      data.plays || [];
+
+    if (!plays.length) {
+
+      target.innerHTML = `
+        <div class="realtime-empty">
+          まだ再生履歴はありません
+        </div>
+      `;
+
+      return;
+    }
+
+    target.innerHTML =
+      plays
+        .slice(0, 6)
+        .map(
+          play => `
+            <div class="realtime-item">
+              ${formatPlayTime(play.clicked_at)}
+              ${play.title}
+            </div>
+          `
+        )
+        .join("");
+
+  } catch (error) {
+
+    console.error(
+      "Recent plays:",
+      error
+    );
+
+  }
+
+}
+
+
+async function recordPlay(videoId) {
+
+  try {
+
+    await fetch(
+      API_URL + "/play",
+      {
+        method: "POST",
+
+        headers: {
+          "Content-Type":
+            "application/json"
+        },
+
+        body:
+          JSON.stringify({
+            video_id: videoId
+          })
+      }
+    );
+
+    loadRecentPlays();
+
+  } catch (error) {
+
+    console.error(
+      "Play record:",
+      error
+    );
+
+  }
+
+}
+
+
+function handlePlayClick(
+  event,
+  videoId
+) {
+
+  recordPlay(videoId);
+
+}
+
+
+/* ========================================
+   今日・前日
+   ======================================== */
+
+function createTodayViewsBox(video) {
+
+  const value =
+    video.today_change?.views;
+
+  if (
+    value === null ||
+    value === undefined
+  ) {
+    return "";
+  }
+
+  return `
+    <div class="change-box">
+      トータル
+      ${formatNumber(value)}回再生中
+    </div>
+  `;
+
+}
+
+
+function createTodayLikesBox(video) {
+
+  const value =
+    video.today_change?.likes;
+
+  if (
+    value === null ||
+    value === undefined
+  ) {
+    return "";
+  }
+
+  return `
+    <div class="change-box">
+      トータル
+      ${formatChange(value)}
+    </div>
+  `;
+
+}
+
+
+function createPreviousViewsBox(video) {
+
+  const previous =
+    video.previous_day_total;
+
+  if (!previous) {
+    return "";
+  }
+
+  return `
+    <div class="change-box">
+      ${formatShortDate(previous.date)}
+      ${formatNumber(previous.views)}回再生
+    </div>
+  `;
+
+}
+
+
+function createPreviousLikesBox(video) {
+
+  const previous =
+    video.previous_day_total;
+
+  if (!previous) {
+    return "";
+  }
+
+  return `
+    <div class="change-box">
+      ${formatShortDate(previous.date)}
+      ${formatChange(previous.likes)}
+    </div>
+  `;
+
+}
+
+
+/* ========================================
+   目標
+   ======================================== */
+
+function getGoal(views) {
+
+  const goals = [
+    100000,
+    200000,
+    300000,
+    400000,
+    500000,
+    1000000
+  ];
+
+  for (
+    const goal of goals
+  ) {
+
+    if (views < goal) {
+      return goal;
+    }
+
+  }
+
+  return (
+    Math.floor(
+      views / 1000000
+    ) + 1
+  ) * 1000000;
+
+}
+
+
+function goalLabel(goal) {
+
+  return (
+    goal / 10000
+  ).toLocaleString(
+    "ja-JP"
+  ) + "万";
+
+}
+
+
+function getPreviousGoal(goal) {
+
+  if (goal === 100000) {
+    return 0;
+  }
+
+  if (goal <= 500000) {
+    return goal - 100000;
+  }
+
+  if (goal === 1000000) {
+    return 500000;
+  }
+
+  return goal - 1000000;
+
+}
+
+
+/* ========================================
+   達成予測
+   ★直近6時間平均を使用
+   ======================================== */
+
+function formatPredictionDate(date) {
+
+  const parts =
+    new Intl.DateTimeFormat(
+      "ja-JP",
+      {
+        timeZone:
+          "Asia/Tokyo",
+
+        year:
+          "numeric",
+
+        month:
+          "2-digit",
+
+        day:
+          "2-digit",
+
+        hour:
+          "2-digit",
+
+        minute:
+          "2-digit",
+
+        hour12:
+          false
+      }
+    ).formatToParts(date);
+
+
+  const get =
+    type =>
+      parts.find(
+        part =>
+          part.type === type
+      )?.value || "";
+
+
+  return (
+    get("year") +
+    "/" +
+    get("month") +
+    "/" +
+    get("day") +
+    " " +
+    get("hour") +
+    ":" +
+    get("minute")
+  );
+
+}
+
+
+function getPaceData(
+  video,
+  goal
+) {
+
+  /*
+    Workerが返す
+    直近6時間の平均再生ペース
+  */
+
+  const sixHourAverage =
+    Number(
+      video.six_hour_pace
+        ?.views_per_hour
+    );
+
+
+  /*
+    6時間データが取れない場合も
+    枠そのものは消さない
+  */
+
+  if (
+    !Number.isFinite(
+      sixHourAverage
+    ) ||
+    sixHourAverage <= 0
+  ) {
+
+    return {
+      type:
+        "calculating",
+
+      label:
+        "ペース算出中",
+
+      arrows:
+        "",
+
+      prediction:
+        null
+    };
+
+  }
+
+
+  const remaining =
+    Math.max(
+      goal -
+      Number(
+        video.views || 0
+      ),
+      0
+    );
+
+
+  /*
+    残り再生数 ÷
+    直近6時間の1時間平均
+  */
+
+  const hoursNeeded =
+    remaining /
+    sixHourAverage;
+
+
+  const prediction =
+    new Date(
+      Date.now() +
+      hoursNeeded *
+      60 *
+      60 *
+      1000
+    );
+
+
+  /*
+    ↑ → ↓ 判定用
+
+    直近6時間平均と
+    前日24時間平均を比較
+  */
+
+  const previousDayViews =
+    Number(
+      video.previous_day_total
+        ?.views
+    );
+
+
+  /*
+    前日の比較データがない場合。
+
+    達成予測自体は出せるので
+    維持表示にして予測は残す。
+  */
+
+  if (
+    !Number.isFinite(
+      previousDayViews
+    ) ||
+    previousDayViews <= 0
+  ) {
+
+    return {
+      type:
+        "steady",
+
+      label:
+        "ペース維持中",
+
+      arrows:
+        "→ → → → →",
+
+      prediction
+    };
+
+  }
+
+
+  const baselineHourly =
+    previousDayViews / 24;
+
+
+  const changeRate =
+    (
+      sixHourAverage -
+      baselineHourly
+    ) /
+    baselineHourly;
+
+
+  /*
+    +5%より速い
+  */
+
+  if (
+    changeRate > 0.05
+  ) {
+
+    return {
+      type:
+        "up",
+
+      label:
+        "ペースアップ中",
+
+      arrows:
+        "↑ ↑ ↑ ↑ ↑",
+
+      prediction
+    };
+
+  }
+
+
+  /*
+    -5%より遅い
+  */
+
+  if (
+    changeRate < -0.05
+  ) {
+
+    return {
+      type:
+        "down",
+
+      label:
+        "ペースダウン中",
+
+      arrows:
+        "↓ ↓ ↓ ↓ ↓",
+
+      prediction
+    };
+
+  }
+
+
+  /*
+    ±5%以内
+  */
+
+  return {
+    type:
+      "steady",
+
+    label:
+      "ペース維持中",
+
+    arrows:
+      "→ → → → →",
+
+    prediction
+  };
+
+}
+
+
+function createPaceForecast(
+  video,
+  goal
+) {
+
+  const pace =
+    getPaceData(
+      video,
+      goal
+    );
+
+
+  const predictionText =
+    pace.prediction
+      ? formatPredictionDate(
+          pace.prediction
+        )
+      : "算出中";
+
+
+  return `
+    <div class="pace-box pace-${pace.type}">
+
+      <div
+        class="pace-arrow-bg"
+        aria-hidden="true"
+      >
+        ${pace.arrows}
+      </div>
+
+      <div class="pace-content">
+
+        <span class="pace-status">
+          ${pace.label}
+        </span>
+
+        <span class="pace-prediction">
+          📊達成予測：${predictionText}
+        </span>
+
+      </div>
+
+    </div>
+  `;
+
+}
+
+
+function createGoal(video) {
+
+  const goal =
+    getGoal(
+      video.views
+    );
+
+  const previousGoal =
+    getPreviousGoal(
+      goal
+    );
+
+  const remaining =
+    Math.max(
+      goal -
+      video.views,
+      0
+    );
+
+  const range =
+    goal -
+    previousGoal;
+
+  const progress =
+    video.views -
+    previousGoal;
+
+  const percent =
+    Math.max(
+      0,
+      Math.min(
+        progress /
+        range *
+        100,
+        100
+      )
+    );
+
+  const nearGoal =
+    percent >= 90
+      ? `<span class="goal-near">❤️‍🔥</span>`
+      : "";
+
+  return `
+    <div class="goal">
+
+      <div class="goal-text">
+        ${goalLabel(goal)}回再生まで
+        あと${formatNumber(remaining)}回
+        ${nearGoal}
+      </div>
+
+      ${createPaceForecast(
+        video,
+        goal
+      )}
+
+      <div class="progress">
 
         <div
-          id="updated"
-          class="updated"
+          class="progress-bar"
+          style="width:${percent}%"
         ></div>
 
       </div>
 
-
-      <div class="realtime">
-
-        <div class="realtime-title">
-          ⭐︎ リアルタイム ⭐︎
-        </div>
-
-        <div
-          id="realtimeList"
-          class="realtime-list"
-        >
-
-          <div class="realtime-empty">
-            再生履歴を取得中...
-          </div>
-
-        </div>
-
+      <div class="progress-percent">
+        ${percent.toFixed(1)}%
       </div>
 
-    </header>
+    </div>
+  `;
+
+}
 
 
-    <main>
+/* ========================================
+   YouTube
+   ======================================== */
 
-      <div
-        id="milestoneAlerts"
-        class="milestone-alerts"
-      ></div>
+function getThumbnail(videoId) {
 
+  return (
+    "https://i.ytimg.com/vi/" +
+    videoId +
+    "/hqdefault.jpg"
+  );
 
-      <div class="prediction-note">
-        ※各楽曲の達成予測は、直近の再生ペースをもとに算出しています※
-      </div>
-
-
-      <div
-        id="cards"
-        class="cards"
-      >
-
-        <div class="loading">
-          データを取得しています...
-        </div>
-
-      </div>
+}
 
 
-      <section class="chart-card">
+function getYouTubeUrl(videoId) {
 
-        <h2 class="chart-title">
-          📈 MV 再生回数 日別推移
-        </h2>
+  return (
+    "https://www.youtube.com/watch?v=" +
+    videoId
+  );
 
-        <div class="chart-wrap">
-
-          <canvas
-            id="historyChart"
-          ></canvas>
-
-        </div>
-
-      </section>
-
-    </main>
+}
 
 
-    <footer class="footer">
-      非公式ファンサイト
-    </footer>
+/* ========================================
+   キリ番80%以上
+   ======================================== */
 
-  </div>
+function createMilestoneAlerts(videos) {
 
-
-  <script>
-
-    const API_URL =
-      "https://musicvideo-views.starsx0601.workers.dev";
-
-
-    const VIDEO_ORDER = [
-      "WISHES",
-      "StarWish",
-      "USOTSUKI",
-      "Drivin' My Life",
-      "Green Light",
-      "Good Boys Anthem"
-    ];
-
-
-    let historyChart = null;
-
-
-    // ========================================
-    // 星
-    // ========================================
-
-    const starBackground =
-      document.getElementById(
-        "star-background"
-      );
-
-
-    const STAR_SYMBOLS = [
-      "✦",
-      "✧",
-      "⋆",
-      "★",
-      "☆"
-    ];
-
-
-    function createStar() {
-
-      const star =
-        document.createElement("span");
-
-      star.className =
-        "falling-star";
-
-      star.textContent =
-        STAR_SYMBOLS[
-          Math.floor(
-            Math.random() *
-            STAR_SYMBOLS.length
-          )
-        ];
-
-      const size =
-        8 +
-        Math.random() * 13;
-
-      const duration =
-        9 +
-        Math.random() * 10;
-
-      star.style.left =
-        Math.random() * 100 +
-        "vw";
-
-      star.style.fontSize =
-        size +
-        "px";
-
-      star.style.animationDuration =
-        duration + "s, " +
-        (
-          1.2 +
-          Math.random() * 2
-        ) +
-        "s";
-
-      star.style.opacity =
-        0.45 +
-        Math.random() * 0.5;
-
-      starBackground.appendChild(
-        star
-      );
-
-      setTimeout(
-        () => {
-          star.remove();
-        },
-        duration * 1000
-      );
-
-    }
-
-
-    for (let i = 0; i < 20; i++) {
-
-      setTimeout(
-        createStar,
-        i * 180
-      );
-
-    }
-
-
-    setInterval(
-      createStar,
-      450
+  const target =
+    document.getElementById(
+      "milestoneAlerts"
     );
 
+  const alerts =
+    videos
+      .map(video => {
 
-    // ========================================
-    // 数字
-    // ========================================
-
-    function formatNumber(number) {
-
-      return Number(number || 0)
-        .toLocaleString("ja-JP");
-
-    }
-
-
-    function formatChange(
-      value,
-      unit = ""
-    ) {
-
-      if (
-        value === null ||
-        value === undefined
-      ) {
-        return "―";
-      }
-
-      const sign =
-        value >= 0
-          ? "+"
-          : "";
-
-      return (
-        sign +
-        formatNumber(value) +
-        unit
-      );
-
-    }
-
-
-    // ========================================
-    // 日付
-    // ========================================
-
-    function formatShortDate(dateString) {
-
-      if (!dateString) {
-        return "";
-      }
-
-      const parts =
-        dateString.split("-");
-
-      if (parts.length !== 3) {
-        return dateString;
-      }
-
-      return (
-        Number(parts[1]) +
-        "/" +
-        Number(parts[2])
-      );
-
-    }
-
-
-    // ========================================
-    // リアルタイム履歴
-    // ========================================
-
-    function formatPlayTime(iso) {
-
-      const date =
-        new Date(iso);
-
-      return new Intl.DateTimeFormat(
-        "ja-JP",
-        {
-          timeZone: "Asia/Tokyo",
-          hour: "2-digit",
-          minute: "2-digit",
-          hour12: false
-        }
-      ).format(date);
-
-    }
-
-
-    async function loadRecentPlays() {
-
-      const target =
-        document.getElementById(
-          "realtimeList"
-        );
-
-      try {
-
-        const response =
-          await fetch(
-            API_URL +
-            "/recent-plays?t=" +
-            Date.now(),
-            {
-              cache: "no-store"
-            }
+        const goal =
+          getGoal(
+            video.views
           );
 
-        if (!response.ok) {
-          throw new Error(
-            "recent plays error"
-          );
-        }
-
-        const data =
-          await response.json();
-
-        const plays =
-          data.plays || [];
-
-        if (plays.length === 0) {
-
-          target.innerHTML = `
-            <div class="realtime-empty">
-              まだ再生履歴はありません
-            </div>
-          `;
-
-          return;
-        }
-
-        target.innerHTML =
-          plays
-            .slice(0, 6)
-            .map(play => `
-              <div class="realtime-item">
-                ${formatPlayTime(play.clicked_at)}
-                ${play.title}
-              </div>
-            `)
-            .join("");
-
-      } catch (error) {
-
-        console.error(
-          "Recent plays:",
-          error
-        );
-
-      }
-
-    }
-
-
-    async function recordPlay(videoId) {
-
-      try {
-
-        await fetch(
-          API_URL + "/play",
-          {
-            method: "POST",
-
-            headers: {
-              "Content-Type":
-                "application/json"
-            },
-
-            body:
-              JSON.stringify({
-                video_id:
-                  videoId
-              })
-          }
-        );
-
-        loadRecentPlays();
-
-      } catch (error) {
-
-        console.error(
-          "Play record:",
-          error
-        );
-
-      }
-
-    }
-
-
-    function handlePlayClick(
-      event,
-      videoId
-    ) {
-
-      recordPlay(videoId);
-
-    }
-
-
-    // ========================================
-    // トータル
-    // ========================================
-
-    function createTodayViewsBox(video) {
-
-      const value =
-        video.today_change?.views;
-
-      if (
-        value === null ||
-        value === undefined
-      ) {
-        return "";
-      }
-
-      return `
-        <div class="change-box">
-          トータル
-          ${formatNumber(value)}回再生中
-        </div>
-      `;
-
-    }
-
-
-    function createTodayLikesBox(video) {
-
-      const value =
-        video.today_change?.likes;
-
-      if (
-        value === null ||
-        value === undefined
-      ) {
-        return "";
-      }
-
-      return `
-        <div class="change-box">
-          トータル
-          ${formatChange(value)}
-        </div>
-      `;
-
-    }
-
-
-    // ========================================
-    // 前日実績
-    // ========================================
-
-    function createPreviousViewsBox(video) {
-
-      const previous =
-        video.previous_day_total;
-
-      if (!previous) {
-        return "";
-      }
-
-      return `
-        <div class="change-box">
-          ${formatShortDate(previous.date)}
-          ${formatNumber(previous.views)}回再生
-        </div>
-      `;
-
-    }
-
-
-    function createPreviousLikesBox(video) {
-
-      const previous =
-        video.previous_day_total;
-
-      if (!previous) {
-        return "";
-      }
-
-      return `
-        <div class="change-box">
-          ${formatShortDate(previous.date)}
-          ${formatChange(previous.likes)}
-        </div>
-      `;
-
-    }
-
-
-    // ========================================
-    // 次の目標
-    // ========================================
-
-    function getGoal(views) {
-
-      const goals = [
-        100000,
-        200000,
-        300000,
-        400000,
-        500000,
-        1000000
-      ];
-
-      for (const goal of goals) {
-
-        if (views < goal) {
-          return goal;
-        }
-
-      }
-
-      return (
-        Math.floor(
-          views / 1000000
-        ) + 1
-      ) * 1000000;
-
-    }
-
-
-    function goalLabel(goal) {
-
-      return (
-        goal / 10000
-      ).toLocaleString("ja-JP") +
-      "万";
-
-    }
-
-
-    function getPreviousGoal(goal) {
-
-      if (goal === 100000) {
-        return 0;
-      }
-
-      if (goal <= 500000) {
-        return goal - 100000;
-      }
-
-      if (goal === 1000000) {
-        return 500000;
-      }
-
-      return goal - 1000000;
-
-    }
-
-
-    // ========================================
-    // 達成予測
-    // ========================================
-
-    function formatPredictionDate(date) {
-
-      return new Intl.DateTimeFormat(
-        "ja-JP",
-        {
-          timeZone: "Asia/Tokyo",
-
-          month: "numeric",
-          day: "numeric",
-
-          hour: "2-digit",
-          minute: "2-digit",
-
-          hour12: false
-        }
-      ).format(date);
-
-    }
-
-
-    function getPaceData(
-      video,
-      goal
-    ) {
-
-      const currentHourly =
-        Number(
-          video.hourly_change?.views
-        );
-
-
-      /*
-        表示は絶対に消さない。
-        1時間比がまだ無い・0以下の場合は
-        「算出中」にする。
-      */
-
-      if (
-        !Number.isFinite(currentHourly) ||
-        currentHourly <= 0
-      ) {
-
-        return {
-          type: "calculating",
-          label: "ペース算出中",
-          arrows: "",
-          prediction: null
-        };
-
-      }
-
-
-      const remaining =
-        Math.max(
-          goal -
-          Number(video.views || 0),
-          0
-        );
-
-
-      const hoursNeeded =
-        remaining /
-        currentHourly;
-
-
-      const prediction =
-        new Date(
-          Date.now() +
-          hoursNeeded *
-          60 *
-          60 *
-          1000
-        );
-
-
-      /*
-        前日の総再生数 ÷ 24 を
-        比較用の基準ペースにする
-      */
-
-      const previousDayViews =
-        Number(
-          video.previous_day_total?.views
-        );
-
-
-      if (
-        !Number.isFinite(previousDayViews) ||
-        previousDayViews <= 0
-      ) {
-
-        return {
-          type: "steady",
-          label: "ペース維持中",
-          arrows: "→ → → → →",
-          prediction
-        };
-
-      }
-
-
-      const baselineHourly =
-        previousDayViews / 24;
-
-
-      const changeRate =
-        (
-          currentHourly -
-          baselineHourly
-        ) /
-        baselineHourly;
-
-
-      if (changeRate > 0.05) {
-
-        return {
-          type: "up",
-          label: "ペースアップ中",
-          arrows: "↑ ↑ ↑ ↑ ↑",
-          prediction
-        };
-
-      }
-
-
-      if (changeRate < -0.05) {
-
-        return {
-          type: "down",
-          label: "ペースダウン中",
-          arrows: "↓ ↓ ↓ ↓ ↓",
-          prediction
-        };
-
-      }
-
-
-      return {
-        type: "steady",
-        label: "ペース維持中",
-        arrows: "→ → → → →",
-        prediction
-      };
-
-    }
-
-
-    function createPaceForecast(
-      video,
-      goal
-    ) {
-
-      const pace =
-        getPaceData(
-          video,
-          goal
-        );
-
-
-      const predictionText =
-        pace.prediction
-          ? formatPredictionDate(
-              pace.prediction
-            )
-          : "算出中";
-
-
-      return `
-        <div class="pace-box pace-${pace.type}">
-
-          <div
-            class="pace-arrow-bg"
-            aria-hidden="true"
-          >
-            ${pace.arrows}
-          </div>
-
-          <div class="pace-content">
-
-            <span class="pace-status">
-              ${pace.label}
-            </span>
-
-            <span class="pace-prediction">
-              📊達成予測：${predictionText}
-            </span>
-
-          </div>
-
-        </div>
-      `;
-
-    }
-
-
-    function createGoal(video) {
-
-      const goal =
-        getGoal(video.views);
-
-      const previousGoal =
-        getPreviousGoal(goal);
-
-      const remaining =
-        Math.max(
-          goal - video.views,
-          0
-        );
-
-      const range =
-        goal - previousGoal;
-
-      const progress =
-        video.views - previousGoal;
-
-      const percent =
-        Math.max(
-          0,
-          Math.min(
-            progress / range * 100,
-            100
-          )
-        );
-
-      const nearGoal =
-        percent >= 90
-          ? `<span class="goal-near">❤️‍🔥</span>`
-          : "";
-
-      return `
-        <div class="goal">
-
-          <div class="goal-text">
-            ${goalLabel(goal)}回再生まで
-            あと${formatNumber(remaining)}回
-            ${nearGoal}
-          </div>
-
-
-          ${createPaceForecast(
-            video,
+        const previousGoal =
+          getPreviousGoal(
             goal
-          )}
+          );
 
+        const range =
+          goal -
+          previousGoal;
 
-          <div class="progress">
+        const progress =
+          video.views -
+          previousGoal;
 
-            <div
-              class="progress-bar"
-              style="width:${percent}%"
-            ></div>
+        const rate =
+          progress /
+          range;
 
-          </div>
+        if (
+          rate < 0.8
+        ) {
+          return "";
+        }
 
-          <div class="progress-percent">
-            ${percent.toFixed(1)}%
-          </div>
+        return `
+          <div class="milestone-alert">
 
-        </div>
-      `;
+            <div class="milestone-message">
+              📣 ${video.title} ${goalLabel(goal)}回再生間近❤️‍🔥❤️‍🔥
+            </div>
 
-    }
-
-
-    // ========================================
-    // YouTube
-    // ========================================
-
-    function getThumbnail(videoId) {
-
-      return (
-        "https://i.ytimg.com/vi/" +
-        videoId +
-        "/hqdefault.jpg"
-      );
-
-    }
-
-
-    function getYouTubeUrl(videoId) {
-
-      return (
-        "https://www.youtube.com/watch?v=" +
-        videoId
-      );
-
-    }
-
-
-    // ========================================
-    // キリ番80%以上
-    // ========================================
-
-    function createMilestoneAlerts(videos) {
-
-      const target =
-        document.getElementById(
-          "milestoneAlerts"
-        );
-
-      const alerts =
-        videos
-          .map(video => {
-
-            const goal =
-              getGoal(video.views);
-
-            const previousGoal =
-              getPreviousGoal(goal);
-
-            const range =
-              goal - previousGoal;
-
-            const progress =
-              video.views - previousGoal;
-
-            const rate =
-              progress / range;
-
-            if (rate < 0.8) {
-              return "";
-            }
-
-            return `
-              <div class="milestone-alert">
-
-                <div class="milestone-message">
-                  📣 ${video.title} ${goalLabel(goal)}回再生間近❤️‍🔥❤️‍🔥
-                </div>
-
-                <a
-                  class="milestone-play"
-                  href="${getYouTubeUrl(video.id)}"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onclick="handlePlayClick(event, '${video.id}')"
-                >
-                  MV再生 ▶
-                </a>
-
-              </div>
-            `;
-
-          })
-          .filter(Boolean);
-
-      target.innerHTML =
-        alerts.join("");
-
-    }
-
-
-    // ========================================
-    // 急上昇
-    // ========================================
-
-    function createTrending(video) {
-
-      if (!video.trending_rank) {
-        return "";
-      }
-
-      return `
-        <div class="trending">
-          📢 急上昇の音楽 #${video.trending_rank}
-        </div>
-      `;
-
-    }
-
-
-    // ========================================
-    // MVカード
-    // ========================================
-
-    function createCard(video) {
-
-      const hourlyViews =
-        video.hourly_change?.views;
-
-      const hourlyLikes =
-        video.hourly_change?.likes;
-
-      const dailyViews =
-        video.daily_change?.views;
-
-      const dailyLikes =
-        video.daily_change?.likes;
-
-      return `
-        <article class="card">
-
-          <div class="video-header">
-
-            <img
-              class="thumbnail"
-              src="${getThumbnail(video.id)}"
-              alt="${video.title}"
-              loading="lazy"
+            <a
+              class="milestone-play"
+              href="${getYouTubeUrl(video.id)}"
+              target="_blank"
+              rel="noopener noreferrer"
+              onclick="handlePlayClick(event, '${video.id}')"
             >
+              MV再生 ▶
+            </a>
 
-            <div class="video-info">
+          </div>
+        `;
 
-              <h2 class="title">
-                ${video.title}
-              </h2>
+      })
+      .filter(Boolean);
 
-              ${createTrending(video)}
+  target.innerHTML =
+    alerts.join("");
 
-              <div>
+}
 
-                <a
-                  class="youtube-button"
-                  href="${getYouTubeUrl(video.id)}"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  onclick="handlePlayClick(event, '${video.id}')"
-                >
-                  ▶ YouTubeでMVを見る
-                </a>
 
-              </div>
+/* ========================================
+   急上昇
+   ======================================== */
 
-            </div>
+function createTrending(video) {
+
+  if (
+    !video.trending_rank
+  ) {
+    return "";
+  }
+
+  return `
+    <div class="trending">
+      📢 急上昇の音楽 #${video.trending_rank}
+    </div>
+  `;
+
+}
+
+
+/* ========================================
+   MVカード
+   ======================================== */
+
+function createCard(video) {
+
+  const hourlyViews =
+    video.hourly_change
+      ?.views;
+
+  const hourlyLikes =
+    video.hourly_change
+      ?.likes;
+
+  const dailyViews =
+    video.daily_change
+      ?.views;
+
+  const dailyLikes =
+    video.daily_change
+      ?.likes;
+
+  return `
+    <article class="card">
+
+      <div class="video-header">
+
+        <img
+          class="thumbnail"
+          src="${getThumbnail(video.id)}"
+          alt="${video.title}"
+          loading="lazy"
+        >
+
+        <div class="video-info">
+
+          <h2 class="title">
+            ${video.title}
+          </h2>
+
+          ${createTrending(video)}
+
+          <div>
+
+            <a
+              class="youtube-button"
+              href="${getYouTubeUrl(video.id)}"
+              target="_blank"
+              rel="noopener noreferrer"
+              onclick="handlePlayClick(event, '${video.id}')"
+            >
+              ▶ YouTubeでMVを見る
+            </a>
 
           </div>
 
+        </div>
 
-          <div class="stats">
+      </div>
 
-            <div class="stat">
 
-              <div class="stat-label">
-                ▶ 再生回数
-              </div>
+      <div class="stats">
 
-              <div class="stat-number">
-                ${formatNumber(video.views)}
-              </div>
+        <div class="stat">
 
-              <div class="changes">
+          <div class="stat-label">
+            ▶ 再生回数
+          </div>
 
-                <div class="change-row">
+          <div class="stat-number">
+            ${formatNumber(video.views)}
+          </div>
 
-                  <span class="change-label">
-                    1時間比
-                  </span>
+          <div class="changes">
 
-                  <span class="change-number">
-                    ${formatChange(
-                      hourlyViews,
-                      "回再生"
-                    )}
-                  </span>
+            <div class="change-row">
 
-                </div>
+              <span class="change-label">
+                1時間比
+              </span>
 
-                ${createTodayViewsBox(video)}
-
-                <div class="change-row">
-
-                  <span class="change-label">
-                    前日比
-                  </span>
-
-                  <span class="change-number">
-                    ${formatChange(
-                      dailyViews,
-                      "回再生"
-                    )}
-                  </span>
-
-                </div>
-
-                ${createPreviousViewsBox(video)}
-
-              </div>
+              <span class="change-number">
+                ${formatChange(
+                  hourlyViews,
+                  "回再生"
+                )}
+              </span>
 
             </div>
 
+            ${createTodayViewsBox(video)}
 
-            <div class="stat">
+            <div class="change-row">
 
-              <div class="stat-label">
-                👍 高評価
-              </div>
+              <span class="change-label">
+                前日比
+              </span>
 
-              <div class="stat-number">
-                ${formatNumber(video.likes)}
-              </div>
-
-              <div class="changes">
-
-                <div class="change-row">
-
-                  <span class="change-label">
-                    1時間比
-                  </span>
-
-                  <span class="change-number">
-                    ${formatChange(hourlyLikes)}
-                  </span>
-
-                </div>
-
-                ${createTodayLikesBox(video)}
-
-                <div class="change-row">
-
-                  <span class="change-label">
-                    前日比
-                  </span>
-
-                  <span class="change-number">
-                    ${formatChange(dailyLikes)}
-                  </span>
-
-                </div>
-
-                ${createPreviousLikesBox(video)}
-
-              </div>
+              <span class="change-number">
+                ${formatChange(
+                  dailyViews,
+                  "回再生"
+                )}
+              </span>
 
             </div>
+
+            ${createPreviousViewsBox(video)}
 
           </div>
 
-
-          ${createGoal(video)}
-
-        </article>
-      `;
-
-    }
+        </div>
 
 
-    // ========================================
-    // 更新日時
-    // ========================================
+        <div class="stat">
 
-    function showUpdatedTime(iso) {
+          <div class="stat-label">
+            👍 高評価
+          </div>
 
-      const date =
-        new Date(iso);
+          <div class="stat-number">
+            ${formatNumber(video.likes)}
+          </div>
 
-      const formatter =
-        new Intl.DateTimeFormat(
-          "ja-JP",
-          {
-            timeZone:
-              "Asia/Tokyo",
+          <div class="changes">
 
-            month:
-              "numeric",
+            <div class="change-row">
 
-            day:
-              "numeric",
+              <span class="change-label">
+                1時間比
+              </span>
 
-            hour:
-              "2-digit",
+              <span class="change-number">
+                ${formatChange(
+                  hourlyLikes
+                )}
+              </span>
 
-            minute:
-              "2-digit"
-          }
-        );
+            </div>
 
-      document.getElementById(
-        "updated"
-      ).textContent =
-        formatter.format(date) +
-        " 時点";
+            ${createTodayLikesBox(video)}
 
-    }
+            <div class="change-row">
+
+              <span class="change-label">
+                前日比
+              </span>
+
+              <span class="change-number">
+                ${formatChange(
+                  dailyLikes
+                )}
+              </span>
+
+            </div>
+
+            ${createPreviousLikesBox(video)}
+
+          </div>
+
+        </div>
+
+      </div>
+
+      ${createGoal(video)}
+
+    </article>
+  `;
+
+}
 
 
-    // ========================================
-    // 日別グラフ
-    // ========================================
+/* ========================================
+   更新日時
+   ======================================== */
 
-    function drawHistory(history) {
+function showUpdatedTime(iso) {
 
-      const dates = [
-        ...new Set(
-          history.map(
+  const date =
+    new Date(iso);
+
+  const formatter =
+    new Intl.DateTimeFormat(
+      "ja-JP",
+      {
+        timeZone:
+          "Asia/Tokyo",
+
+        month:
+          "numeric",
+
+        day:
+          "numeric",
+
+        hour:
+          "2-digit",
+
+        minute:
+          "2-digit"
+      }
+    );
+
+  document.getElementById(
+    "updated"
+  ).textContent =
+    formatter.format(date) +
+    " 時点";
+
+}
+
+
+/* ========================================
+   日別グラフ
+   ======================================== */
+
+function drawHistory(history) {
+
+  const dates = [
+    ...new Set(
+      history.map(
+        item =>
+          item.jst_date
+      )
+    )
+  ];
+
+
+  const datasets =
+    VIDEO_ORDER.map(
+      title => {
+
+        const rows =
+          history.filter(
             item =>
-              item.jst_date
-          )
-        )
-      ];
+              item.title ===
+              title
+          );
 
-
-      const datasets =
-        VIDEO_ORDER.map(title => {
-
-          const rows =
-            history.filter(
-              item =>
-                item.title === title
-            );
-
-          const values =
-            dates.map(date => {
+        const values =
+          dates.map(
+            date => {
 
               const row =
                 rows.find(
                   item =>
-                    item.jst_date === date
+                    item.jst_date ===
+                    date
                 );
 
               return row
-                ? Number(row.end_views)
+                ? Number(
+                    row.end_views
+                  )
                 : null;
 
-            });
+            }
+          );
 
 
-          return {
-            label: title,
-            data: values,
-            tension: 0.25,
-            spanGaps: true,
-            borderWidth: 2,
-            pointRadius: 3
-          };
+        return {
+          label: title,
+          data: values,
+          tension: 0.25,
+          spanGaps: true,
+          borderWidth: 2,
+          pointRadius: 3
+        };
 
-        });
-
-
-      if (historyChart) {
-        historyChart.destroy();
       }
+    );
 
 
-      const ctx =
-        document.getElementById(
-          "historyChart"
-        );
+  if (
+    historyChart
+  ) {
+    historyChart.destroy();
+  }
 
 
-      historyChart =
-        new Chart(
-          ctx,
-          {
+  const ctx =
+    document.getElementById(
+      "historyChart"
+    );
 
-            type: "line",
 
-            data: {
-              labels: dates,
-              datasets: datasets
+  historyChart =
+    new Chart(
+      ctx,
+      {
+
+        type: "line",
+
+        data: {
+          labels: dates,
+          datasets
+        },
+
+        options: {
+
+          responsive: true,
+
+          maintainAspectRatio:
+            false,
+
+          interaction: {
+            mode: "index",
+            intersect: false
+          },
+
+          plugins: {
+
+            legend: {
+              position: "bottom",
+
+              labels: {
+                boxWidth: 12,
+                padding: 14
+              }
             },
 
-            options: {
+            tooltip: {
 
-              responsive: true,
+              callbacks: {
 
-              maintainAspectRatio: false,
+                label(context) {
 
-              interaction: {
-                mode: "index",
-                intersect: false
-              },
+                  const value =
+                    context.parsed.y;
 
-              plugins: {
-
-                legend: {
-                  position: "bottom",
-
-                  labels: {
-                    boxWidth: 12,
-                    padding: 14
-                  }
-                },
-
-                tooltip: {
-
-                  callbacks: {
-
-                    label(context) {
-
-                      const value =
-                        context.parsed.y;
-
-                      if (value === null) {
-                        return "";
-                      }
-
-                      return (
-                        context.dataset.label +
-                        "：" +
-                        formatNumber(value) +
-                        "回"
-                      );
-
-                    }
-
+                  if (
+                    value === null
+                  ) {
+                    return "";
                   }
 
-                }
-
-              },
-
-              scales: {
-
-                y: {
-
-                  ticks: {
-
-                    callback(value) {
-
-                      return Number(value)
-                        .toLocaleString(
-                          "ja-JP",
-                          {
-                            notation:
-                              "compact"
-                          }
-                        );
-
-                    }
-
-                  }
-
-                },
-
-                x: {
-
-                  ticks: {
-                    maxRotation: 0
-                  }
+                  return (
+                    context.dataset.label +
+                    "：" +
+                    formatNumber(value) +
+                    "回"
+                  );
 
                 }
 
@@ -2228,118 +2074,166 @@
 
             }
 
-          }
-        );
+          },
 
-    }
+          scales: {
 
+            y: {
 
-    // ========================================
-    // データ取得
-    // ========================================
+              ticks: {
 
-    async function loadData() {
+                callback(value) {
 
-      const cards =
-        document.getElementById(
-          "cards"
-        );
+                  return Number(
+                    value
+                  ).toLocaleString(
+                    "ja-JP",
+                    {
+                      notation:
+                        "compact"
+                    }
+                  );
 
-      try {
+                }
 
-        const response =
-          await fetch(
-            API_URL +
-            "?t=" +
-            Date.now(),
-            {
-              cache:
-                "no-store"
+              }
+
+            },
+
+            x: {
+
+              ticks: {
+                maxRotation: 0
+              }
+
             }
-          );
 
-        if (!response.ok) {
-
-          throw new Error(
-            "API error"
-          );
+          }
 
         }
 
-        const data =
-          await response.json();
-
-        showUpdatedTime(
-          data.updated_at
-        );
-
-        const sortedVideos =
-          [...data.videos]
-            .sort(
-              (a, b) =>
-                VIDEO_ORDER.indexOf(
-                  a.title
-                ) -
-                VIDEO_ORDER.indexOf(
-                  b.title
-                )
-            );
-
-        createMilestoneAlerts(
-          sortedVideos
-        );
-
-        cards.innerHTML =
-          sortedVideos
-            .map(
-              createCard
-            )
-            .join("");
-
-        drawHistory(
-          data.daily_history || []
-        );
-
-      } catch (error) {
-
-        console.error(
-          error
-        );
-
-        cards.innerHTML = `
-          <div class="error">
-            データを取得できませんでした。<br>
-            少し時間を置いて再読み込みしてください。
-          </div>
-        `;
-
       }
+    );
+
+}
+
+
+/* ========================================
+   データ取得
+   ======================================== */
+
+async function loadData() {
+
+  const cards =
+    document.getElementById(
+      "cards"
+    );
+
+  try {
+
+    const response =
+      await fetch(
+        API_URL +
+        "?t=" +
+        Date.now(),
+        {
+          cache: "no-store"
+        }
+      );
+
+    if (
+      !response.ok
+    ) {
+
+      throw new Error(
+        "API error"
+      );
 
     }
 
-
-    // ========================================
-    // 起動
-    // ========================================
-
-    loadData();
-    loadRecentPlays();
+    const data =
+      await response.json();
 
 
-    // リアルタイム欄だけ10秒ごとに更新
-    setInterval(
-      loadRecentPlays,
-      10000
+    showUpdatedTime(
+      data.updated_at
     );
 
 
-    // MVデータも5分ごとに自動再取得
-    setInterval(
-      loadData,
-      300000
+    const sortedVideos =
+      [...data.videos]
+        .sort(
+          (a, b) =>
+            VIDEO_ORDER.indexOf(
+              a.title
+            ) -
+            VIDEO_ORDER.indexOf(
+              b.title
+            )
+        );
+
+
+    createMilestoneAlerts(
+      sortedVideos
     );
 
-  </script>
+
+    cards.innerHTML =
+      sortedVideos
+        .map(
+          createCard
+        )
+        .join("");
+
+
+    drawHistory(
+      data.daily_history ||
+      []
+    );
+
+  } catch (error) {
+
+    console.error(
+      error
+    );
+
+    cards.innerHTML = `
+      <div class="error">
+        データを取得できませんでした。<br>
+        少し時間を置いて再読み込みしてください。
+      </div>
+    `;
+
+  }
+
+}
+
+
+/* ========================================
+   起動
+   ======================================== */
+
+loadData();
+
+loadRecentPlays();
+
+
+/* リアルタイム欄：10秒ごと */
+
+setInterval(
+  loadRecentPlays,
+  10000
+);
+
+
+/* MVデータ：5分ごと */
+
+setInterval(
+  loadData,
+  300000
+);
+
+</script>
 
 </body>
 </html>
