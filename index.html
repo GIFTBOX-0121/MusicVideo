@@ -522,6 +522,175 @@
       margin-left: 4px;
     }
 
+
+    /* ========================================
+       達成予測・ペース表示
+       ======================================== */
+
+    .goal-prediction {
+      position: relative;
+
+      width: 100%;
+      min-height: 29px;
+
+      margin-top: 7px;
+      padding: 6px 9px;
+
+      overflow: hidden;
+
+      border: 1px solid #dddddd;
+      border-radius: 8px;
+
+      background: #f8f8f8;
+
+      text-align: center;
+    }
+
+    .goal-prediction-text {
+      position: relative;
+      z-index: 2;
+
+      font-size: 10.5px;
+      font-weight: 800;
+      line-height: 1.45;
+
+      color: #555;
+
+      white-space: nowrap;
+    }
+
+
+    /* ペースアップ */
+
+    .goal-prediction.pace-up {
+      border-color: rgba(229, 57, 53, 0.78);
+      background: rgba(255, 242, 242, 0.96);
+    }
+
+    .goal-prediction.pace-up
+    .goal-prediction-text {
+      color: #c62828;
+    }
+
+
+    /* ペースダウン */
+
+    .goal-prediction.pace-down {
+      border-color: rgba(30, 105, 210, 0.75);
+      background: rgba(240, 247, 255, 0.97);
+    }
+
+    .goal-prediction.pace-down
+    .goal-prediction-text {
+      color: #1565c0;
+    }
+
+
+    /* ペース維持 */
+
+    .goal-prediction.pace-steady {
+      border-color: rgba(46, 150, 92, 0.78);
+      background: rgba(241, 252, 246, 0.97);
+    }
+
+    .goal-prediction.pace-steady
+    .goal-prediction-text {
+      color: #21864f;
+    }
+
+
+    /* 背景矢印 */
+
+    .pace-arrows {
+      position: absolute;
+      inset: 0;
+      z-index: 1;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      overflow: hidden;
+
+      pointer-events: none;
+
+      opacity: 0.10;
+
+      font-size: 17px;
+      font-weight: 900;
+
+      letter-spacing: 8px;
+
+      white-space: nowrap;
+    }
+
+    .pace-up .pace-arrows {
+      color: #e53935;
+
+      animation:
+        arrowsUp 1.8s linear infinite;
+    }
+
+    .pace-down .pace-arrows {
+      color: #1976d2;
+
+      animation:
+        arrowsDown 1.8s linear infinite;
+    }
+
+    .pace-steady .pace-arrows {
+      color: #2e965c;
+
+      animation:
+        arrowsSteady 1.8s linear infinite;
+    }
+
+
+    @keyframes arrowsUp {
+
+      0% {
+        transform:
+          translateY(10px);
+      }
+
+      100% {
+        transform:
+          translateY(-10px);
+      }
+
+    }
+
+
+    @keyframes arrowsDown {
+
+      0% {
+        transform:
+          translateY(-10px);
+      }
+
+      100% {
+        transform:
+          translateY(10px);
+      }
+
+    }
+
+
+    @keyframes arrowsSteady {
+
+      0% {
+        transform:
+          translateX(-14px);
+      }
+
+      100% {
+        transform:
+          translateX(14px);
+      }
+
+    }
+
+
     .progress {
       width: 100%;
       height: 12px;
@@ -703,6 +872,15 @@
         padding: 5px 4px;
       }
 
+      .goal-prediction {
+        min-height: 27px;
+        padding: 5px 7px;
+      }
+
+      .goal-prediction-text {
+        font-size: 9.5px;
+      }
+
       .chart-wrap {
         height: 350px;
       }
@@ -711,8 +889,12 @@
 
     @media (prefers-reduced-motion: reduce) {
 
-      .falling-star {
+      .falling-star,
+      .pace-arrows {
         animation: none;
+      }
+
+      .falling-star {
         display: none;
       }
     }
@@ -1272,6 +1454,308 @@
     }
 
 
+    // ========================================
+    // 直近6時間ペース
+    //
+    // Workerから：
+    //
+    // pace: {
+    //   recent_6h_views: 数字,
+    //   previous_6h_views: 数字
+    // }
+    //
+    // を受け取る
+    // ========================================
+
+    function getPaceInfo(video) {
+
+      const recent =
+        Number(
+          video.pace?.recent_6h_views
+        );
+
+      const previous =
+        Number(
+          video.pace?.previous_6h_views
+        );
+
+
+      if (
+        !Number.isFinite(recent) ||
+        recent <= 0
+      ) {
+        return null;
+      }
+
+
+      let state =
+        "steady";
+
+
+      if (
+        Number.isFinite(previous) &&
+        previous > 0
+      ) {
+
+        const changeRate =
+          (
+            recent -
+            previous
+          ) /
+          previous;
+
+
+        if (
+          changeRate >= 0.05
+        ) {
+
+          state =
+            "up";
+
+        } else if (
+          changeRate <= -0.05
+        ) {
+
+          state =
+            "down";
+
+        } else {
+
+          state =
+            "steady";
+
+        }
+
+      }
+
+
+      return {
+        recent,
+        previous,
+        state,
+
+        hourlyAverage:
+          recent / 6
+      };
+
+    }
+
+
+    // ========================================
+    // 達成予測
+    // ========================================
+
+    function getPredictionDate(
+      video,
+      goal
+    ) {
+
+      const pace =
+        getPaceInfo(video);
+
+
+      if (
+        !pace ||
+        pace.hourlyAverage <= 0
+      ) {
+        return null;
+      }
+
+
+      const remaining =
+        Math.max(
+          goal -
+          Number(video.views || 0),
+          0
+        );
+
+
+      if (
+        remaining <= 0
+      ) {
+        return null;
+      }
+
+
+      const hoursUntilGoal =
+        remaining /
+        pace.hourlyAverage;
+
+
+      if (
+        !Number.isFinite(
+          hoursUntilGoal
+        ) ||
+        hoursUntilGoal > 8760
+      ) {
+        return null;
+      }
+
+
+      return new Date(
+        Date.now() +
+        hoursUntilGoal *
+        60 *
+        60 *
+        1000
+      );
+
+    }
+
+
+    function formatPredictionDate(date) {
+
+      if (!date) {
+        return "";
+      }
+
+
+      const parts =
+        new Intl.DateTimeFormat(
+          "ja-JP",
+          {
+            timeZone:
+              "Asia/Tokyo",
+
+            month:
+              "numeric",
+
+            day:
+              "numeric",
+
+            hour:
+              "numeric",
+
+            hour12:
+              false
+          }
+        )
+        .formatToParts(date);
+
+
+      const values = {};
+
+
+      parts.forEach(
+        part => {
+
+          if (
+            part.type !==
+            "literal"
+          ) {
+
+            values[
+              part.type
+            ] =
+              part.value;
+
+          }
+
+        }
+      );
+
+
+      return (
+        Number(values.month) +
+        "/" +
+        Number(values.day) +
+        " " +
+        Number(values.hour) +
+        "時"
+      );
+
+    }
+
+
+    function createPrediction(
+      video,
+      goal
+    ) {
+
+      const pace =
+        getPaceInfo(video);
+
+      const prediction =
+        getPredictionDate(
+          video,
+          goal
+        );
+
+
+      if (
+        !pace ||
+        !prediction
+      ) {
+        return "";
+      }
+
+
+      let className =
+        "";
+
+      let arrows =
+        "";
+
+
+      if (
+        pace.state ===
+        "up"
+      ) {
+
+        className =
+          "pace-up";
+
+        arrows =
+          "↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑";
+
+      } else if (
+        pace.state ===
+        "down"
+      ) {
+
+        className =
+          "pace-down";
+
+        arrows =
+          "↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓";
+
+      } else {
+
+        className =
+          "pace-steady";
+
+        arrows =
+          "→ → → → → → → → → →";
+
+      }
+
+
+      return `
+        <div
+          class="
+            goal-prediction
+            ${className}
+          "
+        >
+
+          <div class="pace-arrows">
+            ${arrows}
+          </div>
+
+          <div class="goal-prediction-text">
+            📊達成予測：${formatPredictionDate(prediction)}
+          </div>
+
+        </div>
+      `;
+
+    }
+
+
+    // ========================================
+    // 目標表示
+    // ========================================
+
     function createGoal(video) {
 
       const goal =
@@ -1315,6 +1799,13 @@
             ${nearGoal}
           </div>
 
+
+          ${createPrediction(
+            video,
+            goal
+          )}
+
+
           <div class="progress">
 
             <div
@@ -1323,6 +1814,7 @@
             ></div>
 
           </div>
+
 
           <div class="progress-percent">
             ${percent.toFixed(1)}%
