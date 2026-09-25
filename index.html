@@ -44,7 +44,6 @@
         );
 
       background-attachment: fixed;
-
       color: #111;
 
       font-family:
@@ -160,7 +159,6 @@
       letter-spacing: 1.5px;
 
       color: #fff;
-
       white-space: nowrap;
 
       text-shadow:
@@ -266,6 +264,95 @@
       color: rgba(255, 255, 255, 0.72);
       font-size: 10px;
       line-height: 1.5;
+    }
+
+    /* ========================================
+       RANDOM VIDEO
+       ======================================== */
+
+    .random-video {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 13px;
+
+      width: 100%;
+      margin: 0 0 14px;
+      padding: 8px 12px;
+
+      border: 1px solid rgba(255, 255, 255, 0.25);
+      border-radius: 12px;
+
+      background: rgba(255, 255, 255, 0.08);
+      backdrop-filter: blur(4px);
+      -webkit-backdrop-filter: blur(4px);
+
+      color: #fff;
+    }
+
+    .random-video-title {
+      flex-shrink: 0;
+      font-size: 10px;
+      font-weight: 900;
+      letter-spacing: 1px;
+      white-space: nowrap;
+    }
+
+    .random-stars {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+    }
+
+    .random-star {
+      appearance: none;
+      -webkit-appearance: none;
+
+      display: flex;
+      align-items: center;
+      justify-content: center;
+
+      width: 27px;
+      height: 27px;
+      padding: 0;
+
+      border: 0;
+      background: transparent;
+
+      color: #ffe26b;
+
+      font-family:
+        Georgia,
+        "Times New Roman",
+        serif;
+
+      font-size: 27px;
+      line-height: 1;
+
+      cursor: pointer;
+
+      text-shadow:
+        0 0 5px rgba(255, 226, 105, 0.65),
+        0 0 10px rgba(255, 202, 40, 0.38);
+
+      transition:
+        transform .15s ease,
+        filter .15s ease;
+    }
+
+    .random-star:hover {
+      transform: scale(1.18);
+      filter: brightness(1.25);
+    }
+
+    .random-star:active {
+      transform: scale(0.88);
+    }
+
+    .random-star:disabled {
+      opacity: 0.45;
+      cursor: wait;
     }
 
     /* ========================================
@@ -635,6 +722,26 @@
         font-size: 9px;
       }
 
+      .random-video {
+        gap: 8px;
+        padding: 7px 8px;
+      }
+
+      .random-video-title {
+        font-size: 9px;
+        letter-spacing: 0.6px;
+      }
+
+      .random-stars {
+        gap: 5px;
+      }
+
+      .random-star {
+        width: 24px;
+        height: 24px;
+        font-size: 24px;
+      }
+
       .card {
         padding: 14px;
       }
@@ -738,6 +845,64 @@
       ※各楽曲の達成予測は、直近6時間の平均再生ペースをもとに算出しています※
     </div>
 
+    <!-- =====================================
+         RANDOM VIDEO
+         ===================================== -->
+
+    <div class="random-video">
+
+      <div class="random-video-title">
+        RANDOM VIDEO
+      </div>
+
+      <div class="random-stars">
+
+        <button
+          class="random-star"
+          type="button"
+          aria-label="ランダム動画を再生"
+          onclick="openRandomVideo(this)"
+        >★</button>
+
+        <button
+          class="random-star"
+          type="button"
+          aria-label="ランダム動画を再生"
+          onclick="openRandomVideo(this)"
+        >★</button>
+
+        <button
+          class="random-star"
+          type="button"
+          aria-label="ランダム動画を再生"
+          onclick="openRandomVideo(this)"
+        >★</button>
+
+        <button
+          class="random-star"
+          type="button"
+          aria-label="ランダム動画を再生"
+          onclick="openRandomVideo(this)"
+        >★</button>
+
+        <button
+          class="random-star"
+          type="button"
+          aria-label="ランダム動画を再生"
+          onclick="openRandomVideo(this)"
+        >★</button>
+
+        <button
+          class="random-star"
+          type="button"
+          aria-label="ランダム動画を再生"
+          onclick="openRandomVideo(this)"
+        >★</button>
+
+      </div>
+
+    </div>
+
     <div
       id="cards"
       class="cards"
@@ -773,6 +938,10 @@ const API_URL =
   "https://musicvideo-views.starsx0601.workers.dev";
 
 
+/*
+  ★ここは現在の並び順をそのまま維持
+*/
+
 const VIDEO_ORDER = [
   "WISHES",
   "StarWish",
@@ -786,6 +955,131 @@ const VIDEO_ORDER = [
 
 
 let historyChart = null;
+
+
+/* ========================================
+   RANDOM VIDEO
+
+   Workerの /random から
+   STARGLOW公式動画を1本取得
+
+   RANDOM VIDEOは
+   /playには送らないので
+   リアルタイム再生履歴には入らない
+   ======================================== */
+
+async function openRandomVideo(button) {
+
+  /*
+    Safari / iPhoneの
+    ポップアップブロック対策。
+
+    ユーザーが星を押した瞬間に
+    先に空タブを作っておく。
+  */
+
+  const newWindow =
+    window.open(
+      "about:blank",
+      "_blank"
+    );
+
+
+  const buttons =
+    document.querySelectorAll(
+      ".random-star"
+    );
+
+
+  buttons.forEach(
+    item => {
+      item.disabled = true;
+    }
+  );
+
+
+  try {
+
+    const response =
+      await fetch(
+        API_URL +
+        "/random?t=" +
+        Date.now(),
+        {
+          cache: "no-store"
+        }
+      );
+
+
+    if (!response.ok) {
+
+      throw new Error(
+        "random video error"
+      );
+
+    }
+
+
+    const data =
+      await response.json();
+
+
+    if (!data.url) {
+
+      throw new Error(
+        "random video URL not found"
+      );
+
+    }
+
+
+    if (newWindow) {
+
+      newWindow.location.href =
+        data.url;
+
+    } else {
+
+      /*
+        万一ブラウザ側で
+        新規タブが拒否された場合
+      */
+
+      window.location.href =
+        data.url;
+
+    }
+
+
+  } catch (error) {
+
+    console.error(
+      "Random video:",
+      error
+    );
+
+
+    if (newWindow) {
+      newWindow.close();
+    }
+
+
+    alert(
+      "動画を取得できませんでした。もう一度お試しください。"
+    );
+
+
+  } finally {
+
+    buttons.forEach(
+      item => {
+        item.disabled = false;
+      }
+    );
+
+  }
+
+}
 
 
 /* ========================================
@@ -1291,22 +1585,12 @@ function getPaceData(
   goal
 ) {
 
-  /*
-    Workerが返す
-    直近6時間の平均再生ペース
-  */
-
   const sixHourAverage =
     Number(
       video.six_hour_pace
         ?.views_per_hour
     );
 
-
-  /*
-    6時間データが取れない場合も
-    枠そのものは消さない
-  */
 
   if (
     !Number.isFinite(
@@ -1342,11 +1626,6 @@ function getPaceData(
     );
 
 
-  /*
-    残り再生数 ÷
-    直近6時間の1時間平均
-  */
-
   const hoursNeeded =
     remaining /
     sixHourAverage;
@@ -1362,26 +1641,12 @@ function getPaceData(
     );
 
 
-  /*
-    ↑ → ↓ 判定用
-
-    直近6時間平均と
-    前日24時間平均を比較
-  */
-
   const previousDayViews =
     Number(
       video.previous_day_total
         ?.views
     );
 
-
-  /*
-    前日の比較データがない場合。
-
-    達成予測自体は出せるので
-    維持表示にして予測は残す。
-  */
 
   if (
     !Number.isFinite(
@@ -1418,10 +1683,6 @@ function getPaceData(
     baselineHourly;
 
 
-  /*
-    +5%より速い
-  */
-
   if (
     changeRate > 0.05
   ) {
@@ -1442,10 +1703,6 @@ function getPaceData(
   }
 
 
-  /*
-    -5%より遅い
-  */
-
   if (
     changeRate < -0.05
   ) {
@@ -1465,10 +1722,6 @@ function getPaceData(
 
   }
 
-
-  /*
-    ±5%以内
-  */
 
   return {
     type:
