@@ -94,7 +94,6 @@
         transform:
           translate3d(0, -40px, 0)
           rotate(0deg);
-
         opacity: 0;
       }
 
@@ -110,7 +109,6 @@
         transform:
           translate3d(35px, 110vh, 0)
           rotate(180deg);
-
         opacity: 0;
       }
     }
@@ -169,7 +167,6 @@
       letter-spacing: 1.5px;
 
       color: #fff;
-
       white-space: nowrap;
 
       text-shadow:
@@ -306,9 +303,9 @@
        ======================================== */
 
     .prediction-note {
-      margin: -7px 4px 16px;
+      margin: 5px 4px 17px;
 
-      color: rgba(255, 255, 255, 0.68);
+      color: rgba(255, 255, 255, 0.70);
 
       text-align: center;
 
@@ -541,7 +538,7 @@
 
 
     /* ========================================
-       達成予測・ペース
+       達成予測
        ======================================== */
 
     .pace-box {
@@ -601,14 +598,11 @@
     }
 
 
-    /* ペースアップ */
+    /* アップ */
 
     .pace-box.pace-up {
       border-color: #e53935;
-
-      background:
-        rgba(255, 238, 238, 0.96);
-
+      background: rgba(255, 238, 238, 0.97);
       color: #c62828;
     }
 
@@ -627,25 +621,20 @@
 
     @keyframes paceArrowUp {
       0% {
-        transform:
-          translateY(16px);
+        transform: translateY(16px);
       }
 
       100% {
-        transform:
-          translateY(-28px);
+        transform: translateY(-28px);
       }
     }
 
 
-    /* ペース維持 */
+    /* 維持 */
 
     .pace-box.pace-steady {
       border-color: #2e9d57;
-
-      background:
-        rgba(238, 250, 241, 0.97);
-
+      background: rgba(238, 250, 241, 0.97);
       color: #217a42;
     }
 
@@ -655,8 +644,7 @@
 
       color: #2e9d57;
 
-      transform:
-        translateY(-50%);
+      transform: translateY(-50%);
 
       animation:
         paceArrowRight 3s linear infinite;
@@ -675,14 +663,11 @@
     }
 
 
-    /* ペースダウン */
+    /* ダウン */
 
     .pace-box.pace-down {
       border-color: #3284d6;
-
-      background:
-        rgba(237, 246, 255, 0.97);
-
+      background: rgba(237, 246, 255, 0.97);
       color: #2168ad;
     }
 
@@ -701,14 +686,25 @@
 
     @keyframes paceArrowDown {
       0% {
-        transform:
-          translateY(-15px);
+        transform: translateY(-15px);
       }
 
       100% {
-        transform:
-          translateY(28px);
+        transform: translateY(28px);
       }
+    }
+
+
+    /* 算出中 */
+
+    .pace-box.pace-calculating {
+      border-color: #9e9e9e;
+      background: rgba(248, 248, 248, 0.97);
+      color: #666;
+    }
+
+    .pace-calculating .pace-arrow-bg {
+      display: none;
     }
 
 
@@ -784,7 +780,7 @@
 
 
     /* ========================================
-       非公式ファンサイト表記
+       その他
        ======================================== */
 
     .footer {
@@ -903,9 +899,7 @@
 
       .pace-box {
         width: 98%;
-
-        padding:
-          6px 7px;
+        padding: 6px 7px;
       }
 
       .pace-status {
@@ -992,7 +986,7 @@
 
 
       <div class="prediction-note">
-        ※各楽曲の達成予測は、直近6時間の再生ペースをもとに算出中※
+        ※各楽曲の達成予測は、直近の再生ペースをもとに算出しています※
       </div>
 
 
@@ -1054,7 +1048,7 @@
 
 
     // ========================================
-    // 🌟 星を降らせる
+    // 星
     // ========================================
 
     const starBackground =
@@ -1185,7 +1179,7 @@
 
 
     // ========================================
-    // 日付表示
+    // 日付
     // ========================================
 
     function formatShortDate(dateString) {
@@ -1211,7 +1205,7 @@
 
 
     // ========================================
-    // リアルタイム再生履歴
+    // リアルタイム履歴
     // ========================================
 
     function formatPlayTime(iso) {
@@ -1344,7 +1338,7 @@
 
 
     // ========================================
-    // トータル表示
+    // トータル
     // ========================================
 
     function createTodayViewsBox(video) {
@@ -1392,7 +1386,7 @@
 
 
     // ========================================
-    // 前日の実績表示
+    // 前日実績
     // ========================================
 
     function createPreviousViewsBox(video) {
@@ -1503,23 +1497,15 @@
       return new Intl.DateTimeFormat(
         "ja-JP",
         {
-          timeZone:
-            "Asia/Tokyo",
+          timeZone: "Asia/Tokyo",
 
-          month:
-            "numeric",
+          month: "numeric",
+          day: "numeric",
 
-          day:
-            "numeric",
+          hour: "2-digit",
+          minute: "2-digit",
 
-          hour:
-            "2-digit",
-
-          minute:
-            "2-digit",
-
-          hour12:
-            false
+          hour12: false
         }
       ).format(date);
 
@@ -1531,58 +1517,44 @@
       goal
     ) {
 
-      const recentRaw =
-        video.pace
-          ?.recent_6h_views;
-
-      const previousRaw =
-        video.pace
-          ?.previous_6h_views;
+      const currentHourly =
+        Number(
+          video.hourly_change?.views
+        );
 
 
-      if (
-        recentRaw === null ||
-        recentRaw === undefined
-      ) {
-        return null;
-      }
-
-
-      const recent =
-        Number(recentRaw);
-
+      /*
+        表示は絶対に消さない。
+        1時間比がまだ無い・0以下の場合は
+        「算出中」にする。
+      */
 
       if (
-        !Number.isFinite(recent) ||
-        recent <= 0
+        !Number.isFinite(currentHourly) ||
+        currentHourly <= 0
       ) {
-        return null;
+
+        return {
+          type: "calculating",
+          label: "ペース算出中",
+          arrows: "",
+          prediction: null
+        };
+
       }
 
 
       const remaining =
         Math.max(
           goal -
-          Number(video.views),
+          Number(video.views || 0),
           0
         );
 
 
-      const perHour =
-        recent / 6;
-
-
-      if (
-        !Number.isFinite(perHour) ||
-        perHour <= 0
-      ) {
-        return null;
-      }
-
-
       const hoursNeeded =
         remaining /
-        perHour;
+        currentHourly;
 
 
       const prediction =
@@ -1595,75 +1567,72 @@
         );
 
 
-      let type =
-        "steady";
+      /*
+        前日の総再生数 ÷ 24 を
+        比較用の基準ペースにする
+      */
 
-      let label =
-        "ペース維持中";
-
-      let arrows =
-        "→ → → → →";
+      const previousDayViews =
+        Number(
+          video.previous_day_total?.views
+        );
 
 
       if (
-        previousRaw !== null &&
-        previousRaw !== undefined
+        !Number.isFinite(previousDayViews) ||
+        previousDayViews <= 0
       ) {
 
-        const previous =
-          Number(previousRaw);
+        return {
+          type: "steady",
+          label: "ペース維持中",
+          arrows: "→ → → → →",
+          prediction
+        };
+
+      }
 
 
-        if (
-          Number.isFinite(previous) &&
-          previous > 0
-        ) {
-
-          const changeRate =
-            (
-              recent -
-              previous
-            ) /
-            previous;
+      const baselineHourly =
+        previousDayViews / 24;
 
 
-          if (
-            changeRate > 0.05
-          ) {
+      const changeRate =
+        (
+          currentHourly -
+          baselineHourly
+        ) /
+        baselineHourly;
 
-            type =
-              "up";
 
-            label =
-              "ペースアップ中";
+      if (changeRate > 0.05) {
 
-            arrows =
-              "↑ ↑ ↑ ↑ ↑";
+        return {
+          type: "up",
+          label: "ペースアップ中",
+          arrows: "↑ ↑ ↑ ↑ ↑",
+          prediction
+        };
 
-          } else if (
-            changeRate < -0.05
-          ) {
+      }
 
-            type =
-              "down";
 
-            label =
-              "ペースダウン中";
+      if (changeRate < -0.05) {
 
-            arrows =
-              "↓ ↓ ↓ ↓ ↓";
-
-          }
-
-        }
+        return {
+          type: "down",
+          label: "ペースダウン中",
+          arrows: "↓ ↓ ↓ ↓ ↓",
+          prediction
+        };
 
       }
 
 
       return {
-        type,
-        label,
-        arrows,
+        type: "steady",
+        label: "ペース維持中",
+        arrows: "→ → → → →",
         prediction
       };
 
@@ -1682,9 +1651,12 @@
         );
 
 
-      if (!pace) {
-        return "";
-      }
+      const predictionText =
+        pace.prediction
+          ? formatPredictionDate(
+              pace.prediction
+            )
+          : "算出中";
 
 
       return `
@@ -1704,9 +1676,7 @@
             </span>
 
             <span class="pace-prediction">
-              📊達成予測：${formatPredictionDate(
-                pace.prediction
-              )}
+              📊達成予測：${predictionText}
             </span>
 
           </div>
@@ -1760,10 +1730,12 @@
             ${nearGoal}
           </div>
 
+
           ${createPaceForecast(
             video,
             goal
           )}
+
 
           <div class="progress">
 
@@ -1810,7 +1782,7 @@
 
 
     // ========================================
-    // キリ番80%以上のお知らせ
+    // キリ番80%以上
     // ========================================
 
     function createMilestoneAlerts(videos) {
@@ -1853,6 +1825,8 @@
                 <a
                   class="milestone-play"
                   href="${getYouTubeUrl(video.id)}"
+                  target="_blank"
+                  rel="noopener noreferrer"
                   onclick="handlePlayClick(event, '${video.id}')"
                 >
                   MV再生 ▶
@@ -2044,6 +2018,7 @@
             </div>
 
           </div>
+
 
           ${createGoal(video)}
 
@@ -2355,6 +2330,13 @@
     setInterval(
       loadRecentPlays,
       10000
+    );
+
+
+    // MVデータも5分ごとに自動再取得
+    setInterval(
+      loadData,
+      300000
     );
 
   </script>
