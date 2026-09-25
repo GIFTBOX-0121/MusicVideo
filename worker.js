@@ -32,6 +32,7 @@ const TRACKING_START_DATE =
 // ========================================
 
 function getJstDate(date = new Date()) {
+
   return new Intl.DateTimeFormat(
     "en-CA",
     {
@@ -41,6 +42,74 @@ function getJstDate(date = new Date()) {
       day: "2-digit"
     }
   ).format(date);
+
+}
+
+
+// ========================================
+// 現在のJST「○時00分」を
+// UTC ISOへ変換
+//
+// 例：
+// JST 2026/09/26 00:18
+// ↓
+// 2026-09-25T15:00:00.000Z
+// ========================================
+
+function getJstHourStartIso(
+  date = new Date()
+) {
+
+  const parts =
+    new Intl.DateTimeFormat(
+      "en-CA",
+      {
+        timeZone:
+          "Asia/Tokyo",
+
+        year:
+          "numeric",
+
+        month:
+          "2-digit",
+
+        day:
+          "2-digit",
+
+        hour:
+          "2-digit",
+
+        hourCycle:
+          "h23"
+      }
+    ).formatToParts(date);
+
+
+  const get =
+    type =>
+      parts.find(
+        part =>
+          part.type === type
+      )?.value || "";
+
+
+  const year =
+    get("year");
+
+  const month =
+    get("month");
+
+  const day =
+    get("day");
+
+  const hour =
+    get("hour");
+
+
+  return new Date(
+    `${year}-${month}-${day}T${hour}:00:00+09:00`
+  ).toISOString();
+
 }
 
 
@@ -49,7 +118,9 @@ function getJstDate(date = new Date()) {
 // ========================================
 
 function getCorsHeaders() {
+
   return {
+
     "content-type":
       "application/json; charset=UTF-8",
 
@@ -64,7 +135,9 @@ function getCorsHeaders() {
 
     "cache-control":
       "no-store"
+
   };
+
 }
 
 
@@ -76,7 +149,10 @@ async function getYouTubeStats(env) {
 
   const ids =
     VIDEOS
-      .map(v => v.id)
+      .map(
+        video =>
+          video.id
+      )
       .join(",");
 
 
@@ -112,25 +188,27 @@ async function getYouTubeStats(env) {
     Object.fromEntries(
 
       (result.items || [])
-        .map(item => [
+        .map(
+          item => [
 
-          item.id,
+            item.id,
 
-          {
-            views:
-              Number(
-                item.statistics
-                  ?.viewCount ?? 0
-              ),
+            {
+              views:
+                Number(
+                  item.statistics
+                    ?.viewCount ?? 0
+                ),
 
-            likes:
-              Number(
-                item.statistics
-                  ?.likeCount ?? 0
-              )
-          }
+              likes:
+                Number(
+                  item.statistics
+                    ?.likeCount ?? 0
+                )
+            }
 
-        ])
+          ]
+        )
 
     );
 
@@ -154,6 +232,7 @@ async function getYouTubeStats(env) {
 
     })
   );
+
 }
 
 
@@ -189,6 +268,7 @@ async function getTrendingRanks(env) {
       );
 
       return {};
+
     }
 
 
@@ -221,7 +301,9 @@ async function getTrendingRanks(env) {
     );
 
     return {};
+
   }
+
 }
 
 
@@ -285,6 +367,7 @@ async function getStarglowUploadsPlaylistId(
 
 
   return playlistId;
+
 }
 
 
@@ -390,6 +473,7 @@ async function getStarglowVideos(env) {
 
 
   return videos;
+
 }
 
 
@@ -425,7 +509,9 @@ async function getRandomStarglowVideo(
 
 
   const videoId =
-    videos[randomIndex];
+    videos[
+      randomIndex
+    ];
 
 
   return {
@@ -438,11 +524,13 @@ async function getRandomStarglowVideo(
       videoId
 
   };
+
 }
 
 
 // ========================================
-// 10分ごとの現在値をvideo_statsへ保存
+// 10分ごとの現在値を
+// video_statsへ保存
 // ========================================
 
 async function saveStats(
@@ -451,7 +539,8 @@ async function saveStats(
 ) {
 
   const recordedAt =
-    new Date().toISOString();
+    new Date()
+      .toISOString();
 
 
   const statements =
@@ -470,13 +559,13 @@ async function saveStats(
 
           VALUES (?, ?, ?, ?, ?)
         `)
-        .bind(
-          video.id,
-          video.title,
-          video.views,
-          video.likes,
-          recordedAt
-        )
+          .bind(
+            video.id,
+            video.title,
+            video.views,
+            video.likes,
+            recordedAt
+          )
 
     );
 
@@ -484,11 +573,21 @@ async function saveStats(
   await env.DB.batch(
     statements
   );
+
 }
 
 
 // ========================================
-// 約1時間前の記録
+// ★ 現在の時計1時間枠の開始値
+//
+// 例：
+// 00:18 → 00:00時点
+// 01:37 → 01:00時点
+// 14:52 → 14:00時点
+//
+// 10分Cronなので、○:00ちょうどの
+// 記録がない場合は、前後の記録から
+// ○:00時点の値を補間する。
 // ========================================
 
 async function getHourlyBase(
@@ -496,33 +595,306 @@ async function getHourlyBase(
   videoId
 ) {
 
-  const oneHourAgo =
+  const hourStartIso =
+    getJstHourStartIso();
+
+
+  const hourStartMs =
     new Date(
-      Date.now() -
-      60 * 60 * 1000
-    ).toISOString();
+      hourStartIso
+    ).getTime();
 
 
-  return await env.DB.prepare(`
-    SELECT
-      views,
-      likes,
-      recorded_at
+  // ------------------------------
+  // ○:00以前の最後の記録
+  // ------------------------------
 
-    FROM video_stats
+  const before =
+    await env.DB.prepare(`
+      SELECT
+        views,
+        likes,
+        recorded_at
 
-    WHERE video_id = ?
-      AND recorded_at <= ?
+      FROM video_stats
 
-    ORDER BY recorded_at DESC
+      WHERE video_id = ?
+        AND recorded_at <= ?
 
-    LIMIT 1
-  `)
-    .bind(
-      videoId,
-      oneHourAgo
-    )
-    .first();
+      ORDER BY
+        recorded_at DESC
+
+      LIMIT 1
+    `)
+      .bind(
+        videoId,
+        hourStartIso
+      )
+      .first();
+
+
+  // ------------------------------
+  // ○:00以降の最初の記録
+  // ------------------------------
+
+  const after =
+    await env.DB.prepare(`
+      SELECT
+        views,
+        likes,
+        recorded_at
+
+      FROM video_stats
+
+      WHERE video_id = ?
+        AND recorded_at >= ?
+
+      ORDER BY
+        recorded_at ASC
+
+      LIMIT 1
+    `)
+      .bind(
+        videoId,
+        hourStartIso
+      )
+      .first();
+
+
+  // ======================================
+  // 前後両方ある場合
+  // → ○:00時点を線形補間
+  // ======================================
+
+  if (
+    before &&
+    after
+  ) {
+
+    const beforeMs =
+      new Date(
+        before.recorded_at
+      ).getTime();
+
+
+    const afterMs =
+      new Date(
+        after.recorded_at
+      ).getTime();
+
+
+    // ○:00ちょうどの記録がある場合
+
+    if (
+      beforeMs ===
+      afterMs
+    ) {
+
+      return {
+
+        views:
+          Number(
+            before.views
+          ),
+
+        likes:
+          Number(
+            before.likes
+          ),
+
+        recorded_at:
+          hourStartIso
+
+      };
+
+    }
+
+
+    const span =
+      afterMs -
+      beforeMs;
+
+
+    /*
+      Cronが大きく欠損している場合に
+      何時間も前のデータを使わない。
+
+      前後30分以内の範囲だけ補間する。
+    */
+
+    if (
+      span > 0 &&
+      span <=
+        30 * 60 * 1000 &&
+      beforeMs <=
+        hourStartMs &&
+      afterMs >=
+        hourStartMs
+    ) {
+
+      const ratio =
+        (
+          hourStartMs -
+          beforeMs
+        ) /
+        span;
+
+
+      const estimatedViews =
+        Number(
+          before.views
+        ) +
+        (
+          Number(
+            after.views
+          ) -
+          Number(
+            before.views
+          )
+        ) *
+        ratio;
+
+
+      const estimatedLikes =
+        Number(
+          before.likes
+        ) +
+        (
+          Number(
+            after.likes
+          ) -
+          Number(
+            before.likes
+          )
+        ) *
+        ratio;
+
+
+      return {
+
+        views:
+          Math.round(
+            estimatedViews
+          ),
+
+        likes:
+          Math.round(
+            estimatedLikes
+          ),
+
+        recorded_at:
+          hourStartIso
+
+      };
+
+    }
+
+  }
+
+
+  // ======================================
+  // 前側しかない場合
+  //
+  // ○:00から20分以内なら採用
+  // ======================================
+
+  if (before) {
+
+    const beforeMs =
+      new Date(
+        before.recorded_at
+      ).getTime();
+
+
+    const gap =
+      hourStartMs -
+      beforeMs;
+
+
+    if (
+      gap >= 0 &&
+      gap <=
+        20 * 60 * 1000
+    ) {
+
+      return {
+
+        views:
+          Number(
+            before.views
+          ),
+
+        likes:
+          Number(
+            before.likes
+          ),
+
+        recorded_at:
+          before.recorded_at
+
+      };
+
+    }
+
+  }
+
+
+  // ======================================
+  // 後側しかない場合
+  //
+  // ○:00から20分以内なら採用
+  // ======================================
+
+  if (after) {
+
+    const afterMs =
+      new Date(
+        after.recorded_at
+      ).getTime();
+
+
+    const gap =
+      afterMs -
+      hourStartMs;
+
+
+    if (
+      gap >= 0 &&
+      gap <=
+        20 * 60 * 1000
+    ) {
+
+      return {
+
+        views:
+          Number(
+            after.views
+          ),
+
+        likes:
+          Number(
+            after.likes
+          ),
+
+        recorded_at:
+          after.recorded_at
+
+      };
+
+    }
+
+  }
+
+
+  /*
+    ○:00付近に信頼できる記録がない場合。
+
+    以前のように何時間も前の値を
+    使うのではなく null にする。
+  */
+
+  return null;
+
 }
 
 
@@ -553,7 +925,8 @@ async function getSixHourBase(
     WHERE video_id = ?
       AND recorded_at <= ?
 
-    ORDER BY recorded_at DESC
+    ORDER BY
+      recorded_at DESC
 
     LIMIT 1
   `)
@@ -562,6 +935,7 @@ async function getSixHourBase(
       sixHoursAgo
     )
     .first();
+
 }
 
 
@@ -593,7 +967,8 @@ async function getTodayFirstRecord(
         '+9 hours'
       ) = ?
 
-    ORDER BY recorded_at ASC
+    ORDER BY
+      recorded_at ASC
 
     LIMIT 1
   `)
@@ -602,6 +977,7 @@ async function getTodayFirstRecord(
       today
     )
     .first();
+
 }
 
 
@@ -634,7 +1010,8 @@ async function getPreviousDailyStat(
       AND jst_date >= ?
       AND jst_date < ?
 
-    ORDER BY jst_date DESC
+    ORDER BY
+      jst_date DESC
 
     LIMIT 1
   `)
@@ -644,6 +1021,7 @@ async function getPreviousDailyStat(
       today
     )
     .first();
+
 }
 
 
@@ -685,6 +1063,7 @@ async function getDailyHistory(
   return (
     result.results || []
   );
+
 }
 
 
@@ -714,7 +1093,8 @@ async function savePlayClick(
 
 
   const clickedAt =
-    new Date().toISOString();
+    new Date()
+      .toISOString();
 
 
   await env.DB.prepare(`
@@ -747,6 +1127,7 @@ async function savePlayClick(
       clickedAt
 
   };
+
 }
 
 
@@ -780,6 +1161,7 @@ async function getRecentPlayClicks(
   return (
     result.results || []
   );
+
 }
 
 
@@ -1011,6 +1393,7 @@ async function finalizePastDays(
   await env.DB.batch(
     statements
   );
+
 }
 
 
@@ -1059,14 +1442,6 @@ export default {
 
     // ======================================
     // RANDOM VIDEO
-    //
-    // GET /random
-    //
-    // STARGLOW公式チャンネルの
-    // 公開動画からランダムで1本
-    //
-    // DB保存なし
-    // 再生履歴にも記録しない
     // ======================================
 
     if (
@@ -1126,13 +1501,13 @@ export default {
 
     // ======================================
     // 再生クリック記録
-    //
-    // POST /play
     // ======================================
 
     if (
-      url.pathname === "/play" &&
-      request.method === "POST"
+      url.pathname ===
+        "/play" &&
+      request.method ===
+        "POST"
     ) {
 
       try {
@@ -1219,8 +1594,6 @@ export default {
 
     // ======================================
     // 最新の再生クリック6件
-    //
-    // GET /recent-plays
     // ======================================
 
     if (
@@ -1312,7 +1685,14 @@ export default {
       ) {
 
         // ------------------------------
-        // 1時間比
+        // ★ 1時間比
+        //
+        // 直近60分ではなく
+        // JSTの現在の時計1時間枠
+        //
+        // 例：
+        // 00:18 → 00:00〜現在
+        // 15:42 → 15:00〜現在
         // ------------------------------
 
         const hourlyBase =
@@ -1415,6 +1795,7 @@ export default {
               base_recorded_at:
                 sixHourBase
                   .recorded_at
+
             };
 
           }
@@ -1646,30 +2027,17 @@ export default {
 
       (async () => {
 
-        // ------------------------------
-        // YouTube現在値取得
-        // ------------------------------
-
         const videos =
           await getYouTubeStats(
             env
           );
 
 
-        // ------------------------------
-        // 10分履歴へ保存
-        // ------------------------------
-
         await saveStats(
           env,
           videos
         );
 
-
-        // ------------------------------
-        // 終了済みの日を
-        // daily_statsへ確定
-        // ------------------------------
 
         await finalizePastDays(
           env
