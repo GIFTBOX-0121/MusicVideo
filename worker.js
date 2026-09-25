@@ -1,10 +1,12 @@
 const VIDEOS = [
   { title: "WISHES", id: "3gsVVVndUKM" },
+  { title: "Moonchaser", id: "FTXk6epFQdM" },
   { title: "StarWish", id: "-Fhuw0VzelM" },
   { title: "USOTSUKI", id: "Nk3b5KnL4hg" },
   { title: "Drivin' My Life", id: "zbSQaKFjyXI" },
   { title: "Green Light", id: "FKtMzDOV08M" },
-  { title: "Good Boys Anthem", id: "jK_uGTE66oo" }
+  { title: "Good Boys Anthem", id: "jK_uGTE66oo" },
+  { title: "GOTH", id: "-PZ1eaqqb04" }
 ];
 
 
@@ -242,7 +244,7 @@ async function getHourlyBase(
 
 
 // ========================================
-// ★ 約6時間前の記録
+// 約6時間前の記録
 //
 // 6時間前以前で一番新しい記録を取得
 // ========================================
@@ -284,10 +286,6 @@ async function getSixHourBase(
 
 // ========================================
 // 今日の最初の記録
-//
-// 今日0:00以降の最初の保存値
-// → 現在値との差で
-// 「今日のトータル」を出す
 // ========================================
 
 async function getTodayFirstRecord(
@@ -861,7 +859,7 @@ export default {
 
 
     // ======================================
-    // ここから既存の統計API
+    // 統計API
     // ======================================
 
     try {
@@ -906,7 +904,7 @@ export default {
 
 
         // ------------------------------
-        // ★ 6時間ペース
+        // 6時間ペース
         // ------------------------------
 
         const sixHourBase =
@@ -1083,7 +1081,6 @@ export default {
           hourly_change:
             hourlyChange,
 
-          // ★ 復活
           six_hour_pace:
             sixHourPace,
 
@@ -1168,16 +1165,19 @@ export default {
     ctx.waitUntil(
       (async () => {
 
+        // YouTube現在値取得
         const videos =
           await getYouTubeStats(env);
 
 
+        // 10分履歴へ保存
         await saveStats(
           env,
           videos
         );
 
 
+        // 終了済みの日をdaily_statsへ確定
         await finalizePastDays(env);
 
       })()
