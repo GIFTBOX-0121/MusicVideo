@@ -302,6 +302,23 @@
 
 
     /* ========================================
+       達成予測についての注釈
+       ======================================== */
+
+    .prediction-note {
+      margin: -7px 4px 16px;
+
+      color: rgba(255, 255, 255, 0.68);
+
+      text-align: center;
+
+      font-size: 9.5px;
+      font-weight: 500;
+      line-height: 1.5;
+    }
+
+
+    /* ========================================
        MVカード
        ======================================== */
 
@@ -524,157 +541,180 @@
 
 
     /* ========================================
-       達成予測・ペース表示
+       達成予測・ペース
        ======================================== */
 
-    .goal-prediction {
+    .pace-box {
       position: relative;
 
-      width: 100%;
-      min-height: 29px;
+      width: min(94%, 430px);
 
-      margin-top: 7px;
-      padding: 6px 9px;
+      margin: 9px auto 0;
+      padding: 7px 10px;
 
       overflow: hidden;
 
-      border: 1px solid #dddddd;
-      border-radius: 8px;
-
-      background: #f8f8f8;
-
-      text-align: center;
+      border: 1.5px solid;
+      border-radius: 9px;
     }
 
-    .goal-prediction-text {
+    .pace-content {
       position: relative;
       z-index: 2;
 
-      font-size: 10.5px;
-      font-weight: 800;
-      line-height: 1.45;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-wrap: wrap;
 
-      color: #555;
+      gap: 3px 8px;
+    }
+
+    .pace-status {
+      font-size: 10px;
+      font-weight: 900;
 
       white-space: nowrap;
+    }
+
+    .pace-prediction {
+      font-size: 9px;
+      font-weight: 700;
+
+      white-space: nowrap;
+    }
+
+    .pace-arrow-bg {
+      position: absolute;
+      z-index: 1;
+
+      pointer-events: none;
+      user-select: none;
+
+      font-size: 22px;
+      font-weight: 900;
+      letter-spacing: 5px;
+
+      white-space: nowrap;
+
+      opacity: 0.10;
     }
 
 
     /* ペースアップ */
 
-    .goal-prediction.pace-up {
-      border-color: rgba(229, 57, 53, 0.78);
-      background: rgba(255, 242, 242, 0.96);
-    }
+    .pace-box.pace-up {
+      border-color: #e53935;
 
-    .goal-prediction.pace-up .goal-prediction-text {
+      background:
+        rgba(255, 238, 238, 0.96);
+
       color: #c62828;
     }
 
+    .pace-up .pace-arrow-bg {
+      left: 0;
+      right: 0;
+      bottom: -18px;
 
-    /* ペースダウン */
+      text-align: center;
 
-    .goal-prediction.pace-down {
-      border-color: rgba(30, 105, 210, 0.75);
-      background: rgba(240, 247, 255, 0.97);
+      color: #e53935;
+
+      animation:
+        paceArrowUp 2.3s linear infinite;
     }
 
-    .goal-prediction.pace-down .goal-prediction-text {
-      color: #1565c0;
+    @keyframes paceArrowUp {
+      0% {
+        transform:
+          translateY(16px);
+      }
+
+      100% {
+        transform:
+          translateY(-28px);
+      }
     }
 
 
     /* ペース維持 */
 
-    .goal-prediction.pace-steady {
-      border-color: rgba(46, 150, 92, 0.78);
-      background: rgba(241, 252, 246, 0.97);
+    .pace-box.pace-steady {
+      border-color: #2e9d57;
+
+      background:
+        rgba(238, 250, 241, 0.97);
+
+      color: #217a42;
     }
 
-    .goal-prediction.pace-steady .goal-prediction-text {
-      color: #21864f;
-    }
+    .pace-steady .pace-arrow-bg {
+      top: 50%;
+      left: -50px;
 
+      color: #2e9d57;
 
-    /* 背景矢印 */
-
-    .pace-arrows {
-      position: absolute;
-      inset: 0;
-      z-index: 1;
-
-      display: flex;
-      align-items: center;
-      justify-content: center;
-
-      overflow: hidden;
-
-      pointer-events: none;
-
-      opacity: 0.10;
-
-      font-size: 17px;
-      font-weight: 900;
-
-      letter-spacing: 8px;
-
-      white-space: nowrap;
-    }
-
-    .pace-up .pace-arrows {
-      color: #e53935;
+      transform:
+        translateY(-50%);
 
       animation:
-        arrowsUp 1.8s linear infinite;
+        paceArrowRight 3s linear infinite;
     }
 
-    .pace-down .pace-arrows {
-      color: #1976d2;
-
-      animation:
-        arrowsDown 1.8s linear infinite;
-    }
-
-    .pace-steady .pace-arrows {
-      color: #2e965c;
-
-      animation:
-        arrowsSteady 1.8s linear infinite;
-    }
-
-
-    @keyframes arrowsUp {
+    @keyframes paceArrowRight {
       0% {
-        transform: translateY(10px);
+        transform:
+          translate(-45px, -50%);
       }
 
       100% {
-        transform: translateY(-10px);
+        transform:
+          translate(110px, -50%);
       }
     }
 
 
-    @keyframes arrowsDown {
+    /* ペースダウン */
+
+    .pace-box.pace-down {
+      border-color: #3284d6;
+
+      background:
+        rgba(237, 246, 255, 0.97);
+
+      color: #2168ad;
+    }
+
+    .pace-down .pace-arrow-bg {
+      left: 0;
+      right: 0;
+      top: -18px;
+
+      text-align: center;
+
+      color: #3284d6;
+
+      animation:
+        paceArrowDown 2.3s linear infinite;
+    }
+
+    @keyframes paceArrowDown {
       0% {
-        transform: translateY(-10px);
+        transform:
+          translateY(-15px);
       }
 
       100% {
-        transform: translateY(10px);
+        transform:
+          translateY(28px);
       }
     }
 
 
-    @keyframes arrowsSteady {
-      0% {
-        transform: translateX(-14px);
-      }
-
-      100% {
-        transform: translateX(14px);
-      }
-    }
-
+    /* ========================================
+       進捗バー
+       ======================================== */
 
     .progress {
       width: 100%;
@@ -826,6 +866,10 @@
         font-size: 9px;
       }
 
+      .prediction-note {
+        font-size: 9px;
+      }
+
       .card {
         padding: 14px;
       }
@@ -857,13 +901,19 @@
         padding: 5px 4px;
       }
 
-      .goal-prediction {
-        min-height: 27px;
-        padding: 5px 7px;
+      .pace-box {
+        width: 98%;
+
+        padding:
+          6px 7px;
       }
 
-      .goal-prediction-text {
+      .pace-status {
         font-size: 9.5px;
+      }
+
+      .pace-prediction {
+        font-size: 8.5px;
       }
 
       .chart-wrap {
@@ -874,13 +924,13 @@
 
     @media (prefers-reduced-motion: reduce) {
 
-      .falling-star,
-      .pace-arrows {
+      .falling-star {
         animation: none;
+        display: none;
       }
 
-      .falling-star {
-        display: none;
+      .pace-arrow-bg {
+        animation: none !important;
       }
     }
 
@@ -939,6 +989,11 @@
         id="milestoneAlerts"
         class="milestone-alerts"
       ></div>
+
+
+      <div class="prediction-note">
+        ※各楽曲の達成予測は、直近6時間の再生ペースをもとに算出中※
+      </div>
 
 
       <div
@@ -1440,16 +1495,49 @@
 
 
     // ========================================
-    // 直近6時間ペース
+    // 達成予測
     // ========================================
 
-    function getPaceInfo(video) {
+    function formatPredictionDate(date) {
+
+      return new Intl.DateTimeFormat(
+        "ja-JP",
+        {
+          timeZone:
+            "Asia/Tokyo",
+
+          month:
+            "numeric",
+
+          day:
+            "numeric",
+
+          hour:
+            "2-digit",
+
+          minute:
+            "2-digit",
+
+          hour12:
+            false
+        }
+      ).format(date);
+
+    }
+
+
+    function getPaceData(
+      video,
+      goal
+    ) {
 
       const recentRaw =
-        video.pace?.recent_6h_views;
+        video.pace
+          ?.recent_6h_views;
 
       const previousRaw =
-        video.pace?.previous_6h_views;
+        video.pace
+          ?.previous_6h_views;
 
 
       if (
@@ -1472,8 +1560,49 @@
       }
 
 
-      let previous =
-        null;
+      const remaining =
+        Math.max(
+          goal -
+          Number(video.views),
+          0
+        );
+
+
+      const perHour =
+        recent / 6;
+
+
+      if (
+        !Number.isFinite(perHour) ||
+        perHour <= 0
+      ) {
+        return null;
+      }
+
+
+      const hoursNeeded =
+        remaining /
+        perHour;
+
+
+      const prediction =
+        new Date(
+          Date.now() +
+          hoursNeeded *
+          60 *
+          60 *
+          1000
+        );
+
+
+      let type =
+        "steady";
+
+      let label =
+        "ペース維持中";
+
+      let arrows =
+        "→ → → → →";
 
 
       if (
@@ -1481,65 +1610,50 @@
         previousRaw !== undefined
       ) {
 
-        const parsedPrevious =
+        const previous =
           Number(previousRaw);
 
-        if (
-          Number.isFinite(parsedPrevious)
-        ) {
-          previous =
-            parsedPrevious;
-        }
-
-      }
-
-
-      let state =
-        "steady";
-
-
-      if (
-        previous !== null &&
-        previous > 0
-      ) {
-
-        const changeRate =
-          (
-            recent -
-            previous
-          ) /
-          previous;
-
-
-        /*
-          +5%超
-          → ペースアップ
-
-          -5%未満
-          → ペースダウン
-
-          -5%〜+5%
-          → ペース維持
-        */
 
         if (
-          changeRate > 0.05
+          Number.isFinite(previous) &&
+          previous > 0
         ) {
 
-          state =
-            "up";
+          const changeRate =
+            (
+              recent -
+              previous
+            ) /
+            previous;
 
-        } else if (
-          changeRate < -0.05
-        ) {
 
-          state =
-            "down";
+          if (
+            changeRate > 0.05
+          ) {
 
-        } else {
+            type =
+              "up";
 
-          state =
-            "steady";
+            label =
+              "ペースアップ中";
+
+            arrows =
+              "↑ ↑ ↑ ↑ ↑";
+
+          } else if (
+            changeRate < -0.05
+          ) {
+
+            type =
+              "down";
+
+            label =
+              "ペースダウン中";
+
+            arrows =
+              "↓ ↓ ↓ ↓ ↓";
+
+          }
 
         }
 
@@ -1547,240 +1661,54 @@
 
 
       return {
-        recent,
-        previous,
-        state,
-
-        hourlyAverage:
-          recent / 6
+        type,
+        label,
+        arrows,
+        prediction
       };
 
     }
 
 
-    // ========================================
-    // 達成予測
-    // ========================================
-
-    function getPredictionDate(
+    function createPaceForecast(
       video,
       goal
     ) {
 
       const pace =
-        getPaceInfo(video);
-
-
-      if (
-        !pace ||
-        pace.hourlyAverage <= 0
-      ) {
-        return null;
-      }
-
-
-      const remaining =
-        Math.max(
-          goal -
-          Number(video.views || 0),
-          0
-        );
-
-
-      if (
-        remaining <= 0
-      ) {
-        return null;
-      }
-
-
-      const hoursUntilGoal =
-        remaining /
-        pace.hourlyAverage;
-
-
-      /*
-        何日先でも表示する。
-        以前の「1年以上なら非表示」は撤廃。
-      */
-
-      if (
-        !Number.isFinite(
-          hoursUntilGoal
-        )
-      ) {
-        return null;
-      }
-
-
-      return new Date(
-        Date.now() +
-        hoursUntilGoal *
-        60 *
-        60 *
-        1000
-      );
-
-    }
-
-
-    function formatPredictionDate(date) {
-
-      if (!date) {
-        return "";
-      }
-
-
-      const parts =
-        new Intl.DateTimeFormat(
-          "ja-JP",
-          {
-            timeZone:
-              "Asia/Tokyo",
-
-            month:
-              "numeric",
-
-            day:
-              "numeric",
-
-            hour:
-              "2-digit",
-
-            minute:
-              "2-digit",
-
-            hour12:
-              false
-          }
-        )
-        .formatToParts(date);
-
-
-      const values = {};
-
-
-      parts.forEach(
-        part => {
-
-          if (
-            part.type !==
-            "literal"
-          ) {
-
-            values[
-              part.type
-            ] =
-              part.value;
-
-          }
-
-        }
-      );
-
-
-      return (
-        Number(values.month) +
-        "/" +
-        Number(values.day) +
-        " " +
-        values.hour +
-        ":" +
-        values.minute
-      );
-
-    }
-
-
-    function createPrediction(
-      video,
-      goal
-    ) {
-
-      const pace =
-        getPaceInfo(video);
-
-      const prediction =
-        getPredictionDate(
+        getPaceData(
           video,
           goal
         );
 
 
-      if (
-        !pace ||
-        !prediction
-      ) {
+      if (!pace) {
         return "";
       }
 
 
-      let className =
-        "";
-
-      let arrows =
-        "";
-
-      let paceLabel =
-        "";
-
-
-      if (
-        pace.state ===
-        "up"
-      ) {
-
-        className =
-          "pace-up";
-
-        arrows =
-          "↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑";
-
-        paceLabel =
-          "ペースアップ中";
-
-      } else if (
-        pace.state ===
-        "down"
-      ) {
-
-        className =
-          "pace-down";
-
-        arrows =
-          "↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓";
-
-        paceLabel =
-          "ペースダウン中";
-
-      } else {
-
-        className =
-          "pace-steady";
-
-        arrows =
-          "→ → → → → → → → → →";
-
-        paceLabel =
-          "ペース維持中";
-
-      }
-
-
       return `
-        <div
-          class="
-            goal-prediction
-            ${className}
-          "
-        >
+        <div class="pace-box pace-${pace.type}">
 
-          <div class="pace-arrows">
-            ${arrows}
+          <div
+            class="pace-arrow-bg"
+            aria-hidden="true"
+          >
+            ${pace.arrows}
           </div>
 
-          <div class="goal-prediction-text">
-            ${paceLabel}　📊達成予測：${formatPredictionDate(prediction)}
+          <div class="pace-content">
+
+            <span class="pace-status">
+              ${pace.label}
+            </span>
+
+            <span class="pace-prediction">
+              📊達成予測：${formatPredictionDate(
+                pace.prediction
+              )}
+            </span>
+
           </div>
 
         </div>
@@ -1788,10 +1716,6 @@
 
     }
 
-
-    // ========================================
-    // 目標表示
-    // ========================================
 
     function createGoal(video) {
 
@@ -1836,12 +1760,10 @@
             ${nearGoal}
           </div>
 
-
-          ${createPrediction(
+          ${createPaceForecast(
             video,
             goal
           )}
-
 
           <div class="progress">
 
@@ -1851,7 +1773,6 @@
             ></div>
 
           </div>
-
 
           <div class="progress-percent">
             ${percent.toFixed(1)}%
