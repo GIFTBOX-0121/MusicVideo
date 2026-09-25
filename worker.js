@@ -11,10 +11,16 @@ const VIDEOS = [
 
 
 // ========================================
+// STARGLOW公式YouTube
+// RANDOM VIDEO用
+// ========================================
+
+const STARGLOW_YOUTUBE_HANDLE =
+  "@starglow_bmsg";
+
+
+// ========================================
 // 集計開始日
-//
-// 9/23以前の途中データは
-// 「前日比」には使用しない
 // ========================================
 
 const TRACKING_START_DATE =
@@ -67,55 +73,92 @@ function getCorsHeaders() {
 // ========================================
 
 async function getYouTubeStats(env) {
-  const ids = VIDEOS.map(v => v.id).join(",");
+
+  const ids =
+    VIDEOS
+      .map(v => v.id)
+      .join(",");
+
 
   const url =
     "https://www.googleapis.com/youtube/v3/videos" +
     "?part=statistics" +
-    "&id=" + encodeURIComponent(ids) +
-    "&key=" + encodeURIComponent(env.YOUTUBE_API_KEY);
+    "&id=" +
+    encodeURIComponent(ids) +
+    "&key=" +
+    encodeURIComponent(
+      env.YOUTUBE_API_KEY
+    );
 
-  const response = await fetch(url);
+
+  const response =
+    await fetch(url);
+
 
   if (!response.ok) {
+
     throw new Error(
       `YouTube API error: ${response.status}`
     );
+
   }
 
-  const result = await response.json();
 
-  const stats = Object.fromEntries(
-    (result.items || []).map(item => [
-      item.id,
-      {
-        views:
-          Number(item.statistics?.viewCount ?? 0),
+  const result =
+    await response.json();
 
-        likes:
-          Number(item.statistics?.likeCount ?? 0)
-      }
-    ])
+
+  const stats =
+    Object.fromEntries(
+
+      (result.items || [])
+        .map(item => [
+
+          item.id,
+
+          {
+            views:
+              Number(
+                item.statistics
+                  ?.viewCount ?? 0
+              ),
+
+            likes:
+              Number(
+                item.statistics
+                  ?.likeCount ?? 0
+              )
+          }
+
+        ])
+
+    );
+
+
+  return VIDEOS.map(
+    video => ({
+
+      title:
+        video.title,
+
+      id:
+        video.id,
+
+      views:
+        stats[video.id]
+          ?.views ?? 0,
+
+      likes:
+        stats[video.id]
+          ?.likes ?? 0
+
+    })
   );
-
-  return VIDEOS.map(video => ({
-    title: video.title,
-    id: video.id,
-
-    views:
-      stats[video.id]?.views ?? 0,
-
-    likes:
-      stats[video.id]?.likes ?? 0
-  }));
 }
 
 
 // ========================================
 // YouTube 急上昇の音楽ランキング
-//
-// 日本 / 音楽カテゴリ / mostPopular
-// 上位50件から対象MVを探す
 // ========================================
 
 async function getTrendingRanks(env) {
@@ -127,14 +170,20 @@ async function getTrendingRanks(env) {
     "&regionCode=JP" +
     "&videoCategoryId=10" +
     "&maxResults=50" +
-    "&key=" + encodeURIComponent(env.YOUTUBE_API_KEY);
+    "&key=" +
+    encodeURIComponent(
+      env.YOUTUBE_API_KEY
+    );
 
 
   try {
 
-    const response = await fetch(url);
+    const response =
+      await fetch(url);
+
 
     if (!response.ok) {
+
       console.error(
         `YouTube trending API error: ${response.status}`
       );
@@ -150,17 +199,19 @@ async function getTrendingRanks(env) {
     const ranks = {};
 
 
-    (result.items || []).forEach(
-      (item, index) => {
+    (result.items || [])
+      .forEach(
+        (item, index) => {
 
-        ranks[item.id] =
-          index + 1;
+          ranks[item.id] =
+            index + 1;
 
-      }
-    );
+        }
+      );
 
 
     return ranks;
+
 
   } catch (error) {
 
@@ -175,34 +226,264 @@ async function getTrendingRanks(env) {
 
 
 // ========================================
+// STARGLOW公式チャンネルの
+// UploadsプレイリストID取得
+// ========================================
+
+async function getStarglowUploadsPlaylistId(
+  env
+) {
+
+  const url =
+    "https://www.googleapis.com/youtube/v3/channels" +
+    "?part=contentDetails" +
+    "&forHandle=" +
+    encodeURIComponent(
+      STARGLOW_YOUTUBE_HANDLE
+    ) +
+    "&key=" +
+    encodeURIComponent(
+      env.YOUTUBE_API_KEY
+    );
+
+
+  const response =
+    await fetch(url);
+
+
+  if (!response.ok) {
+
+    throw new Error(
+      `YouTube channel API error: ${response.status}`
+    );
+
+  }
+
+
+  const result =
+    await response.json();
+
+
+  const channel =
+    result.items?.[0];
+
+
+  const playlistId =
+    channel
+      ?.contentDetails
+      ?.relatedPlaylists
+      ?.uploads;
+
+
+  if (!playlistId) {
+
+    throw new Error(
+      "STARGLOW uploads playlist not found"
+    );
+
+  }
+
+
+  return playlistId;
+}
+
+
+// ========================================
+// STARGLOW公式チャンネルの
+// 公開動画を全部取得
+//
+// 通常動画＋Shorts
+// ========================================
+
+async function getStarglowVideos(env) {
+
+  const playlistId =
+    await getStarglowUploadsPlaylistId(
+      env
+    );
+
+
+  const videos = [];
+
+
+  let pageToken = "";
+
+
+  do {
+
+    let url =
+      "https://www.googleapis.com/youtube/v3/playlistItems" +
+      "?part=contentDetails,status" +
+      "&playlistId=" +
+      encodeURIComponent(
+        playlistId
+      ) +
+      "&maxResults=50" +
+      "&key=" +
+      encodeURIComponent(
+        env.YOUTUBE_API_KEY
+      );
+
+
+    if (pageToken) {
+
+      url +=
+        "&pageToken=" +
+        encodeURIComponent(
+          pageToken
+        );
+
+    }
+
+
+    const response =
+      await fetch(url);
+
+
+    if (!response.ok) {
+
+      throw new Error(
+        `YouTube playlist API error: ${response.status}`
+      );
+
+    }
+
+
+    const result =
+      await response.json();
+
+
+    for (
+      const item of
+      result.items || []
+    ) {
+
+      const videoId =
+        item.contentDetails
+          ?.videoId;
+
+
+      const privacyStatus =
+        item.status
+          ?.privacyStatus;
+
+
+      if (
+        videoId &&
+        privacyStatus === "public"
+      ) {
+
+        videos.push(
+          videoId
+        );
+
+      }
+
+    }
+
+
+    pageToken =
+      result.nextPageToken || "";
+
+
+  } while (pageToken);
+
+
+  return videos;
+}
+
+
+// ========================================
+// STARGLOW公式から
+// ランダムで1本選択
+// ========================================
+
+async function getRandomStarglowVideo(
+  env
+) {
+
+  const videos =
+    await getStarglowVideos(
+      env
+    );
+
+
+  if (!videos.length) {
+
+    throw new Error(
+      "No public STARGLOW videos found"
+    );
+
+  }
+
+
+  const randomIndex =
+    Math.floor(
+      Math.random() *
+      videos.length
+    );
+
+
+  const videoId =
+    videos[randomIndex];
+
+
+  return {
+
+    video_id:
+      videoId,
+
+    url:
+      "https://www.youtube.com/watch?v=" +
+      videoId
+
+  };
+}
+
+
+// ========================================
 // 10分ごとの現在値をvideo_statsへ保存
 // ========================================
 
-async function saveStats(env, videos) {
-  const recordedAt = new Date().toISOString();
+async function saveStats(
+  env,
+  videos
+) {
 
-  const statements = videos.map(video =>
-    env.DB.prepare(`
-      INSERT INTO video_stats
-        (
-          video_id,
-          title,
-          views,
-          likes,
-          recorded_at
+  const recordedAt =
+    new Date().toISOString();
+
+
+  const statements =
+    videos.map(
+      video =>
+
+        env.DB.prepare(`
+          INSERT INTO video_stats
+            (
+              video_id,
+              title,
+              views,
+              likes,
+              recorded_at
+            )
+
+          VALUES (?, ?, ?, ?, ?)
+        `)
+        .bind(
+          video.id,
+          video.title,
+          video.views,
+          video.likes,
+          recordedAt
         )
 
-      VALUES (?, ?, ?, ?, ?)
-    `).bind(
-      video.id,
-      video.title,
-      video.views,
-      video.likes,
-      recordedAt
-    )
-  );
+    );
 
-  await env.DB.batch(statements);
+
+  await env.DB.batch(
+    statements
+  );
 }
 
 
@@ -214,11 +495,13 @@ async function getHourlyBase(
   env,
   videoId
 ) {
+
   const oneHourAgo =
     new Date(
       Date.now() -
       60 * 60 * 1000
     ).toISOString();
+
 
   return await env.DB.prepare(`
     SELECT
@@ -245,8 +528,6 @@ async function getHourlyBase(
 
 // ========================================
 // 約6時間前の記録
-//
-// 6時間前以前で一番新しい記録を取得
 // ========================================
 
 async function getSixHourBase(
@@ -292,8 +573,10 @@ async function getTodayFirstRecord(
   env,
   videoId
 ) {
+
   const today =
     getJstDate();
+
 
   return await env.DB.prepare(`
     SELECT
@@ -304,6 +587,7 @@ async function getTodayFirstRecord(
     FROM video_stats
 
     WHERE video_id = ?
+
       AND date(
         recorded_at,
         '+9 hours'
@@ -322,7 +606,7 @@ async function getTodayFirstRecord(
 
 
 // ========================================
-// 前日の正式な日次データを取得
+// 前日の正式な日次データ
 // ========================================
 
 async function getPreviousDailyStat(
@@ -332,6 +616,7 @@ async function getPreviousDailyStat(
 
   const today =
     getJstDate();
+
 
   return await env.DB.prepare(`
     SELECT
@@ -366,33 +651,40 @@ async function getPreviousDailyStat(
 // 過去の日別履歴
 // ========================================
 
-async function getDailyHistory(env) {
-  const result = await env.DB.prepare(`
-    SELECT
-      video_id,
-      title,
-      jst_date,
-      start_views,
-      end_views,
-      views_change,
-      start_likes,
-      end_likes,
-      likes_change
+async function getDailyHistory(
+  env
+) {
 
-    FROM daily_stats
+  const result =
+    await env.DB.prepare(`
+      SELECT
+        video_id,
+        title,
+        jst_date,
+        start_views,
+        end_views,
+        views_change,
+        start_likes,
+        end_likes,
+        likes_change
 
-    WHERE jst_date >= ?
+      FROM daily_stats
 
-    ORDER BY
-      jst_date ASC,
-      video_id ASC
-  `)
-    .bind(
-      TRACKING_START_DATE
-    )
-    .all();
+      WHERE jst_date >= ?
 
-  return result.results || [];
+      ORDER BY
+        jst_date ASC,
+        video_id ASC
+    `)
+      .bind(
+        TRACKING_START_DATE
+      )
+      .all();
+
+
+  return (
+    result.results || []
+  );
 }
 
 
@@ -413,9 +705,11 @@ async function savePlayClick(
 
 
   if (!video) {
+
     throw new Error(
       "Invalid video ID"
     );
+
   }
 
 
@@ -442,6 +736,7 @@ async function savePlayClick(
 
 
   return {
+
     video_id:
       video.id,
 
@@ -450,15 +745,18 @@ async function savePlayClick(
 
     clicked_at:
       clickedAt
+
   };
 }
 
 
 // ========================================
-// 最新の再生クリック6件を取得
+// 最新の再生クリック6件
 // ========================================
 
-async function getRecentPlayClicks(env) {
+async function getRecentPlayClicks(
+  env
+) {
 
   const result =
     await env.DB.prepare(`
@@ -475,207 +773,244 @@ async function getRecentPlayClicks(env) {
         id DESC
 
       LIMIT 6
-    `).all();
+    `)
+      .all();
 
 
-  return result.results || [];
+  return (
+    result.results || []
+  );
 }
 
 
 // ========================================
-// 終了した日のデータをdaily_statsへ確定
+// 終了した日のデータを
+// daily_statsへ確定
 // ========================================
 
-async function finalizePastDays(env) {
+async function finalizePastDays(
+  env
+) {
+
   const today =
     getJstDate();
 
-  const result = await env.DB.prepare(`
-    WITH raw AS (
+
+  const result =
+    await env.DB.prepare(`
+      WITH raw AS (
+
+        SELECT
+          video_id,
+          title,
+          views,
+          likes,
+          recorded_at,
+
+          date(
+            recorded_at,
+            '+9 hours'
+          ) AS jst_date
+
+        FROM video_stats
+
+        WHERE
+          date(
+            recorded_at,
+            '+9 hours'
+          ) >= ?
+
+          AND
+
+          date(
+            recorded_at,
+            '+9 hours'
+          ) < ?
+      ),
+
+      ranked AS (
+
+        SELECT
+          video_id,
+          title,
+          views,
+          likes,
+          recorded_at,
+          jst_date,
+
+          ROW_NUMBER() OVER (
+            PARTITION BY
+              video_id,
+              jst_date
+
+            ORDER BY
+              recorded_at ASC
+          ) AS first_rn,
+
+          ROW_NUMBER() OVER (
+            PARTITION BY
+              video_id,
+              jst_date
+
+            ORDER BY
+              recorded_at DESC
+          ) AS last_rn
+
+        FROM raw
+      ),
+
+      daily AS (
+
+        SELECT
+          video_id,
+
+          MAX(title)
+            AS title,
+
+          jst_date,
+
+          MAX(
+            CASE
+              WHEN first_rn = 1
+              THEN views
+            END
+          ) AS start_views,
+
+          MAX(
+            CASE
+              WHEN last_rn = 1
+              THEN views
+            END
+          ) AS end_views,
+
+          MAX(
+            CASE
+              WHEN first_rn = 1
+              THEN likes
+            END
+          ) AS start_likes,
+
+          MAX(
+            CASE
+              WHEN last_rn = 1
+              THEN likes
+            END
+          ) AS end_likes
+
+        FROM ranked
+
+        GROUP BY
+          video_id,
+          jst_date
+      )
 
       SELECT
         video_id,
         title,
-        views,
-        likes,
-        recorded_at,
-
-        date(
-          recorded_at,
-          '+9 hours'
-        ) AS jst_date
-
-      FROM video_stats
-
-      WHERE
-        date(
-          recorded_at,
-          '+9 hours'
-        ) >= ?
-
-        AND
-
-        date(
-          recorded_at,
-          '+9 hours'
-        ) < ?
-    ),
-
-    ranked AS (
-
-      SELECT
-        video_id,
-        title,
-        views,
-        likes,
-        recorded_at,
         jst_date,
+        start_views,
+        end_views,
+        start_likes,
+        end_likes
 
-        ROW_NUMBER() OVER (
-          PARTITION BY
-            video_id,
-            jst_date
+      FROM daily
 
-          ORDER BY
-            recorded_at ASC
-        ) AS first_rn,
-
-        ROW_NUMBER() OVER (
-          PARTITION BY
-            video_id,
-            jst_date
-
-          ORDER BY
-            recorded_at DESC
-        ) AS last_rn
-
-      FROM raw
-    ),
-
-    daily AS (
-
-      SELECT
-        video_id,
-
-        MAX(title) AS title,
-
-        jst_date,
-
-        MAX(
-          CASE
-            WHEN first_rn = 1
-            THEN views
-          END
-        ) AS start_views,
-
-        MAX(
-          CASE
-            WHEN last_rn = 1
-            THEN views
-          END
-        ) AS end_views,
-
-        MAX(
-          CASE
-            WHEN first_rn = 1
-            THEN likes
-          END
-        ) AS start_likes,
-
-        MAX(
-          CASE
-            WHEN last_rn = 1
-            THEN likes
-          END
-        ) AS end_likes
-
-      FROM ranked
-
-      GROUP BY
-        video_id,
-        jst_date
-    )
-
-    SELECT
-      video_id,
-      title,
-      jst_date,
-      start_views,
-      end_views,
-      start_likes,
-      end_likes
-
-    FROM daily
-
-    ORDER BY
-      jst_date ASC,
-      video_id ASC
-  `)
-    .bind(
-      TRACKING_START_DATE,
-      today
-    )
-    .all();
+      ORDER BY
+        jst_date ASC,
+        video_id ASC
+    `)
+      .bind(
+        TRACKING_START_DATE,
+        today
+      )
+      .all();
 
 
   const rows =
     result.results || [];
 
 
-  if (rows.length === 0) {
+  if (
+    rows.length === 0
+  ) {
     return;
   }
 
 
   const statements =
-    rows.map(row =>
-      env.DB.prepare(`
-        INSERT OR IGNORE INTO daily_stats
-          (
-            video_id,
-            title,
-            jst_date,
+    rows.map(
+      row =>
 
-            start_views,
-            end_views,
-            views_change,
+        env.DB.prepare(`
+          INSERT OR IGNORE INTO daily_stats
+            (
+              video_id,
+              title,
+              jst_date,
 
-            start_likes,
-            end_likes,
-            likes_change,
+              start_views,
+              end_views,
+              views_change,
 
-            created_at
+              start_likes,
+              end_likes,
+              likes_change,
+
+              created_at
+            )
+
+          VALUES (
+            ?, ?, ?,
+            ?, ?, ?,
+            ?, ?, ?,
+            ?
+          )
+        `)
+          .bind(
+            row.video_id,
+            row.title,
+            row.jst_date,
+
+            Number(
+              row.start_views
+            ),
+
+            Number(
+              row.end_views
+            ),
+
+            Number(
+              row.end_views
+            ) -
+            Number(
+              row.start_views
+            ),
+
+            Number(
+              row.start_likes
+            ),
+
+            Number(
+              row.end_likes
+            ),
+
+            Number(
+              row.end_likes
+            ) -
+            Number(
+              row.start_likes
+            ),
+
+            new Date()
+              .toISOString()
           )
 
-        VALUES (
-          ?, ?, ?,
-          ?, ?, ?,
-          ?, ?, ?,
-          ?
-        )
-      `).bind(
-        row.video_id,
-        row.title,
-        row.jst_date,
-
-        Number(row.start_views),
-        Number(row.end_views),
-
-        Number(row.end_views) -
-        Number(row.start_views),
-
-        Number(row.start_likes),
-        Number(row.end_likes),
-
-        Number(row.end_likes) -
-        Number(row.start_likes),
-
-        new Date().toISOString()
-      )
     );
 
 
-  await env.DB.batch(statements);
+  await env.DB.batch(
+    statements
+  );
 }
 
 
@@ -689,17 +1024,25 @@ export default {
   // サイトからアクセスされたとき
   // ======================================
 
-  async fetch(request, env) {
+  async fetch(
+    request,
+    env
+  ) {
 
     const url =
-      new URL(request.url);
+      new URL(
+        request.url
+      );
 
 
     // ======================================
     // CORS
     // ======================================
 
-    if (request.method === "OPTIONS") {
+    if (
+      request.method ===
+      "OPTIONS"
+    ) {
 
       return new Response(
         null,
@@ -710,11 +1053,81 @@ export default {
             getCorsHeaders()
         }
       );
+
+    }
+
+
+    // ======================================
+    // RANDOM VIDEO
+    //
+    // GET /random
+    //
+    // STARGLOW公式チャンネルの
+    // 公開動画からランダムで1本
+    //
+    // DB保存なし
+    // 再生履歴にも記録しない
+    // ======================================
+
+    if (
+      url.pathname ===
+        "/random" &&
+      request.method ===
+        "GET"
+    ) {
+
+      try {
+
+        const randomVideo =
+          await getRandomStarglowVideo(
+            env
+          );
+
+
+        return new Response(
+          JSON.stringify(
+            randomVideo,
+            null,
+            2
+          ),
+          {
+            headers:
+              getCorsHeaders()
+          }
+        );
+
+
+      } catch (error) {
+
+        return new Response(
+          JSON.stringify(
+            {
+              error:
+                "Failed to get random video",
+
+              message:
+                error.message
+            },
+            null,
+            2
+          ),
+          {
+            status: 500,
+
+            headers:
+              getCorsHeaders()
+          }
+        );
+
+      }
+
     }
 
 
     // ======================================
     // 再生クリック記録
+    //
+    // POST /play
     // ======================================
 
     if (
@@ -750,6 +1163,7 @@ export default {
                 getCorsHeaders()
             }
           );
+
         }
 
 
@@ -797,17 +1211,23 @@ export default {
               getCorsHeaders()
           }
         );
+
       }
+
     }
 
 
     // ======================================
     // 最新の再生クリック6件
+    //
+    // GET /recent-plays
     // ======================================
 
     if (
-      url.pathname === "/recent-plays" &&
-      request.method === "GET"
+      url.pathname ===
+        "/recent-plays" &&
+      request.method ===
+        "GET"
     ) {
 
       try {
@@ -854,7 +1274,9 @@ export default {
               getCorsHeaders()
           }
         );
+
       }
+
     }
 
 
@@ -867,16 +1289,27 @@ export default {
       const [
         currentVideos,
         trendingRanks
-      ] = await Promise.all([
-        getYouTubeStats(env),
-        getTrendingRanks(env)
-      ]);
+      ] =
+        await Promise.all([
+
+          getYouTubeStats(
+            env
+          ),
+
+          getTrendingRanks(
+            env
+          )
+
+        ]);
 
 
       const videos = [];
 
 
-      for (const video of currentVideos) {
+      for (
+        const video of
+        currentVideos
+      ) {
 
         // ------------------------------
         // 1時間比
@@ -894,11 +1327,15 @@ export default {
             ? {
                 views:
                   video.views -
-                  Number(hourlyBase.views),
+                  Number(
+                    hourlyBase.views
+                  ),
 
                 likes:
                   video.likes -
-                  Number(hourlyBase.likes)
+                  Number(
+                    hourlyBase.likes
+                  )
               }
             : null;
 
@@ -914,14 +1351,16 @@ export default {
           );
 
 
-        let sixHourPace = null;
+        let sixHourPace =
+          null;
 
 
         if (sixHourBase) {
 
           const baseTime =
             new Date(
-              sixHourBase.recorded_at
+              sixHourBase
+                .recorded_at
             ).getTime();
 
 
@@ -930,8 +1369,15 @@ export default {
 
 
           const hours =
-            (nowTime - baseTime) /
-            (60 * 60 * 1000);
+            (
+              nowTime -
+              baseTime
+            ) /
+            (
+              60 *
+              60 *
+              1000
+            );
 
 
           const viewsChange =
@@ -950,12 +1396,15 @@ export default {
 
               hours:
                 Number(
-                  hours.toFixed(3)
+                  hours.toFixed(
+                    3
+                  )
                 ),
 
               views_per_hour:
                 Math.round(
-                  viewsChange / hours
+                  viewsChange /
+                  hours
                 ),
 
               base_views:
@@ -964,9 +1413,12 @@ export default {
                 ),
 
               base_recorded_at:
-                sixHourBase.recorded_at
+                sixHourBase
+                  .recorded_at
             };
+
           }
+
         }
 
 
@@ -986,11 +1438,15 @@ export default {
             ? {
                 views:
                   video.views -
-                  Number(todayBase.views),
+                  Number(
+                    todayBase.views
+                  ),
 
                 likes:
                   video.likes -
-                  Number(todayBase.likes)
+                  Number(
+                    todayBase.likes
+                  )
               }
             : null;
 
@@ -1017,15 +1473,21 @@ export default {
           )
             ? {
                 views:
-                  Number(todayChange.views) -
                   Number(
-                    previousDay.views_change
+                    todayChange.views
+                  ) -
+                  Number(
+                    previousDay
+                      .views_change
                   ),
 
                 likes:
-                  Number(todayChange.likes) -
                   Number(
-                    previousDay.likes_change
+                    todayChange.likes
+                  ) -
+                  Number(
+                    previousDay
+                      .likes_change
                   )
               }
             : null;
@@ -1039,16 +1501,19 @@ export default {
           previousDay
             ? {
                 date:
-                  previousDay.jst_date,
+                  previousDay
+                    .jst_date,
 
                 views:
                   Number(
-                    previousDay.views_change
+                    previousDay
+                      .views_change
                   ),
 
                 likes:
                   Number(
-                    previousDay.likes_change
+                    previousDay
+                      .likes_change
                   )
               }
             : null;
@@ -1059,10 +1524,13 @@ export default {
         // ------------------------------
 
         const trendingRank =
-          trendingRanks[video.id] ?? null;
+          trendingRanks[
+            video.id
+          ] ?? null;
 
 
         videos.push({
+
           title:
             video.title,
 
@@ -1092,7 +1560,9 @@ export default {
 
           previous_day_total:
             previousDayTotal
+
         });
+
       }
 
 
@@ -1101,18 +1571,22 @@ export default {
       // ------------------------------
 
       const dailyHistory =
-        await getDailyHistory(env);
+        await getDailyHistory(
+          env
+        );
 
 
       const data = {
 
         updated_at:
-          new Date().toISOString(),
+          new Date()
+            .toISOString(),
 
         videos,
 
         daily_history:
           dailyHistory
+
       };
 
 
@@ -1150,7 +1624,9 @@ export default {
             getCorsHeaders()
         }
       );
+
     }
+
   },
 
 
@@ -1160,27 +1636,49 @@ export default {
   // 10分ごと
   // ======================================
 
-  async scheduled(event, env, ctx) {
+  async scheduled(
+    event,
+    env,
+    ctx
+  ) {
 
     ctx.waitUntil(
+
       (async () => {
 
+        // ------------------------------
         // YouTube現在値取得
+        // ------------------------------
+
         const videos =
-          await getYouTubeStats(env);
+          await getYouTubeStats(
+            env
+          );
 
 
+        // ------------------------------
         // 10分履歴へ保存
+        // ------------------------------
+
         await saveStats(
           env,
           videos
         );
 
 
-        // 終了済みの日をdaily_statsへ確定
-        await finalizePastDays(env);
+        // ------------------------------
+        // 終了済みの日を
+        // daily_statsへ確定
+        // ------------------------------
+
+        await finalizePastDays(
+          env
+        );
 
       })()
+
     );
+
   }
+
 };
