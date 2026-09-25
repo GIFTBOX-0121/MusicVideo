@@ -137,8 +137,6 @@ async function getTrendingRanks(env) {
         `YouTube trending API error: ${response.status}`
       );
 
-      // 急上昇取得だけ失敗しても
-      // STARS BASE本体は止めない
       return {};
     }
 
@@ -169,8 +167,6 @@ async function getTrendingRanks(env) {
       error
     );
 
-    // 急上昇取得だけ失敗しても
-    // 他のデータは通常表示
     return {};
   }
 }
@@ -246,6 +242,47 @@ async function getHourlyBase(
 
 
 // ========================================
+// ★ 約6時間前の記録
+//
+// 6時間前以前で一番新しい記録を取得
+// ========================================
+
+async function getSixHourBase(
+  env,
+  videoId
+) {
+
+  const sixHoursAgo =
+    new Date(
+      Date.now() -
+      6 * 60 * 60 * 1000
+    ).toISOString();
+
+
+  return await env.DB.prepare(`
+    SELECT
+      views,
+      likes,
+      recorded_at
+
+    FROM video_stats
+
+    WHERE video_id = ?
+      AND recorded_at <= ?
+
+    ORDER BY recorded_at DESC
+
+    LIMIT 1
+  `)
+    .bind(
+      videoId,
+      sixHoursAgo
+    )
+    .first();
+}
+
+
+// ========================================
 // 今日の最初の記録
 //
 // 今日0:00以降の最初の保存値
@@ -288,11 +325,6 @@ async function getTodayFirstRecord(
 
 // ========================================
 // 前日の正式な日次データを取得
-//
-// ★ 2026-09-24以降だけを対象にする
-//
-// これにより9/23の途中データは
-// 前日比に絶対使用しない
 // ========================================
 
 async function getPreviousDailyStat(
@@ -334,8 +366,6 @@ async function getPreviousDailyStat(
 
 // ========================================
 // 過去の日別履歴
-//
-// ★ 9/24以降のみ返す
 // ========================================
 
 async function getDailyHistory(env) {
@@ -370,9 +400,6 @@ async function getDailyHistory(env) {
 
 // ========================================
 // 再生クリックを記録
-//
-// index.htmlからvideo_idだけ受け取り、
-// 曲名はWorker側のVIDEOSから確定する。
 // ========================================
 
 async function savePlayClick(
@@ -431,8 +458,6 @@ async function savePlayClick(
 
 // ========================================
 // 最新の再生クリック6件を取得
-//
-// ★ 6件表示
 // ========================================
 
 async function getRecentPlayClicks(env) {
@@ -461,13 +486,6 @@ async function getRecentPlayClicks(env) {
 
 // ========================================
 // 終了した日のデータをdaily_statsへ確定
-//
-// ★ 9/24以降だけを日次データ化
-//
-// 今日より前で、まだdaily_statsに存在しない日を
-// video_statsから日次データへ圧縮
-//
-// ※video_statsは削除しない
 // ========================================
 
 async function finalizePastDays(env) {
@@ -699,12 +717,6 @@ export default {
 
     // ======================================
     // 再生クリック記録
-    //
-    // POST /play
-    // body:
-    // {
-    //   "video_id": "..."
-    // }
     // ======================================
 
     if (
@@ -793,8 +805,6 @@ export default {
 
     // ======================================
     // 最新の再生クリック6件
-    //
-    // GET /recent-plays
     // ======================================
 
     if (
@@ -856,7 +866,6 @@ export default {
 
     try {
 
-      // 現在値と急上昇を並行取得
       const [
         currentVideos,
         trendingRanks
@@ -897,9 +906,74 @@ export default {
 
 
         // ------------------------------
+        // ★ 6時間ペース
+        // ------------------------------
+
+        const sixHourBase =
+          await getSixHourBase(
+            env,
+            video.id
+          );
+
+
+        let sixHourPace = null;
+
+
+        if (sixHourBase) {
+
+          const baseTime =
+            new Date(
+              sixHourBase.recorded_at
+            ).getTime();
+
+
+          const nowTime =
+            Date.now();
+
+
+          const hours =
+            (nowTime - baseTime) /
+            (60 * 60 * 1000);
+
+
+          const viewsChange =
+            video.views -
+            Number(
+              sixHourBase.views
+            );
+
+
+          if (hours > 0) {
+
+            sixHourPace = {
+
+              views_change:
+                viewsChange,
+
+              hours:
+                Number(
+                  hours.toFixed(3)
+                ),
+
+              views_per_hour:
+                Math.round(
+                  viewsChange / hours
+                ),
+
+              base_views:
+                Number(
+                  sixHourBase.views
+                ),
+
+              base_recorded_at:
+                sixHourBase.recorded_at
+            };
+          }
+        }
+
+
+        // ------------------------------
         // 今日トータル
-        //
-        // 今日最初の保存値 → 現在値
         // ------------------------------
 
         const todayBase =
@@ -925,8 +999,6 @@ export default {
 
         // ------------------------------
         // 前日の正式な日次データ
-        //
-        // 9/24以降のみ
         // ------------------------------
 
         const previousDay =
@@ -938,13 +1010,6 @@ export default {
 
         // ------------------------------
         // 前日比
-        //
-        // 今日ここまでの増加数
-        // －
-        // 昨日1日の増加数
-        //
-        // 9/24はpreviousDayが存在しないので
-        // null → 表示は「－」
         // ------------------------------
 
         const previousDayComparison =
@@ -970,10 +1035,6 @@ export default {
 
         // ------------------------------
         // 前日の実績
-        //
-        // index.htmlで
-        // 「9/24 ○回再生」
-        // の枠を表示するために返す
         // ------------------------------
 
         const previousDayTotal =
@@ -997,8 +1058,6 @@ export default {
 
         // ------------------------------
         // 急上昇順位
-        //
-        // ランク外なら null
         // ------------------------------
 
         const trendingRank =
@@ -1018,23 +1077,22 @@ export default {
           likes:
             video.likes,
 
-          // ★ 急上昇
           trending_rank:
             trendingRank,
 
-          // ★ 1時間比
           hourly_change:
             hourlyChange,
 
-          // ★ 今日トータル
+          // ★ 復活
+          six_hour_pace:
+            sixHourPace,
+
           today_change:
             todayChange,
 
-          // ★ 前日比
           daily_change:
             previousDayComparison,
 
-          // ★ 前日の実績
           previous_day_total:
             previousDayTotal
         });
@@ -1110,30 +1168,15 @@ export default {
     ctx.waitUntil(
       (async () => {
 
-        // ------------------------------
-        // ① YouTube現在値取得
-        // ------------------------------
-
         const videos =
           await getYouTubeStats(env);
 
-
-        // ------------------------------
-        // ② 現在値を10分履歴へ保存
-        // ------------------------------
 
         await saveStats(
           env,
           videos
         );
 
-
-        // ------------------------------
-        // ③ 9/24以降の終了済みの日を
-        // daily_statsへ確定
-        //
-        // ※古い10分履歴は削除しない
-        // ------------------------------
 
         await finalizePastDays(env);
 
