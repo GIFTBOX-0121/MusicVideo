@@ -567,8 +567,7 @@
       background: rgba(255, 242, 242, 0.96);
     }
 
-    .goal-prediction.pace-up
-    .goal-prediction-text {
+    .goal-prediction.pace-up .goal-prediction-text {
       color: #c62828;
     }
 
@@ -580,8 +579,7 @@
       background: rgba(240, 247, 255, 0.97);
     }
 
-    .goal-prediction.pace-down
-    .goal-prediction-text {
+    .goal-prediction.pace-down .goal-prediction-text {
       color: #1565c0;
     }
 
@@ -593,8 +591,7 @@
       background: rgba(241, 252, 246, 0.97);
     }
 
-    .goal-prediction.pace-steady
-    .goal-prediction-text {
+    .goal-prediction.pace-steady .goal-prediction-text {
       color: #21864f;
     }
 
@@ -647,47 +644,35 @@
 
 
     @keyframes arrowsUp {
-
       0% {
-        transform:
-          translateY(10px);
+        transform: translateY(10px);
       }
 
       100% {
-        transform:
-          translateY(-10px);
+        transform: translateY(-10px);
       }
-
     }
 
 
     @keyframes arrowsDown {
-
       0% {
-        transform:
-          translateY(-10px);
+        transform: translateY(-10px);
       }
 
       100% {
-        transform:
-          translateY(10px);
+        transform: translateY(10px);
       }
-
     }
 
 
     @keyframes arrowsSteady {
-
       0% {
-        transform:
-          translateX(-14px);
+        transform: translateX(-14px);
       }
 
       100% {
-        transform:
-          translateX(14px);
+        transform: translateX(14px);
       }
-
     }
 
 
@@ -1456,28 +1441,27 @@
 
     // ========================================
     // 直近6時間ペース
-    //
-    // Workerから：
-    //
-    // pace: {
-    //   recent_6h_views: 数字,
-    //   previous_6h_views: 数字
-    // }
-    //
-    // を受け取る
     // ========================================
 
     function getPaceInfo(video) {
 
-      const recent =
-        Number(
-          video.pace?.recent_6h_views
-        );
+      const recentRaw =
+        video.pace?.recent_6h_views;
 
-      const previous =
-        Number(
-          video.pace?.previous_6h_views
-        );
+      const previousRaw =
+        video.pace?.previous_6h_views;
+
+
+      if (
+        recentRaw === null ||
+        recentRaw === undefined
+      ) {
+        return null;
+      }
+
+
+      const recent =
+        Number(recentRaw);
 
 
       if (
@@ -1488,12 +1472,34 @@
       }
 
 
+      let previous =
+        null;
+
+
+      if (
+        previousRaw !== null &&
+        previousRaw !== undefined
+      ) {
+
+        const parsedPrevious =
+          Number(previousRaw);
+
+        if (
+          Number.isFinite(parsedPrevious)
+        ) {
+          previous =
+            parsedPrevious;
+        }
+
+      }
+
+
       let state =
         "steady";
 
 
       if (
-        Number.isFinite(previous) &&
+        previous !== null &&
         previous > 0
       ) {
 
@@ -1505,15 +1511,26 @@
           previous;
 
 
+        /*
+          +5%超
+          → ペースアップ
+
+          -5%未満
+          → ペースダウン
+
+          -5%〜+5%
+          → ペース維持
+        */
+
         if (
-          changeRate >= 0.05
+          changeRate > 0.05
         ) {
 
           state =
             "up";
 
         } else if (
-          changeRate <= -0.05
+          changeRate < -0.05
         ) {
 
           state =
@@ -1582,11 +1599,15 @@
         pace.hourlyAverage;
 
 
+      /*
+        何日先でも表示する。
+        以前の「1年以上なら非表示」は撤廃。
+      */
+
       if (
         !Number.isFinite(
           hoursUntilGoal
-        ) ||
-        hoursUntilGoal > 8760
+        )
       ) {
         return null;
       }
@@ -1624,7 +1645,10 @@
               "numeric",
 
             hour:
-              "numeric",
+              "2-digit",
+
+            minute:
+              "2-digit",
 
             hour12:
               false
@@ -1660,8 +1684,9 @@
         "/" +
         Number(values.day) +
         " " +
-        Number(values.hour) +
-        "時"
+        values.hour +
+        ":" +
+        values.minute
       );
 
     }
@@ -1696,6 +1721,9 @@
       let arrows =
         "";
 
+      let paceLabel =
+        "";
+
 
       if (
         pace.state ===
@@ -1708,6 +1736,9 @@
         arrows =
           "↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑ ↑";
 
+        paceLabel =
+          "ペースアップ中";
+
       } else if (
         pace.state ===
         "down"
@@ -1719,6 +1750,9 @@
         arrows =
           "↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓ ↓";
 
+        paceLabel =
+          "ペースダウン中";
+
       } else {
 
         className =
@@ -1726,6 +1760,9 @@
 
         arrows =
           "→ → → → → → → → → →";
+
+        paceLabel =
+          "ペース維持中";
 
       }
 
@@ -1743,7 +1780,7 @@
           </div>
 
           <div class="goal-prediction-text">
-            📊達成予測：${formatPredictionDate(prediction)}
+            ${paceLabel}　📊達成予測：${formatPredictionDate(prediction)}
           </div>
 
         </div>
