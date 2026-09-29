@@ -347,6 +347,66 @@
     }
 
     /* ========================================
+       FEATURED VIDEO
+       ======================================== */
+
+    .featured-videos {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin: 0 0 18px;
+    }
+
+    .featured-video {
+      min-width: 0;
+      overflow: hidden;
+      border-radius: 12px;
+      background: rgba(255, 255, 255, 0.94);
+      box-shadow: 0 4px 18px rgba(0, 0, 0, 0.10);
+    }
+
+    .featured-video a {
+      display: block;
+      color: #111;
+      text-decoration: none;
+    }
+
+    .featured-thumbnail {
+      display: block;
+      width: 100%;
+      aspect-ratio: 16 / 9;
+      object-fit: cover;
+      background: #eee;
+    }
+
+    .featured-text {
+      padding: 7px 8px 8px;
+      min-width: 0;
+    }
+
+    .featured-group,
+    .featured-title {
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+
+    .featured-group {
+      font-size: 9px;
+      font-weight: 700;
+      color: #777;
+      line-height: 1.35;
+    }
+
+    .featured-title {
+      margin-top: 2px;
+      font-size: 11px;
+      font-weight: 900;
+      color: #111;
+      line-height: 1.35;
+    }
+
+    /* ========================================
        MVカード
        ======================================== */
 
@@ -890,6 +950,52 @@
           aria-label="ランダム動画を再生"
         >★</button>
 
+      </div>
+
+    </div>
+
+    <!-- ====================================
+         FEATURED VIDEO
+         ==================================== -->
+
+    <div class="featured-videos">
+
+      <div class="featured-video">
+        <a
+          href="https://youtu.be/BrUM1VrWFhM?si=pseq9b-LhlcKxiB5"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <img
+            class="featured-thumbnail"
+            src="https://i.ytimg.com/vi/BrUM1VrWFhM/hqdefault.jpg"
+            alt="ONE WHO GLOWS"
+            loading="lazy"
+          >
+          <div class="featured-text">
+            <div class="featured-group">SOUMA (ONE OR EIGHT) × TAIKI (STARGLOW)</div>
+            <div class="featured-title">ONE WHO GLOWS</div>
+          </div>
+        </a>
+      </div>
+
+      <div class="featured-video">
+        <a
+          href="https://youtu.be/nn2V3mptPLg?si=4dBZRl3AFPu_klI7"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <img
+            class="featured-thumbnail"
+            src="https://i.ytimg.com/vi/nn2V3mptPLg/hqdefault.jpg"
+            alt="Nameless MythS"
+            loading="lazy"
+          >
+          <div class="featured-text">
+            <div class="featured-group">MAZZEL × STARGLOW</div>
+            <div class="featured-title">Nameless MythS</div>
+          </div>
+        </a>
       </div>
 
     </div>
