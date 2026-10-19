@@ -845,7 +845,7 @@
     }
 
 
-    /* BMSG floating navigation (preview) */
+    /* BMSG artist collection — isolated from statistics */
     .bmsg-fab{position:fixed;left:calc(100vw - 82px);top:42%;width:64px;height:64px;border-radius:50%;border:none;background:#050505;color:#fff;box-shadow:0 4px 18px #0009;z-index:1100;display:grid;place-items:center;font-size:12px;font-weight:900;letter-spacing:-.5px;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none}
     .bmsg-fab:active{cursor:grabbing}.bmsg-fab span{border:none;padding:3px 4px;pointer-events:none}
     .bmsg-overlay[hidden],.bmsg-artist-page[hidden]{display:none!important}
@@ -854,12 +854,30 @@
     .bmsg-dialog-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}.bmsg-dialog-head h2{margin:0;font-size:18px;letter-spacing:2px}
     .bmsg-close,.bmsg-back{border:1px solid #ffffff55;border-radius:999px;background:#ffffff16;color:#fff;cursor:pointer;padding:9px 14px;font-weight:700}
     .bmsg-artist-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+    .bmsg-menu-featured{grid-column:1/-1;width:100%;min-height:55px;font-size:15px;letter-spacing:.07em;background:linear-gradient(110deg,#344d86,#172c5c);border:1px solid #b9c9f788}
+    .bmsg-menu-columns{grid-column:1/-1;display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:12px;margin-top:10px;align-items:start}
+    .bmsg-menu-column{display:flex;flex-direction:column;gap:9px;min-width:0}
+    .bmsg-menu-heading{font-size:11px;letter-spacing:.12em;color:#dce5ff;font-weight:900;min-height:19px;margin:0 0 3px 2px}
+    .bmsg-menu-column .bmsg-artist-choice{width:100%;overflow-wrap:anywhere}
     .bmsg-artist-choice{min-height:45px;border:1px solid #ffffff40;border-radius:11px;background:#ffffff12;color:white;font-size:12px;font-weight:800;cursor:pointer;padding:9px 5px}
     .bmsg-artist-choice:active{background:#ffffff38}
     .bmsg-artist-page{position:relative;z-index:2;min-height:65vh;color:#fff;padding:12px 0 32px}
-    .bmsg-page-head{display:flex;align-items:center;gap:14px;margin-bottom:22px}.bmsg-page-head h2{font-size:clamp(19px,5vw,28px);margin:0;overflow-wrap:anywhere}
-    .bmsg-page-note{color:#ffffffb0;font-size:13px;line-height:1.8;padding:22px;border:1px solid #ffffff30;border-radius:14px;background:#ffffff0b}
-    @media(max-width:420px){.bmsg-fab{width:60px;height:60px;font-size:12px}.bmsg-dialog{padding:16px}}
+    .bmsg-page-head{display:flex;align-items:center;gap:14px;margin-bottom:18px}.bmsg-page-head h2{font-size:clamp(19px,5vw,28px);margin:0;overflow-wrap:anywhere}
+    .bmsg-page-note{color:#ffffffc7;font-size:13px;line-height:1.8;padding:22px;border:1px solid #ffffff30;border-radius:14px;background:#ffffff0b}
+    .bmsg-page-status{color:#d5dcf0;font-size:12px;margin:0 0 12px}
+    .bmsg-filter-list{display:flex;flex-wrap:wrap;gap:8px;margin:0 0 18px}
+    .bmsg-filter{border:1px solid #ffffff55;border-radius:999px;background:#ffffff13;color:white;padding:7px 12px;font-size:11px;font-weight:700;cursor:pointer}
+    .bmsg-filter[aria-pressed="true"]{background:#fff;color:#14213c;border-color:#fff}
+    .bmsg-video-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+    .bmsg-video-card{overflow:hidden;border:1px solid #ffffff2a;border-radius:13px;background:#ffffffed;color:#121625;min-width:0}
+    .bmsg-video-link{display:block;color:inherit;text-decoration:none}
+    .bmsg-video-thumb{display:block;width:100%;aspect-ratio:16/9;object-fit:cover;background:#dfe3ed}
+    .bmsg-video-body{padding:10px 11px 12px}
+    .bmsg-video-title{margin:0;font-size:13px;line-height:1.5;font-weight:800;overflow-wrap:anywhere}
+    .bmsg-video-type{font-size:10px;color:#5e6471;margin-top:5px}
+    .bmsg-video-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}
+    .bmsg-video-tag{border-radius:5px;background:#e5eaf3;color:#243552;padding:3px 6px;font-size:10px;font-weight:700;overflow-wrap:anywhere}
+    @media(max-width:420px){.bmsg-fab{width:60px;height:60px;font-size:12px}.bmsg-dialog{padding:16px}.bmsg-video-grid{gap:9px}.bmsg-video-body{padding:9px}.bmsg-video-title{font-size:12px}}
 
   </style>
 </head>
@@ -912,7 +930,13 @@
 
   </header>
 
-  <section id="bmsgArtistPage" class="bmsg-artist-page" hidden aria-live="polite"><div class="bmsg-page-head"><button id="bmsgBack" class="bmsg-back" type="button">← STARS BASE</button><h2 id="bmsgPageTitle"></h2></div><div class="bmsg-page-note">MVのサムネイルと曲名は、公式動画のリンクを確認してからここに追加します。</div></section>
+  <section id="bmsgArtistPage" class="bmsg-artist-page" hidden aria-live="polite">
+    <div class="bmsg-page-head"><button id="bmsgBack" class="bmsg-back" type="button">← STARS BASE</button><h2 id="bmsgPageTitle"></h2></div>
+    <div id="bmsgPageStatus" class="bmsg-page-status" role="status"></div>
+    <div id="bmsgTagFilters" class="bmsg-filter-list" hidden aria-label="BMSG動画タグで絞り込み"></div>
+    <div id="bmsgVideoGrid" class="bmsg-video-grid"></div>
+    <div id="bmsgPageEmpty" class="bmsg-page-note" hidden></div>
+  </section>
 
   <main id="starsMain">
 
@@ -1063,7 +1087,9 @@
 
 /* BMSG artist navigation — independent of existing statistics */
 (function initBmsgNavigation(){
-  const artists=['BE:FIRST','MAZZEL','HANA','REIKO','Aile The Shota','Ayumu Imazu','SALU','ふみの','TAKARA','SKY-HI','トレーニー'];
+  const ADMIN_PUBLIC_API='https://starsbase-artist-admin.starsx0601.workers.dev';
+  const solo=['SKY-HI','Novel Core','Aile The Shota','edhiii boi','REIKO','SALU','ふみの','Ayumu Imazu'];
+  const group=['STARGLOW','BMSG','BE:FIRST','MAZZEL','HANA','ShowMinorSavage','BMSG TRAINEE'];
   const fab=document.getElementById('bmsgFab');
   const overlay=document.getElementById('bmsgOverlay');
   const close=document.getElementById('bmsgClose');
@@ -1074,7 +1100,12 @@
   const main=document.getElementById('starsMain');
   const header=document.getElementById('starsHeader');
   const footer=document.getElementById('starsFooter');
+  const grid=document.getElementById('bmsgVideoGrid');
+  const empty=document.getElementById('bmsgPageEmpty');
+  const status=document.getElementById('bmsgPageStatus');
+  const filters=document.getElementById('bmsgTagFilters');
   const key='starsbase-bmsg-fab-position-v1';
+  let currentArtist='',requestNumber=0,artistVideos=[],activeTag='ALL';
   function clamp(n,a,b){return Math.max(a,Math.min(n,b));}
   function place(x,y){fab.style.left=clamp(x,4,window.innerWidth-fab.offsetWidth-4)+'px';fab.style.top=clamp(y,4,window.innerHeight-fab.offsetHeight-4)+'px';}
   try{const saved=JSON.parse(localStorage.getItem(key));if(Number.isFinite(saved?.x)&&Number.isFinite(saved?.y))place(saved.x,saved.y);}catch(e){}
@@ -1089,12 +1120,66 @@
   close.addEventListener('click',hideMenu);
   overlay.addEventListener('click',e=>{if(e.target===overlay)hideMenu();});
   document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!overlay.hidden)hideMenu();});
-  function showHome(){page.hidden=true;header.hidden=false;main.hidden=false;footer.hidden=false;window.scrollTo(0,0);}
-  function showArtist(name){pageTitle.textContent=name;overlay.hidden=true;header.hidden=true;main.hidden=true;footer.hidden=true;page.hidden=false;window.scrollTo(0,0);}
-  artists.forEach(name=>{const b=document.createElement('button');b.type='button';b.className='bmsg-artist-choice';b.textContent=name;b.addEventListener('click',()=>showArtist(name));list.appendChild(b);});
+  function showHome(){requestNumber++;currentArtist='';page.hidden=true;header.hidden=false;main.hidden=false;footer.hidden=false;window.scrollTo(0,0);}
+  function makeTagButton(name){
+    const b=document.createElement('button');b.type='button';b.className='bmsg-filter';b.textContent=name;b.setAttribute('aria-pressed',String(activeTag===name));
+    b.addEventListener('click',()=>{activeTag=name;renderVideos();});return b;
+  }
+  function renderVideos(){
+    grid.replaceChildren();filters.replaceChildren();
+    const isBmsg=currentArtist==='BMSG';
+    const tags=[...new Set(artistVideos.flatMap(v=>Array.isArray(v.tags)?v.tags:[]))].sort((a,b)=>a.localeCompare(b,'ja'));
+    if(isBmsg&&tags.length){filters.hidden=false;filters.append(makeTagButton('ALL'));for(const tag of tags)filters.append(makeTagButton(tag));}
+    else{filters.hidden=true;activeTag='ALL';}
+    const videos=artistVideos.filter(v=>!isBmsg||activeTag==='ALL'||(v.tags||[]).includes(activeTag));
+    status.textContent=videos.length+' VIDEOS';
+    empty.hidden=videos.length>0;
+    if(!videos.length)empty.textContent=activeTag==='ALL'?'登録されている動画はまだありません。':'このタグの動画はまだありません。';
+    for(const v of videos){
+      if(!/^[\w-]{11}$/.test(v.video_id))continue;
+      const card=document.createElement('article');card.className='bmsg-video-card';
+      const link=document.createElement('a');link.className='bmsg-video-link';link.href='https://www.youtube.com/watch?v='+encodeURIComponent(v.video_id);link.target='_blank';link.rel='noopener noreferrer';
+      const img=document.createElement('img');img.className='bmsg-video-thumb';img.src='https://i.ytimg.com/vi/'+v.video_id+'/hqdefault.jpg';img.alt='';img.loading='lazy';
+      const body=document.createElement('div');body.className='bmsg-video-body';
+      const title=document.createElement('h3');title.className='bmsg-video-title';title.textContent=v.title||'タイトル未設定';body.append(title);
+      if(v.category){const type=document.createElement('div');type.className='bmsg-video-type';type.textContent=v.category;body.append(type);}
+      if(isBmsg&&Array.isArray(v.tags)&&v.tags.length){const tagbox=document.createElement('div');tagbox.className='bmsg-video-tags';for(const t of v.tags){const label=document.createElement('span');label.className='bmsg-video-tag';label.textContent='#'+t;tagbox.append(label);}body.append(tagbox);}
+      link.append(img,body);card.append(link);grid.append(card);
+    }
+  }
+  async function showArtist(name){
+    const thisRequest=++requestNumber;currentArtist=name;activeTag='ALL';artistVideos=[];
+    pageTitle.textContent=name;overlay.hidden=true;header.hidden=true;main.hidden=true;footer.hidden=true;page.hidden=false;
+    grid.replaceChildren();filters.hidden=true;empty.hidden=true;status.textContent='動画を読み込んでいます...';window.scrollTo(0,0);
+    try{
+      const response=await fetch(ADMIN_PUBLIC_API+'/api/videos?artist='+encodeURIComponent(name),{cache:'no-store'});
+      if(!response.ok)throw new Error('動画の取得に失敗しました');
+      const data=await response.json();
+      if(thisRequest!==requestNumber)return;
+      artistVideos=Array.isArray(data.videos)?data.videos:[];
+      renderVideos();
+    }catch(e){if(thisRequest!==requestNumber)return;status.textContent='';empty.hidden=false;empty.textContent='動画を読み込めませんでした。通信状況を確認して、ページを開き直してください。';}
+  }
+  function artistButton(name,extraClass=''){
+    const b=document.createElement('button');b.type='button';b.className='bmsg-artist-choice'+(extraClass?' '+extraClass:'');
+    b.textContent=name;b.addEventListener('click',()=>showArtist(name));return b;
+  }
+  // STARGLOW is the full-width first button.
+  list.append(artistButton('STARGLOW','bmsg-menu-featured'));
+  // Two independent vertical columns: solo names left, group names right.
+  const columns=document.createElement('div');columns.className='bmsg-menu-columns';
+  const soloColumn=document.createElement('div');soloColumn.className='bmsg-menu-column';
+  const soloHeading=document.createElement('div');soloHeading.className='bmsg-menu-heading';soloHeading.textContent='SOLO ARTIST';
+  soloColumn.append(soloHeading);
+  for(const name of solo)soloColumn.append(artistButton(name));
+  const groupColumn=document.createElement('div');groupColumn.className='bmsg-menu-column';
+  // Intentionally no heading above the group column.
+  const groupSpacer=document.createElement('div');groupSpacer.className='bmsg-menu-heading';groupSpacer.setAttribute('aria-hidden','true');
+  groupColumn.append(groupSpacer);
+  for(const name of group.filter(name=>name!=='STARGLOW'))groupColumn.append(artistButton(name));
+  columns.append(soloColumn,groupColumn);list.append(columns);
   back.addEventListener('click',showHome);
 })();
-
 const API_URL =
   "https://musicvideo-views.starsx0601.workers.dev";
 
