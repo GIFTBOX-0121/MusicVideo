@@ -844,6 +844,23 @@
       }
     }
 
+
+    /* BMSG floating navigation (preview) */
+    .bmsg-fab{position:fixed;left:calc(100vw - 76px);top:42%;width:58px;height:58px;border-radius:50%;border:2px solid #fff;background:#050505;color:#fff;box-shadow:0 4px 18px #0009;z-index:1100;display:grid;place-items:center;font-size:12px;font-weight:900;letter-spacing:-.5px;cursor:grab;touch-action:none;user-select:none;-webkit-user-select:none}
+    .bmsg-fab:active{cursor:grabbing}.bmsg-fab span{border:1px solid #fff;padding:3px 4px;pointer-events:none}
+    .bmsg-overlay[hidden],.bmsg-artist-page[hidden]{display:none!important}
+    .bmsg-overlay{position:fixed;inset:0;z-index:1200;background:rgba(3,8,24,.77);display:flex;align-items:center;justify-content:center;padding:18px;backdrop-filter:blur(7px);-webkit-backdrop-filter:blur(7px)}
+    .bmsg-dialog{width:min(100%,430px);max-height:85dvh;overflow:auto;background:linear-gradient(150deg,#15284d,#0b1027);color:white;border:1px solid #ffffff45;border-radius:22px;padding:20px;box-shadow:0 18px 50px #0009}
+    .bmsg-dialog-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:14px}.bmsg-dialog-head h2{margin:0;font-size:18px;letter-spacing:2px}
+    .bmsg-close,.bmsg-back{border:1px solid #ffffff55;border-radius:999px;background:#ffffff16;color:#fff;cursor:pointer;padding:9px 14px;font-weight:700}
+    .bmsg-artist-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}
+    .bmsg-artist-choice{min-height:45px;border:1px solid #ffffff40;border-radius:11px;background:#ffffff12;color:white;font-size:12px;font-weight:800;cursor:pointer;padding:9px 5px}
+    .bmsg-artist-choice:active{background:#ffffff38}
+    .bmsg-artist-page{position:relative;z-index:2;min-height:65vh;color:#fff;padding:12px 0 32px}
+    .bmsg-page-head{display:flex;align-items:center;gap:14px;margin-bottom:22px}.bmsg-page-head h2{font-size:clamp(19px,5vw,28px);margin:0;overflow-wrap:anywhere}
+    .bmsg-page-note{color:#ffffffb0;font-size:13px;line-height:1.8;padding:22px;border:1px solid #ffffff30;border-radius:14px;background:#ffffff0b}
+    @media(max-width:420px){.bmsg-fab{width:53px;height:53px;font-size:11px}.bmsg-dialog{padding:16px}}
+
   </style>
 </head>
 
@@ -851,9 +868,19 @@
 
 <div id="star-background"></div>
 
+
+<!-- BMSG movable shortcut / artist menu -->
+<button id="bmsgFab" class="bmsg-fab" type="button" aria-label="BMSGアーティスト一覧を開く"><span>BMSG</span></button>
+<div id="bmsgOverlay" class="bmsg-overlay" hidden>
+  <div class="bmsg-dialog" role="dialog" aria-modal="true" aria-labelledby="bmsgMenuTitle">
+    <div class="bmsg-dialog-head"><h2 id="bmsgMenuTitle">BMSG ARTIST</h2><button id="bmsgClose" class="bmsg-close" type="button" aria-label="閉じる">✕</button></div>
+    <div id="bmsgArtistList" class="bmsg-artist-list"></div>
+  </div>
+</div>
+
 <div class="container">
 
-  <header>
+  <header id="starsHeader">
 
     <div class="header-left">
 
@@ -885,7 +912,9 @@
 
   </header>
 
-  <main>
+  <section id="bmsgArtistPage" class="bmsg-artist-page" hidden aria-live="polite"><div class="bmsg-page-head"><button id="bmsgBack" class="bmsg-back" type="button">← STARS BASE</button><h2 id="bmsgPageTitle"></h2></div><div class="bmsg-page-note">MVのサムネイルと曲名は、公式動画のリンクを確認してからここに追加します。</div></section>
+
+  <main id="starsMain">
 
     <div
       id="milestoneAlerts"
@@ -1023,13 +1052,48 @@
 
   </main>
 
-  <footer class="footer">
+  <footer id="starsFooter" class="footer">
     非公式ファンサイト
   </footer>
 
 </div>
 
 <script>
+
+
+/* BMSG artist navigation — independent of existing statistics */
+(function initBmsgNavigation(){
+  const artists=['BE:FIRST','MAZZEL','HANA','REIKO','Aile The Shota','Ayumu Imazu','SALU','ふみの','TAKARA','SKY-HI','トレーニー'];
+  const fab=document.getElementById('bmsgFab');
+  const overlay=document.getElementById('bmsgOverlay');
+  const close=document.getElementById('bmsgClose');
+  const list=document.getElementById('bmsgArtistList');
+  const page=document.getElementById('bmsgArtistPage');
+  const pageTitle=document.getElementById('bmsgPageTitle');
+  const back=document.getElementById('bmsgBack');
+  const main=document.getElementById('starsMain');
+  const header=document.getElementById('starsHeader');
+  const footer=document.getElementById('starsFooter');
+  const key='starsbase-bmsg-fab-position-v1';
+  function clamp(n,a,b){return Math.max(a,Math.min(n,b));}
+  function place(x,y){fab.style.left=clamp(x,4,window.innerWidth-fab.offsetWidth-4)+'px';fab.style.top=clamp(y,4,window.innerHeight-fab.offsetHeight-4)+'px';}
+  try{const saved=JSON.parse(localStorage.getItem(key));if(Number.isFinite(saved?.x)&&Number.isFinite(saved?.y))place(saved.x,saved.y);}catch(e){}
+  window.addEventListener('resize',()=>place(fab.offsetLeft,fab.offsetTop));
+  let drag=null;
+  fab.addEventListener('pointerdown',e=>{if(e.button!==0)return;drag={id:e.pointerId,x:e.clientX,y:e.clientY,left:fab.offsetLeft,top:fab.offsetTop,moved:false};fab.setPointerCapture(e.pointerId);e.preventDefault();});
+  fab.addEventListener('pointermove',e=>{if(!drag||e.pointerId!==drag.id)return;const dx=e.clientX-drag.x,dy=e.clientY-drag.y;if(Math.hypot(dx,dy)>6)drag.moved=true;if(drag.moved)place(drag.left+dx,drag.top+dy);});
+  function endDrag(e){if(!drag||e.pointerId!==drag.id)return;const moved=drag.moved;drag=null;if(moved){try{localStorage.setItem(key,JSON.stringify({x:fab.offsetLeft,y:fab.offsetTop}));}catch(err){}}else{overlay.hidden=false;close.focus();}}
+  fab.addEventListener('pointerup',endDrag);
+  fab.addEventListener('pointercancel',()=>{drag=null;});
+  function hideMenu(){overlay.hidden=true;fab.focus();}
+  close.addEventListener('click',hideMenu);
+  overlay.addEventListener('click',e=>{if(e.target===overlay)hideMenu();});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!overlay.hidden)hideMenu();});
+  function showHome(){page.hidden=true;header.hidden=false;main.hidden=false;footer.hidden=false;window.scrollTo(0,0);}
+  function showArtist(name){pageTitle.textContent=name;overlay.hidden=true;header.hidden=true;main.hidden=true;footer.hidden=true;page.hidden=false;window.scrollTo(0,0);}
+  artists.forEach(name=>{const b=document.createElement('button');b.type='button';b.className='bmsg-artist-choice';b.textContent=name;b.addEventListener('click',()=>showArtist(name));list.appendChild(b);});
+  back.addEventListener('click',showHome);
+})();
 
 const API_URL =
   "https://musicvideo-views.starsx0601.workers.dev";
