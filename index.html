@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -871,45 +869,27 @@
     .bmsg-filter{border:1px solid #ffffff55;border-radius:999px;background:#ffffff13;color:white;padding:7px 12px;font-size:11px;font-weight:700;cursor:pointer}
     .bmsg-filter[aria-pressed="true"]{background:#fff;color:#14213c;border-color:#fff}
     .bmsg-video-grid{display:flex;flex-direction:column;gap:22px}
-    .bmsg-song-group{min-width:0}
-    .bmsg-song-heading{margin:0 0 11px;padding:12px 14px;text-align:center;font-size:15px;font-weight:900;line-height:1.5;overflow-wrap:anywhere;background:linear-gradient(110deg,#344d86,#172c5c);border:1px solid #b9c9f788;border-radius:12px;color:white}
-    .bmsg-song-videos{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:11px}
-    @media(min-width:620px){.bmsg-song-videos{grid-template-columns:repeat(3,minmax(0,1fr))}}
+    .bmsg-song-group{min-width:0;border:1px solid #b9c9f744;border-radius:12px;overflow:hidden;background:#ffffff08}
+    .bmsg-song-group[open] .bmsg-song-heading{border-bottom:1px solid #b9c9f755}
+    .bmsg-song-group summary{list-style:none;cursor:pointer;user-select:none;-webkit-tap-highlight-color:transparent}
+    .bmsg-song-group summary::-webkit-details-marker{display:none}
+    .bmsg-song-group summary:after{content:'＋';float:right;font-size:18px;line-height:1.2}
+    .bmsg-song-group[open] summary:after{content:'－'}
+    .bmsg-song-heading{margin:0;padding:12px 14px;text-align:center;font-size:15px;font-weight:900;line-height:1.5;overflow-wrap:anywhere;background:linear-gradient(110deg,#344d86,#172c5c);border:1px solid #b9c9f788;border-radius:12px;color:white}
+    .bmsg-song-videos{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;padding:10px}
+
     .bmsg-filter-label{color:#dce5ff;font-size:12px;font-weight:800;margin:10px 0 7px}
     .bmsg-filter-list{margin-bottom:12px}
     .bmsg-filter-reset{margin:0 0 15px}
     .bmsg-video-card{overflow:hidden;border:1px solid #ffffff2a;border-radius:13px;background:#ffffffed;color:#121625;min-width:0}
     .bmsg-video-link{display:block;color:inherit;text-decoration:none}
     .bmsg-video-thumb{display:block;width:100%;aspect-ratio:16/9;object-fit:cover;background:#dfe3ed}
-    .bmsg-video-body{padding:10px 11px 12px}
-    .bmsg-video-title{margin:0;font-size:13px;line-height:1.5;font-weight:800;overflow-wrap:anywhere}
+    .bmsg-video-body{padding:7px 6px 9px}
+    .bmsg-video-title{margin:0;font-size:clamp(9px,1.6vw,12px);line-height:1.4;font-weight:800;overflow-wrap:anywhere;display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
     .bmsg-video-type{font-size:10px;color:#5e6471;margin-top:5px}
     .bmsg-video-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:8px}
     .bmsg-video-tag{border-radius:5px;background:#e5eaf3;color:#243552;padding:3px 6px;font-size:10px;font-weight:700;overflow-wrap:anywhere}
     @media(max-width:420px){.bmsg-fab{width:60px;height:60px;font-size:12px}.bmsg-dialog{padding:16px}.bmsg-video-grid{gap:9px}.bmsg-video-body{padding:9px}.bmsg-video-title{font-size:12px}}
-
-
-    /* PREMIUM artist collection — presentation only */
-    .bmsg-page-head{display:flex;flex-direction:column;align-items:stretch;gap:12px;margin:0 0 20px}
-    .bmsg-page-head .bmsg-back{align-self:flex-start;padding:9px 15px;background:#0b1020b8;border:1px solid #aab4ca80;color:#e8edf7;letter-spacing:.04em}
-    .bmsg-artist-hero{position:relative;overflow:hidden;min-width:0;padding:21px 18px 19px;text-align:center;border:1px solid #c5d1e1a6;border-radius:17px;background:linear-gradient(125deg,#202c43 0%,#0c1220 46%,#26344e 100%);box-shadow:0 12px 32px #0005,inset 0 1px #ffffff3d}
-    .bmsg-artist-hero::before{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(105deg,transparent 25%,#ffffff0c 50%,transparent 75%)}
-    .bmsg-artist-eyebrow{position:relative;color:#bdc8d9;font-size:10px;font-weight:800;letter-spacing:.19em;margin-bottom:12px}
-    .bmsg-page-head h2{position:relative;display:block;width:100%;margin:0;color:#f8fbff;font-size:clamp(27px,7vw,43px);font-weight:900;line-height:1.25;letter-spacing:.065em;white-space:nowrap;overflow:hidden;text-overflow:clip;text-shadow:0 2px 18px #dce7ff3d}
-    .bmsg-artist-hero-rule{position:relative;width:65px;height:2px;margin:16px auto 0;border-radius:10px;background:linear-gradient(90deg,transparent,#e2e9f5,transparent)}
-    .bmsg-page-status{font-size:11px;letter-spacing:.14em;color:#e0e6f2;margin:0 0 16px;text-align:right}
-    .bmsg-filter-label{color:#e5eaf4;letter-spacing:.09em}
-    .bmsg-song-group{min-width:0;padding:0 0 6px}
-    .bmsg-song-heading{display:flex;align-items:center;justify-content:center;width:100%;height:55px;min-height:55px;max-height:55px;margin:0 0 12px;padding:0 15px;white-space:nowrap;overflow:hidden;text-overflow:clip;overflow-wrap:normal;font-size:18px;font-weight:900;line-height:1;letter-spacing:.025em;text-align:center;color:#f8fbff;background:linear-gradient(115deg,#303d54,#111927 54%,#35435a);border:1px solid #b9c7dbaa;border-radius:12px;box-shadow:inset 0 1px #ffffff33,0 5px 18px #0003}
-    .bmsg-song-videos{gap:12px}
-    .bmsg-video-card{min-width:0;overflow:hidden;border:1px solid #aebdd25c;border-radius:12px;background:linear-gradient(180deg,#f7f9fc,#e7ebf2);color:#111827;box-shadow:0 5px 15px #0003;transition:transform .18s ease,box-shadow .18s ease}
-    @media(hover:hover){.bmsg-video-card:hover{transform:translateY(-3px);box-shadow:0 9px 25px #0006}}
-    .bmsg-video-thumb{aspect-ratio:16/9;object-fit:cover;background:#202a3a}
-    .bmsg-video-body{padding:10px 10px 11px;min-width:0}
-    .bmsg-video-title{display:block;width:100%;height:18px;line-height:18px;margin:0;white-space:nowrap;overflow:hidden;text-overflow:clip;overflow-wrap:normal;font-size:12px;font-weight:900;letter-spacing:0}
-    .bmsg-video-tags{margin-top:7px}
-    .bmsg-video-tag{background:#dce3ed;color:#293a54}
-    @media(max-width:420px){.bmsg-artist-hero{padding:19px 12px 17px}.bmsg-artist-eyebrow{font-size:9px}.bmsg-song-heading{height:50px;min-height:50px;max-height:50px;padding:0 10px;font-size:16px}.bmsg-video-body{padding:8px}.bmsg-video-title{font-size:11px}}
 
   </style>
 </head>
@@ -963,7 +943,7 @@
   </header>
 
   <section id="bmsgArtistPage" class="bmsg-artist-page" hidden aria-live="polite">
-    <div class="bmsg-page-head"><button id="bmsgBack" class="bmsg-back" type="button">← STARS BASE</button><div class="bmsg-artist-hero"><h2 id="bmsgPageTitle" class="bmsg-fit-text"></h2><div class="bmsg-artist-hero-rule" aria-hidden="true"></div></div></div>
+    <div class="bmsg-page-head"><button id="bmsgBack" class="bmsg-back" type="button">← STARS BASE</button><h2 id="bmsgPageTitle"></h2></div>
     <div id="bmsgPageStatus" class="bmsg-page-status" role="status"></div>
     <div class="bmsg-filter-label">動画の種類</div>
     <div id="bmsgTypeFilters" class="bmsg-filter-list" aria-label="動画の種類で絞り込み"></div>
@@ -1165,21 +1145,7 @@
   function normalizedType(type){return String(type||'').trim().toLowerCase();}
   function typeRank(type){const i=TYPE_ORDER.findIndex(x=>normalizedType(x)===normalizedType(type));return i<0?TYPE_ORDER.length:i;}
   function isSpecial(type){return currentArtist==='STARGLOW'&&['SG LAB','STARGLOW IS COMING'].includes(String(type||'').trim());}
-  function groupName(v){
-    if(isSpecial(v.category))return String(v.category).trim();
-    const title=String(v.title||'').trim();
-    if(normalizedType(v.category)!=='live')return title||'タイトル未設定';
-    // Match the longest known song first, avoiding Star / StarWish collisions.
-    const known=[...new Set([...artistSongOrder,...artistVideos.filter(x=>normalizedType(x.category)!=='live'&&!isSpecial(x.category)).map(x=>String(x.title||'').trim())].filter(Boolean))].sort((a,b)=>b.length-a.length);
-    for(const song of known){
-      if(title===song)return song;
-      if(!title.startsWith(song))continue;
-      const suffix=title.slice(song.length);
-      if(/^\s*[\[【（(]/.test(suffix)||/^\s+[-–—|／/]/.test(suffix)||/^\s+(?:DAY\s*\d+|at\s|@)/i.test(suffix))return song;
-    }
-    const bracket=title.match(/^(.+?)\s*[\[【（(]/);
-    return (bracket?bracket[1].trim():title)||'タイトル未設定';
-  }
+  function groupName(v){return isSpecial(v.category)?String(v.category).trim():(String(v.song_title||'').trim()||String(v.title||'').trim()||'曲名未設定');}
   function numberInTitle(title){const m=String(title||'').match(/#\s*(\d+)/);return m?Number(m[1]):Number.POSITIVE_INFINITY;}
   function specialRank(v){
     if(v.category==='SG LAB')return numberInTitle(v.title);
@@ -1203,40 +1169,12 @@
     const link=document.createElement('a');link.className='bmsg-video-link';link.href='https://www.youtube.com/watch?v='+encodeURIComponent(v.video_id);link.target='_blank';link.rel='noopener noreferrer';
     const img=document.createElement('img');img.className='bmsg-video-thumb';img.src='https://i.ytimg.com/vi/'+v.video_id+'/hqdefault.jpg';img.alt='';img.loading='lazy';
     const body=document.createElement('div');body.className='bmsg-video-body';
-    const title=document.createElement('h3');title.className='bmsg-video-title bmsg-fit-text';
+    const title=document.createElement('h3');title.className='bmsg-video-title';
     title.textContent=isSpecial(v.category)?(v.title||v.category):(v.category==='Live'?(v.title||'Live'):(v.category||'動画'));
     body.append(title);
     if(Array.isArray(v.tags)&&v.tags.length){const tagbox=document.createElement('div');tagbox.className='bmsg-video-tags';for(const t of v.tags){const label=document.createElement('span');label.className='bmsg-video-tag';label.textContent='#'+t;tagbox.append(label);}body.append(tagbox);}
     link.append(img,body);card.append(link);return card;
   }
-  // Fit long titles to a single line without changing any header/card height.
-  const fitCanvas=document.createElement('canvas');
-  const fitContext=fitCanvas.getContext('2d');
-  function fitOneText(el){
-    if(!el||!el.isConnected||!fitContext)return;
-    el.style.fontSize='';
-    const style=getComputedStyle(el);
-    const base=parseFloat(style.fontSize)||16;
-    const available=el.clientWidth-(el.classList.contains('bmsg-song-heading')?0:1);
-    if(available<=0)return;
-    const weight=style.fontWeight;
-    const family=style.fontFamily;
-    const spacing=parseFloat(style.letterSpacing)||0;
-    const content=el.textContent||'';
-    const min=7;
-    let low=min,high=base;
-    for(let i=0;i<15;i++){
-      const mid=(low+high)/2;
-      fitContext.font=weight+' '+mid+'px '+family;
-      const width=fitContext.measureText(content).width+Math.max(0,content.length-1)*spacing;
-      if(width<=available-2)low=mid;else high=mid;
-    }
-    el.style.fontSize=Math.min(base,Math.max(min,low)).toFixed(2)+'px';
-  }
-  function fitVisibleTitles(){page.querySelectorAll('.bmsg-fit-text').forEach(fitOneText);}
-  const fitObserver=typeof ResizeObserver==='function'?new ResizeObserver(()=>fitVisibleTitles()):null;
-  if(fitObserver)fitObserver.observe(page);
-  window.addEventListener('resize',fitVisibleTitles);
   function renderVideos(){
     grid.replaceChildren();filters.replaceChildren();typeFilters.replaceChildren();
     const types=[...new Set(artistVideos.map(v=>String(v.category||'').trim()).filter(Boolean))].sort((a,b)=>typeRank(a)-typeRank(b)||a.localeCompare(b,'ja'));
@@ -1250,29 +1188,24 @@
     status.textContent=videos.length+' VIDEOS';
     empty.hidden=videos.length>0;
     if(!videos.length)empty.textContent=artistVideos.length?'該当する動画はありません。':'登録されている動画はまだありません。';
-    // Use the administrator-saved song order; filters do not reorder groups.
+    // Preserve the API's song order; videos within each song use the fixed category order.
     const groups=new Map();
     for(const v of videos){const key=groupName(v);if(!groups.has(key))groups.set(key,[]);groups.get(key).push(v);}
-    const savedRank=new Map(artistSongOrder.map((name,i)=>[name,i]));
-    const orderedGroups=[...groups.entries()].sort((a,b)=>{
-      const ai=savedRank.has(a[0])?savedRank.get(a[0]):Number.MAX_SAFE_INTEGER;
-      const bi=savedRank.has(b[0])?savedRank.get(b[0]):Number.MAX_SAFE_INTEGER;
-      return ai-bi;
-    });
+    const orderIndex=new Map(artistSongOrder.map((name,i)=>[name,i]));
+    const orderedGroups=[...groups.entries()].sort((a,b)=>{const ai=orderIndex.has(a[0])?orderIndex.get(a[0]):Number.MAX_SAFE_INTEGER;const bi=orderIndex.has(b[0])?orderIndex.get(b[0]):Number.MAX_SAFE_INTEGER;return ai-bi;});
     for(const [name,items] of orderedGroups){
-      const section=document.createElement('section');section.className='bmsg-song-group';
-      const heading=document.createElement('h3');heading.className='bmsg-song-heading bmsg-fit-text';heading.textContent=name;
+      const section=document.createElement('details');section.className='bmsg-song-group';
+      const heading=document.createElement('summary');heading.className='bmsg-song-heading';heading.textContent=name;
       const row=document.createElement('div');row.className='bmsg-song-videos';
       const special=isSpecial(items[0].category);
       items.sort((a,b)=>special?(specialRank(a)-specialRank(b)):(typeRank(a.category)-typeRank(b.category)));
       for(const v of items){const card=createVideoCard(v);if(card)row.append(card);}
       section.append(heading,row);grid.append(section);
     }
-    fitVisibleTitles();
   }
   async function showArtist(name){
     const thisRequest=++requestNumber;currentArtist=name;activeTag='ALL';activeType='ALL';artistVideos=[];artistSongOrder=[];
-    pageTitle.textContent=name;overlay.hidden=true;header.hidden=true;main.hidden=true;footer.hidden=true;page.hidden=false;fitVisibleTitles();
+    pageTitle.textContent=name;overlay.hidden=true;header.hidden=true;main.hidden=true;footer.hidden=true;page.hidden=false;
     grid.replaceChildren();filters.hidden=true;tagLabel.hidden=true;typeFilters.replaceChildren();resetFilters.hidden=true;empty.hidden=true;status.textContent='動画を読み込んでいます...';window.scrollTo(0,0);
     try{
       const response=await fetch(ADMIN_PUBLIC_API+'/api/videos?artist='+encodeURIComponent(name),{cache:'no-store'});
