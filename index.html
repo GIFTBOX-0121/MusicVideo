@@ -1124,7 +1124,7 @@
   const tagLabel=document.getElementById('bmsgTagFilterLabel');
   const resetFilters=document.getElementById('bmsgResetFilters');
   const key='starsbase-bmsg-fab-position-v1';
-  let currentArtist='',requestNumber=0,artistVideos=[],artistSongOrder=[],activeTag='ALL',activeType='ALL';
+  let currentArtist='',requestNumber=0,artistVideos=[],artistFolders=[],activeTag='ALL',activeType='ALL';
   function clamp(n,a,b){return Math.max(a,Math.min(n,b));}
   function place(x,y){fab.style.left=clamp(x,4,window.innerWidth-fab.offsetWidth-4)+'px';fab.style.top=clamp(y,4,window.innerHeight-fab.offsetHeight-4)+'px';}
   try{const saved=JSON.parse(localStorage.getItem(key));if(Number.isFinite(saved?.x)&&Number.isFinite(saved?.y))place(saved.x,saved.y);}catch(e){}
@@ -1145,54 +1145,10 @@
   function normalizedType(type){return String(type||'').trim().toLowerCase();}
   function typeRank(type){const i=TYPE_ORDER.findIndex(x=>normalizedType(x)===normalizedType(type));return i<0?TYPE_ORDER.length:i;}
   function isSpecial(type){return currentArtist==='STARGLOW'&&['SG LAB','STARGLOW IS COMING'].includes(String(type||'').trim());}
-  // Use the same title-based grouping rules as the admin's song-order screen.
-  // Explicit song names saved by the admin take priority over inferred titles.
-  // Song identity is independent of video type, event subtitle and title decoration.
-  // Admin-assigned names are respected unless they are merely an unprocessed video title.
-  function cleanSongText(value){
-    let t=String(value||'').normalize('NFKC').trim();
-    t=t.replace(/^(?:\[[^\]]+\]|【[^】]+】)\s*/g,'').trim();
-    const names=[currentArtist,'BMSG','STARGLOW','BE:FIRST','MAZZEL','SKY-HI','Novel Core','Aile The Shota'];
-    for(const name of names){
-      if(!name)continue;
-      const escaped=name.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
-      const prefix=new RegExp('^'+escaped+'\\s*[/|｜:：-]\\s*','i');
-      if(prefix.test(t)){t=t.replace(prefix,'').trim();break;}
-    }
-    // Remove standard suffixes (including free-form subtitles such as
-    // "- Behind The Scenes -" and "- Yakatabune Party -").
-    t=t.replace(/\s*[\[(【（]\s*(?:Official\s*)?(?:Music\s*Video|MV|Performance\s*Video|Dance\s*(?:Practice|Performance)|Lyric\s*Video|Live\s*(?:Video|Performance)?|Teaser|Trailer|Behind\s*the\s*Scenes|Audio|Visualizer|Short\s*Ver\.?)[^\])】）]*[\])】）]\s*$/i,'').trim();
-    t=t.replace(/\s+[-–—|｜]\s*(?:Official\s*)?(?:Music\s*Video|MV|Performance\s*Video|Dance\s*(?:Practice|Performance)|Lyric\s*Video|Live\s*(?:Video|Performance)?|Teaser|Trailer|Behind\s*the\s*Scenes|Yakatabune\s*Party|Making(?:\s*of)?|Audio|Visualizer|Short\s*Ver\.?)(?:\s*[-–—].*)?\s*[-–—]?\s*$/i,'').trim();
-    t=t.replace(/\s+[-–—]\s*(?:Behind\s*The\s*Scenes|Yakatabune\s*Party)\s*[-–—]?\s*$/i,'').trim();
-    return t.replace(/\s+[-–—]\s*$/,'').trim();
-  }
-  function songKey(value){return cleanSongText(value).toLocaleLowerCase('ja').replace(/[\s\u3000'’‘\"“”\-–—_・.！!？?]/g,'');}
-  function groupName(v){
-    const raw=String(v.title||'').trim();
-    const category=String(v.category||'').trim();
-    const tags=Array.isArray(v.tags)?v.tags:[];
-    if(currentArtist==='STARGLOW'){
-      if(category.toUpperCase()==='STARGLOW IS COMING'||/STARGLOW\s+IS\s+COMING/i.test(raw))return 'STARGLOW IS COMING';
-      if(/covered\s+by/i.test(raw)&&tags.some(t=>/^#?STARCRUISE$/i.test(String(t).trim())))return 'STARSONGS';
-    }
-    if(isSpecial(category))return category;
-    const explicit=String(v.song_title||'').trim();
-    const normalizedRaw=cleanSongText(raw);
-    const normalizedExplicit=cleanSongText(explicit);
-    // The API falls back to the full video title. Ignore that fallback.
-    // Explicit custom names take priority unless they are just another
-    // decorated form of the same title.
-    if(explicit&&explicit!==raw&&songKey(explicit)!==songKey(raw))return explicit;
-    const targetKey=songKey(normalizedRaw);
-    // Match the already-established song ordering to keep consistent names.
-    // Avoid using raw decorated video titles as the canonical name.
-    const candidates=artistSongOrder.filter(x=>x&&x!=='STARGLOW IS COMING'&&x!=='STARSONGS');
-    const matching=candidates.filter(x=>songKey(x)===targetKey);
-    if(matching.length){
-      matching.sort((a,b)=>cleanSongText(a).length-cleanSongText(b).length);
-      return cleanSongText(matching[0]);
-    }
-    return normalizedRaw||'未分類';
+  // Folder assignments are authoritative. Never infer folders from titles or tags.
+  function folderFor(v){
+    const id=Number(v.folder_id);
+    return Number.isSafeInteger(id)&&id>0?id:null;
   }
   function numberInTitle(title){const m=String(title||'').match(/#\s*(\d+)/);return m?Number(m[1]):Number.POSITIVE_INFINITY;}
   function specialRank(v){
@@ -1232,27 +1188,26 @@
     filters.hidden=tagLabel.hidden=tags.length===0;
     if(tags.length){filters.append(makeFilterButton('ALL','tag'));for(const tag of tags)filters.append(makeFilterButton(tag,'tag'));}
     resetFilters.hidden=activeType==='ALL'&&activeTag==='ALL';
-    const videos=artistVideos.filter(v=>(activeType==='ALL'||v.category===activeType)&&(activeTag==='ALL'||(v.tags||[]).includes(activeTag))&&/^[\w-]{11}$/.test(v.video_id));
+    const videos=artistVideos.filter(v=>folderFor(v)!==null&&(activeType==='ALL'||v.category===activeType)&&(activeTag==='ALL'||(v.tags||[]).includes(activeTag))&&/^[\w-]{11}$/.test(v.video_id));
     status.textContent=videos.length+' VIDEOS';
     empty.hidden=videos.length>0;
-    if(!videos.length)empty.textContent=artistVideos.length?'該当する動画はありません。':'登録されている動画はまだありません。';
-    // Preserve the API's song order; videos within each song use the fixed category order.
-    const groups=new Map();
-    for(const v of videos){const key=groupName(v);if(!groups.has(key))groups.set(key,[]);groups.get(key).push(v);}
-    const orderIndex=new Map(artistSongOrder.map((name,i)=>[name,i]));
-    const orderedGroups=[...groups.entries()].sort((a,b)=>{const ai=orderIndex.has(a[0])?orderIndex.get(a[0]):Number.MAX_SAFE_INTEGER;const bi=orderIndex.has(b[0])?orderIndex.get(b[0]):Number.MAX_SAFE_INTEGER;return ai-bi;});
-    for(const [name,items] of orderedGroups){
+    if(!videos.length)empty.textContent=artistVideos.length?'該当する動画がありません（未分類の動画は表示されません）。':'登録されている動画はまだありません。';
+    // Show only videos explicitly assigned to an existing folder.
+    const groups=new Map(artistFolders.map(f=>[Number(f.id),[]]));
+    for(const v of videos){const id=folderFor(v);if(groups.has(id))groups.get(id).push(v);}
+    for(const folder of artistFolders){
+      const items=groups.get(Number(folder.id))||[];
+      if(!items.length)continue;
       const section=document.createElement('details');section.className='bmsg-song-group';
-      const heading=document.createElement('summary');heading.className='bmsg-song-heading';heading.textContent=name;
+      const heading=document.createElement('summary');heading.className='bmsg-song-heading';heading.textContent=folder.name;
       const row=document.createElement('div');row.className='bmsg-song-videos';
-      const special=isSpecial(items[0].category);
-      items.sort((a,b)=>special?(specialRank(a)-specialRank(b)):(typeRank(a.category)-typeRank(b.category)));
+      items.sort((a,b)=>typeRank(a.category)-typeRank(b.category)||Number(a.sort_order||0)-Number(b.sort_order||0));
       for(const v of items){const card=createVideoCard(v);if(card)row.append(card);}
       section.append(heading,row);grid.append(section);
     }
   }
   async function showArtist(name){
-    const thisRequest=++requestNumber;currentArtist=name;activeTag='ALL';activeType='ALL';artistVideos=[];artistSongOrder=[];
+    const thisRequest=++requestNumber;currentArtist=name;activeTag='ALL';activeType='ALL';artistVideos=[];artistFolders=[];
     pageTitle.textContent=name;overlay.hidden=true;header.hidden=true;main.hidden=true;footer.hidden=true;page.hidden=false;
     grid.replaceChildren();filters.hidden=true;tagLabel.hidden=true;typeFilters.replaceChildren();resetFilters.hidden=true;empty.hidden=true;status.textContent='動画を読み込んでいます...';window.scrollTo(0,0);
     try{
@@ -1261,7 +1216,7 @@
       const data=await response.json();
       if(thisRequest!==requestNumber)return;
       artistVideos=Array.isArray(data.videos)?data.videos:[];
-      artistSongOrder=Array.isArray(data.song_order)?data.song_order:[];
+      artistFolders=Array.isArray(data.folders)?data.folders:[];
       renderVideos();
     }catch(e){if(thisRequest!==requestNumber)return;status.textContent='';empty.hidden=false;empty.textContent='動画を読み込めませんでした。通信状況を確認して、ページを開き直してください。';}
   }
