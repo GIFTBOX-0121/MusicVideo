@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -1174,7 +1175,7 @@
     const img=document.createElement('img');img.className='bmsg-video-thumb';img.src='https://i.ytimg.com/vi/'+v.video_id+'/hqdefault.jpg';img.alt='';img.loading='lazy';
     const body=document.createElement('div');body.className='bmsg-video-body';
     const title=document.createElement('h3');title.className='bmsg-video-title';
-    title.textContent=String(v.title||v.display_title||v.original_title||'動画').trim();
+    title.textContent=String(v.display_title||v.title||v.original_title||'動画').trim();
     body.append(title);
     if(Array.isArray(v.tags)&&v.tags.length){const tagbox=document.createElement('div');tagbox.className='bmsg-video-tags';for(const t of v.tags){const label=document.createElement('span');label.className='bmsg-video-tag';label.textContent='#'+t;tagbox.append(label);}body.append(tagbox);}
     link.append(img,body);card.append(link);return card;
