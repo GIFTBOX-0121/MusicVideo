@@ -1145,7 +1145,20 @@
   function normalizedType(type){return String(type||'').trim().toLowerCase();}
   function typeRank(type){const i=TYPE_ORDER.findIndex(x=>normalizedType(x)===normalizedType(type));return i<0?TYPE_ORDER.length:i;}
   function isSpecial(type){return currentArtist==='STARGLOW'&&['SG LAB','STARGLOW IS COMING'].includes(String(type||'').trim());}
-  function groupName(v){return isSpecial(v.category)?String(v.category).trim():(String(v.song_title||'').trim()||String(v.title||'').trim()||'曲名未設定');}
+  // Use the same title-based grouping rules as the admin's song-order screen.
+  // Explicit song names saved by the admin take priority over inferred titles.
+  function groupName(v){
+    if(isSpecial(v.category))return String(v.category).trim();
+    const raw=String(v.title||'').trim();
+    const explicit=String(v.song_title||'').trim();
+    if(explicit&&explicit!==raw)return explicit;
+    let t=raw.replace(/^(?:\[[^\]]+\]|【[^】]+】)\s*/g,'').trim();
+    const artistNames=[currentArtist,'BMSG','STARGLOW','BE:FIRST','MAZZEL','SKY-HI','Novel Core','Aile The Shota'];
+    for(const a of artistNames){if(a&&t.toLowerCase().startsWith(a.toLowerCase()+' - ')){t=t.slice(a.length+3).trim();break;}}
+    t=t.replace(/\s*[\[(【（]\s*(?:Official\s*)?(?:Music\s*Video|MV|Performance\s*Video|Dance\s*(?:Practice|Performance)|Lyric\s*Video|Live\s*(?:Video|Performance)?|Teaser|Trailer|Behind\s*the\s*Scenes|Audio|Visualizer|Short\s*Ver\.?)[^\])】）]*[\])】）]\s*$/i,'').trim();
+    t=t.replace(/\s+[-–—|/]\s*(?:Official\s*)?(?:Music\s*Video|MV|Performance\s*Video|Dance\s*(?:Practice|Performance)|Lyric\s*Video|Live\s*(?:Video|Performance)?|Teaser|Trailer|Audio|Visualizer|Short\s*Ver\.?).*$/i,'').trim();
+    return t||raw||'曲名未設定';
+  }
   function numberInTitle(title){const m=String(title||'').match(/#\s*(\d+)/);return m?Number(m[1]):Number.POSITIVE_INFINITY;}
   function specialRank(v){
     if(v.category==='SG LAB')return numberInTitle(v.title);
