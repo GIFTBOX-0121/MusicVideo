@@ -933,6 +933,25 @@
     .bmsg-folder-panel .bmsg-video-title{font-size:clamp(9px,1.7vw,12px)}
     @media(max-width:420px){.bmsg-video-grid{gap:9px}.bmsg-folder-panel{padding:10px}.bmsg-folder-panel .bmsg-song-videos{gap:5px}.bmsg-folder-panel .bmsg-video-title{font-size:9px}.bmsg-folder-panel .bmsg-video-tags{gap:2px}.bmsg-folder-panel .bmsg-video-tag{font-size:8px;padding:2px 3px}}
 
+
+    /* Other artists: two-column vinyl record folders, vertical video popup */
+    .bmsg-video-grid.bmsg-vinyl-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:18px 14px}
+    .bmsg-vinyl-tile{appearance:none;width:100%;min-width:0;border:1px solid #ffffff50;border-radius:14px;padding:14px 10px 12px;background:linear-gradient(150deg,#222633,#090b10 65%,#30323c);color:#f5f5f8;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:10px;box-shadow:0 10px 26px #0008;font:inherit}
+    .bmsg-vinyl-disc{position:relative;width:min(100%,190px);aspect-ratio:1;border-radius:50%;display:grid;place-items:center;overflow:hidden;background:repeating-radial-gradient(circle at center,#111318 0 2px,#2d3037 3px 4px,#111318 5px 7px);border:2px solid #999eaa;box-shadow:inset 0 0 24px #000,0 4px 18px #000a}
+    .bmsg-vinyl-disc::before{content:'';position:absolute;inset:29%;border-radius:50%;background:radial-gradient(circle at center,#c9cdd6 0 6%,#303542 7% 13%,#d7dbe5 14% 15%,#4c5364 16% 100%);border:1px solid #dce0ec80}
+    .bmsg-vinyl-title{position:relative;z-index:1;display:grid;place-items:center;width:56%;min-height:42px;padding:5px;text-align:center;font-size:clamp(10px,2.8vw,14px);line-height:1.3;font-weight:900;letter-spacing:.035em;overflow-wrap:anywhere;text-shadow:0 2px 5px #000,0 0 10px #000}
+    .bmsg-vinyl-count{font-size:10px;letter-spacing:.13em;color:#bfc5d0}
+    .bmsg-vinyl-tile:focus-visible{outline:3px solid white;outline-offset:3px}
+    .bmsg-folder-panel.bmsg-vinyl-panel{max-width:760px}
+    .bmsg-vinyl-panel .bmsg-song-videos{display:flex;flex-direction:column;gap:0}
+    .bmsg-vinyl-panel .bmsg-video-card{width:100%;border:0;border-bottom:1px solid #ffffff26;border-radius:0;background:transparent;box-shadow:none}
+    .bmsg-vinyl-panel .bmsg-video-link{display:flex;flex-direction:row;align-items:center;gap:13px;padding:10px 2px}
+    .bmsg-vinyl-panel .bmsg-video-thumb{width:42%;max-width:210px;aspect-ratio:16/9;object-fit:cover;flex:none;border-radius:7px}
+    .bmsg-vinyl-panel .bmsg-video-body{flex:1;min-width:0;padding:0}
+    .bmsg-vinyl-panel .bmsg-video-title{font-size:clamp(12px,3.3vw,16px);line-height:1.5;text-align:left;overflow-wrap:anywhere}
+    .bmsg-vinyl-panel .bmsg-video-tags{justify-content:flex-start}
+    .bmsg-vinyl-date{display:block;margin-top:6px;font-size:11px;color:#b6c2d6}
+    @media(max-width:420px){.bmsg-vinyl-panel .bmsg-video-thumb{width:40%}.bmsg-vinyl-panel .bmsg-video-link{gap:9px}}
   </style>
 </head>
 
@@ -1177,7 +1196,9 @@
   document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!folderModal.hidden){e.stopPropagation();closeFolderModal();}});
   function openFolderModal(folder,items,trigger){
     lastFolderTrigger=trigger;folderModalTitle.textContent=folder.name;folderModalVideos.replaceChildren();
-    for(const v of items){const card=createVideoCard(v);if(card)folderModalVideos.append(card);}
+    const isVinyl=currentArtist!=='STARGLOW';
+    folderModal.querySelector('.bmsg-folder-panel').classList.toggle('bmsg-vinyl-panel',isVinyl);
+    for(const v of items){const card=createVideoCard(v);if(card){if(isVinyl&&v.published_at){const date=document.createElement('time');date.className='bmsg-vinyl-date';date.textContent='公開日 '+String(v.published_at).slice(0,10);card.querySelector('.bmsg-video-body')?.append(date);}folderModalVideos.append(card);}}
     folderModal.hidden=false;document.body.style.overflow='hidden';folderModalClose.focus();
   }
 
@@ -1244,7 +1265,7 @@
     link.append(img,body);card.append(link);return card;
   }
   function renderVideos(){
-    grid.replaceChildren();folderNav.replaceChildren();filters.replaceChildren();typeFilters.replaceChildren();
+    grid.replaceChildren();grid.classList.toggle('bmsg-vinyl-grid',currentArtist!=='STARGLOW');folderNav.replaceChildren();filters.replaceChildren();typeFilters.replaceChildren();
     const types=[...new Set(artistVideos.map(v=>String(v.category||'').trim()).filter(Boolean))].sort((a,b)=>typeRank(a)-typeRank(b)||a.localeCompare(b,'ja'));
     typeFilters.append(makeFilterButton('ALL','type'));
     for(const type of types)typeFilters.append(makeFilterButton(type,'type'));
@@ -1262,7 +1283,20 @@
     for(const folder of artistFolders){
       const items=groups.get(Number(folder.id))||[];
       // Keep every registered folder visible, even when it currently has no assigned videos.
-      items.sort((a,b)=>{const ai=a.folder_video_order,bi=b.folder_video_order;return (ai==null?999999:ai)-(bi==null?999999:bi)||Number(a.sort_order||0)-Number(b.sort_order||0);});
+      if(currentArtist==='STARGLOW'){
+        items.sort((a,b)=>{const ai=a.folder_video_order,bi=b.folder_video_order;return (ai==null?999999:ai)-(bi==null?999999:bi)||Number(a.sort_order||0)-Number(b.sort_order||0);});
+      }else{
+        items.sort((a,b)=>{const ad=Date.parse(a.published_at||'')||0,bd=Date.parse(b.published_at||'')||0;return bd-ad||Number(a.sort_order||0)-Number(b.sort_order||0);});
+      }
+      if(currentArtist!=='STARGLOW'){
+        const tile=document.createElement('button');tile.type='button';tile.className='bmsg-vinyl-tile';tile.setAttribute('aria-label',folder.name+' の動画を開く');
+        const disc=document.createElement('span');disc.className='bmsg-vinyl-disc';
+        const label=document.createElement('span');label.className='bmsg-vinyl-title';label.textContent=folder.name;
+        disc.append(label);
+        const count=document.createElement('span');count.className='bmsg-vinyl-count';count.textContent=items.length+' VIDEOS';
+        tile.append(disc,count);tile.addEventListener('click',()=>openFolderModal(folder,items,tile));grid.append(tile);
+        continue;
+      }
       const tile=document.createElement('button');tile.type='button';tile.className='bmsg-jacket-tile';tile.setAttribute('aria-label',folder.name+' の動画を開く');
       const art=document.createElement('span');art.className='bmsg-jacket-art';
       const fallback=()=>{art.replaceChildren();const wrap=document.createElement('span');wrap.className='bmsg-jacket-fallback';const mark=document.createElement('span');mark.className='bmsg-jacket-fallback-mark';mark.textContent='STARS BASE';const sub=document.createElement('span');sub.className='bmsg-jacket-fallback-small';sub.textContent='ARTIST COLLECTION';wrap.append(mark,sub);art.append(wrap);};
