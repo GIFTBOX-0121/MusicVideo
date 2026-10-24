@@ -1084,6 +1084,17 @@
 .random-video-single .random-star:active{transform:scale(.95);filter:drop-shadow(0 0 5px rgba(255,231,205,.5))}
 @media(max-width:480px){.bmsg-special-videos{gap:5px}.bmsg-special-title{font-size:9px}.bmsg-special-group{font-size:7px}.random-video-single{gap:8px;min-height:96px;padding:16px 8px}.random-video-single .random-star{font-size:47px;width:60px;height:60px}}
   
+
+/* Compact, low-glare RANDOM VIDEO entry. SELECTING window is unchanged. */
+.random-video-compact-wrap{display:flex;justify-content:center;margin:2px 0 16px;padding:0 6px}
+.random-video-compact{display:inline-flex;align-items:center;justify-content:center;gap:clamp(6px,1.8vw,11px);max-width:100%;min-height:38px;padding:9px clamp(11px,3vw,19px);border:1px solid rgba(193,170,218,.58);border-radius:999px;background:linear-gradient(110deg,rgba(31,39,61,.93),rgba(55,47,72,.94),rgba(28,39,60,.93));color:#f1e9f7;font:750 clamp(10px,2.55vw,12px)/1.2 inherit;letter-spacing:.65px;white-space:nowrap;box-shadow:inset 0 1px 0 rgba(255,255,255,.14),0 3px 12px rgba(5,9,25,.14);cursor:pointer;transition:border-color .15s,transform .15s}
+.random-video-compact:hover{border-color:rgba(228,204,248,.85)}
+.random-video-compact:active{transform:scale(.98)}
+.random-video-compact:focus-visible{outline:2px solid #f3dfff;outline-offset:3px}
+.random-compact-star{color:#d9c4ed;font-size:15px;line-height:1;text-shadow:0 0 3px rgba(228,208,245,.18)}
+.random-compact-slash{color:#a99aba;font-weight:400}
+@media(max-width:380px){.random-video-compact{gap:6px;letter-spacing:0;padding:9px 10px}}
+
     /* Search results appear directly below the artist search bar. */
     .bmsg-inline-search-results{width:100%;grid-column:1/-1;margin-top:8px}
     .bmsg-inline-search-list{display:flex;flex-direction:column;gap:10px}
@@ -1196,10 +1207,12 @@
          RANDOM VIDEO
          ==================================== -->
 
-    <div class="random-video random-video-single">
-      <span class="random-label">STARGLOW</span>
-      <button class="random-star" type="button" onclick="openRandomVideo()" aria-label="STARGLOWのランダム動画を選ぶ">★</button>
-      <span class="random-label">RANDOM VIDEO</span>
+    <div class="random-video-compact-wrap">
+      <button class="random-video-compact" type="button" onclick="openRandomVideo()" aria-label="STARGLOWのランダム動画を選ぶ">
+        <span class="random-compact-star" aria-hidden="true">★</span>
+        <span>STARGLOW</span><span class="random-compact-slash">/</span><span>RANDOM VIDEO</span>
+        <span class="random-compact-star" aria-hidden="true">★</span>
+      </button>
     </div>
 
     <div
@@ -1508,21 +1521,59 @@
       if(!visibleFolders&&!unclassified.length)empty.textContent=query?'検索に一致する楽曲・動画はありません。':'フォルダも動画もまだ登録されていません。';
     }
   }
+  // Artist data: immediate memory/local cache, background refresh after 10 minutes.
+  const artistDataCache=new Map();
+  const ARTIST_CACHE_TTL=10*60*1000;
+  const artistCacheKey=name=>'starsbase-artist-videos-v1:'+encodeURIComponent(name);
+  function readArtistCache(name){
+    if(artistDataCache.has(name))return artistDataCache.get(name);
+    try{
+      const raw=localStorage.getItem(artistCacheKey(name));
+      if(!raw)return null;
+      const saved=JSON.parse(raw);
+      if(!saved||!Array.isArray(saved.videos)||!Array.isArray(saved.folders)||!Number.isFinite(saved.at))return null;
+      artistDataCache.set(name,saved);return saved;
+    }catch(_e){return null;}
+  }
+  function saveArtistCache(name,entry){
+    artistDataCache.set(name,entry);
+    try{localStorage.setItem(artistCacheKey(name),JSON.stringify(entry));}catch(_e){/* Storage full or disabled: memory cache still works. */}
+  }
+  const pendingArtistFetches=new Map();
+  function fetchArtistData(name){
+    if(pendingArtistFetches.has(name))return pendingArtistFetches.get(name);
+    const promise=(async()=>{
+      const response=await fetch(ADMIN_PUBLIC_API+'/api/videos?artist='+encodeURIComponent(name),{cache:'no-store'});
+      if(!response.ok){let detail='';try{const err=await response.json();detail=err.error||err.message||'';}catch(_e){}throw new Error('API '+response.status+(detail?'：'+detail:''));}
+      const data=await response.json();
+      if(!Array.isArray(data.folders))throw new Error('APIからフォルダ一覧が返されていません');
+      const entry={videos:Array.isArray(data.videos)?data.videos:[],folders:data.folders,at:Date.now()};
+      saveArtistCache(name,entry);
+      return entry;
+    })().finally(()=>pendingArtistFetches.delete(name));
+    pendingArtistFetches.set(name,promise);return promise;
+  }
   async function showArtist(name){
     closeFolderModal();const thisRequest=++requestNumber;currentArtist=name;activeTag='ALL';activeType='ALL';artistVideos=[];artistFolders=[];
     searchInput.value='';searchClear.hidden=true;searchResult.textContent='';searchWrap.hidden=name==='STARGLOW';
     pageTitle.textContent=name;overlay.hidden=true;header.hidden=true;main.hidden=true;footer.hidden=true;page.hidden=false;
-    grid.replaceChildren();folderNav.replaceChildren();filters.hidden=true;tagLabel.hidden=true;typeFilters.replaceChildren();resetFilters.hidden=true;empty.hidden=true;status.textContent='動画を読み込んでいます...';window.scrollTo(0,0);
+    grid.replaceChildren();folderNav.replaceChildren();filters.hidden=true;tagLabel.hidden=true;typeFilters.replaceChildren();resetFilters.hidden=true;empty.hidden=true;window.scrollTo(0,0);
+    const cached=readArtistCache(name);
+    if(cached){
+      artistVideos=cached.videos;artistFolders=cached.folders;status.textContent='';renderVideos();
+      if(Date.now()-cached.at<ARTIST_CACHE_TTL)return;
+    }else status.textContent='動画を読み込んでいます...';
     try{
-      const response=await fetch(ADMIN_PUBLIC_API+'/api/videos?artist='+encodeURIComponent(name),{cache:'no-store'});
-      if(!response.ok){let detail='';try{const err=await response.json();detail=err.error||err.message||'';}catch(_e){}throw new Error('API '+response.status+(detail?'：'+detail:''));}
-      const data=await response.json();
+      const entry=await fetchArtistData(name);
       if(thisRequest!==requestNumber)return;
-      artistVideos=Array.isArray(data.videos)?data.videos:[];
-      if(!Array.isArray(data.folders))throw new Error('APIからフォルダ一覧が返されていません');
-      artistFolders=data.folders;
+      artistVideos=entry.videos;artistFolders=entry.folders;
       renderVideos();
-    }catch(e){if(thisRequest!==requestNumber)return;console.error('BMSG artist loading error:',e);status.textContent='読み込みエラー';empty.hidden=false;empty.textContent='動画を表示できませんでした：'+String(e && e.message || e);}
+    }catch(e){
+      if(thisRequest!==requestNumber)return;
+      console.error('BMSG artist loading error:',e);
+      if(!cached){status.textContent='読み込みエラー';empty.hidden=false;empty.textContent='動画を表示できませんでした：'+String(e&&e.message||e);}
+      // On refresh failure, keep previously cached data visible.
+    }
   }
   function artistButton(name,extraClass=''){
     const b=document.createElement('button');b.type='button';b.className='bmsg-artist-choice'+(extraClass?' '+extraClass:'');
