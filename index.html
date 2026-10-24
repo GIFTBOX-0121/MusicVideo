@@ -1016,6 +1016,18 @@
     .bmsg-global-sort[hidden]{display:none}
     .bmsg-global-sort button{border:1px solid #ffffff6c;border-radius:7px;background:#ffffff12;color:#e5ecf8;padding:7px 9px;font-size:11px;font-weight:700;cursor:pointer}
     .bmsg-global-sort button[aria-pressed="true"]{background:#e7edf7;color:#111a29;border-color:#fff}
+
+    /* Unclassified videos: two columns beneath all folders (non-STARGLOW only). */
+    .bmsg-unclassified-section{margin-top:16px;padding-top:20px;border-top:1px solid #d8e3f354;width:100%}
+    .bmsg-unclassified-heading{font-size:15px;font-weight:800;letter-spacing:.09em;color:#f4f7ff;margin:0 0 14px}
+    .bmsg-unclassified-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+    .bmsg-unclassified-list .bmsg-video-card{min-width:0;border:1px solid #ffffff80;border-radius:12px;background:rgba(255,255,255,.13);overflow:hidden;box-shadow:0 7px 22px #0004}
+    .bmsg-unclassified-list .bmsg-video-link{display:flex;flex-direction:column;gap:0;padding:0;text-decoration:none;color:#fff;height:100%}
+    .bmsg-unclassified-list .bmsg-video-thumb{width:100%;max-width:none;aspect-ratio:16/9;object-fit:cover;border-radius:0}
+    .bmsg-unclassified-list .bmsg-video-body{padding:10px;flex:1;min-width:0}
+    .bmsg-unclassified-list .bmsg-video-title{color:#fff!important;font-size:clamp(11px,2.6vw,14px);line-height:1.5;text-align:left;overflow-wrap:anywhere;text-shadow:0 1px 3px #0007}
+    .bmsg-unclassified-list .bmsg-video-tag{color:#fff;background:#ffffff26}
+    .bmsg-unclassified-list .bmsg-video-card:hover{border-color:#fff;background:#ffffff25}
   </style>
 </head>
 
@@ -1450,10 +1462,10 @@
     filters.hidden=true;tagLabel.hidden=true;typeFilters.hidden=true;
     if(tags.length){filters.append(makeFilterButton('ALL','tag'));for(const tag of tags)filters.append(makeFilterButton(tag,'tag'));}
     resetFilters.hidden=true;
-    const videos=artistVideos.filter(v=>folderFor(v)!==null&&(activeType==='ALL'||v.category===activeType)&&(activeTag==='ALL'||(v.tags||[]).includes(activeTag))&&/^[\w-]{11}$/.test(v.video_id));
+    const videos=artistVideos.filter(v=>(activeType==='ALL'||v.category===activeType)&&(activeTag==='ALL'||(v.tags||[]).includes(activeTag))&&/^[\w-]{11}$/.test(v.video_id));
     status.textContent=artistFolders.length+' FOLDERS · '+videos.length+' VIDEOS';
     let visibleFolders=0,visibleVideos=0;
-    empty.hidden=artistFolders.length>0;
+    empty.hidden=artistFolders.length>0||isOther&&videos.length>0;
     if(!artistFolders.length)empty.textContent='フォルダがまだ登録されていません。管理画面の登録内容をご確認ください。';
     // Show only videos explicitly assigned to an existing folder.
     const groups=new Map(artistFolders.map(f=>[Number(f.id),[]]));
@@ -1488,7 +1500,20 @@
       const count=document.createElement('span');count.className='bmsg-jacket-count';count.textContent=items.length+' VIDEOS';
       tile.append(art,name,count);tile.addEventListener('click',()=>openFolderModal(folder,items,tile));grid.append(tile);
     }
-    if(isOther){searchResult.textContent=query?visibleFolders+' フォルダ / '+visibleVideos+' 動画が一致':'';empty.hidden=visibleFolders>0;if(!visibleFolders)empty.textContent=query?'検索に一致する楽曲・フォルダはありません。':'フォルダがまだ登録されていません。';}
+    if(isOther){
+      // Videos without an existing folder are visible below the folder list, newest first.
+      const unclassified=sortByPublished(videos.filter(v=>!groups.has(folderFor(v))).filter(v=>!query||[v.display_title,v.title,v.original_title,v.category,...(Array.isArray(v.tags)?v.tags:[])].some(x=>String(x||'').toLocaleLowerCase('ja').includes(query))));
+      if(unclassified.length){
+        const section=document.createElement('section');section.className='bmsg-unclassified-section';
+        const heading=document.createElement('h3');heading.className='bmsg-unclassified-heading';heading.textContent='未分類 · '+unclassified.length+' VIDEOS';
+        const list=document.createElement('div');list.className='bmsg-unclassified-list';
+        for(const v of unclassified){const card=createVideoCard(v);if(card)list.append(card);}
+        section.append(heading,list);grid.append(section);
+      }
+      searchResult.textContent=query?visibleFolders+' フォルダ / '+(visibleVideos+unclassified.length)+' 動画が一致':'';
+      empty.hidden=visibleFolders>0||unclassified.length>0;
+      if(!visibleFolders&&!unclassified.length)empty.textContent=query?'検索に一致する楽曲・動画はありません。':'フォルダも動画もまだ登録されていません。';
+    }
   }
   async function showArtist(name){
     closeFolderModal();const thisRequest=++requestNumber;currentArtist=name;activeTag='ALL';activeType='ALL';artistVideos=[];artistFolders=[];
