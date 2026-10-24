@@ -1243,7 +1243,7 @@
       artistVideos=Array.isArray(data.videos)?data.videos:[];
       artistFolders=Array.isArray(data.folders)?data.folders:[];
       renderVideos();
-    }catch(e){if(thisRequest!==requestNumber)return;status.textContent='';empty.hidden=false;empty.textContent='動画を読み込めませんでした。通信状況を確認して、ページを開き直してください。';}
+    }catch(e){if(thisRequest!==requestNumber)return;console.error('BMSG artist loading error:',e);status.textContent='読み込みエラー';empty.hidden=false;empty.textContent='動画を表示できませんでした：'+String(e && e.message || e);}
   }
   function artistButton(name,extraClass=''){
     const b=document.createElement('button');b.type='button';b.className='bmsg-artist-choice'+(extraClass?' '+extraClass:'');
