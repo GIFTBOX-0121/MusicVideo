@@ -1250,6 +1250,9 @@ const API_URL =
   "https://musicvideo-views.starsx0601.workers.dev";
 
 
+const PIECES_TEST_API = 'https://starsbase-stats-test.starsx0601.workers.dev';
+const PIECES_VIDEO_ID = '5dzBSPmQdL4';
+
 const VIDEO_ORDER = [
   "WISHES",
   "Moonchaser",
@@ -1855,7 +1858,7 @@ function createPreviousViewsBox(video) {
   const previous =
     video.previous_day_total;
 
-  if (!previous) {
+  if (!previous || previous.views === null || previous.views === undefined) {
     return "";
   }
 
@@ -1874,7 +1877,7 @@ function createPreviousLikesBox(video) {
   const previous =
     video.previous_day_total;
 
-  if (!previous) {
+  if (!previous || previous.likes === null || previous.likes === undefined) {
     return "";
   }
 
@@ -2806,6 +2809,51 @@ function drawHistory(history) {
    データ取得
    ======================================== */
 
+// Preview only: PIECES comes from the isolated test Worker, not the production statistics Worker.
+// The test Worker currently exposes /stats and /history; no hourly history endpoint exists.
+async function loadPiecesPreview() {
+  const [statsResponse, historyResponse] = await Promise.all([
+    fetch(PIECES_TEST_API + '/stats?t=' + Date.now(), {cache:'no-store'}),
+    fetch(PIECES_TEST_API + '/history?t=' + Date.now(), {cache:'no-store'})
+  ]);
+  if (!statsResponse.ok || !historyResponse.ok) throw new Error('PIECES test API error');
+  const [statsData, historyData] = await Promise.all([statsResponse.json(),historyResponse.json()]);
+  const stats=statsData.stats;
+  if (!statsData.ok || !historyData.ok || !stats || stats.video_id !== PIECES_VIDEO_ID)
+    throw new Error('PIECES data unavailable');
+  const daily=(Array.isArray(historyData.daily)?historyData.daily:[])
+    .filter(row=>row.video_id===PIECES_VIDEO_ID && /^\d{4}-\d{2}-\d{2}$/.test(row.recorded_date))
+    .sort((a,b)=>a.recorded_date.localeCompare(b.recorded_date));
+  const jstToday=new Intl.DateTimeFormat('en-CA',{timeZone:'Asia/Tokyo',year:'numeric',month:'2-digit',day:'2-digit'}).format(new Date());
+  const yesterday=daily.filter(row=>row.recorded_date<jstToday).at(-1);
+  const dayBefore=yesterday?daily.filter(row=>row.recorded_date<yesterday.recorded_date).at(-1):null;
+  const views=Number(stats.views),likes=Number(stats.likes);
+  if (!Number.isFinite(views)||!Number.isFinite(likes)) throw new Error('PIECES invalid stats');
+  const video={
+    id:PIECES_VIDEO_ID,title:'PIECES',views,likes,
+    hourly_change:null, // The test API does not expose hourly snapshots yet.
+    daily_change:yesterday&&dayBefore?{
+      views:Number(yesterday.views)-Number(dayBefore.views),
+      likes:Number(yesterday.likes)-Number(dayBefore.likes)
+    }:null,
+    today_change:yesterday?{
+      views:views-Number(yesterday.views),likes:likes-Number(yesterday.likes)
+    }:null,
+    previous_day_total:yesterday?{
+      date:yesterday.recorded_date,
+      views:yesterday&&dayBefore?Number(yesterday.views)-Number(dayBefore.views):null,
+      likes:yesterday&&dayBefore?Number(yesterday.likes)-Number(dayBefore.likes):null
+    }:null,
+    six_hour_pace:null,
+    preview_test:true
+  };
+  // Daily test snapshots are provisional until the day ends; only past dates appear in chart.
+  const history=daily.filter(row=>row.recorded_date<jstToday).map(row=>({
+    title:'PIECES',jst_date:row.recorded_date,end_views:Number(row.views)
+  }));
+  return {video,history};
+}
+
 async function loadData() {
 
   const cards =
@@ -2844,18 +2892,27 @@ async function loadData() {
     );
 
 
-    const sortedVideos =
-      [...data.videos]
-        .sort(
-          (a, b) =>
-            VIDEO_ORDER.indexOf(
-              a.title
-            ) -
-            VIDEO_ORDER.indexOf(
-              b.title
-            )
-        );
-
+    // A failed PIECES preview request must not break the six existing production cards.
+    const allVideos=[...data.videos];
+    let allHistory=[...(data.daily_history||[])];
+    try {
+      const pieces=await loadPiecesPreview();
+      const existing=allVideos.findIndex(v=>v.id===PIECES_VIDEO_ID || v.title==='PIECES');
+      if(existing>=0) allVideos.splice(existing,1);
+      allVideos.push(pieces.video);
+      allHistory=allHistory.filter(row=>row.title!=='PIECES').concat(pieces.history);
+    } catch (piecesError) {
+      console.warn('PIECES preview is unavailable:',piecesError);
+      // If PIECES is absent from production, show an honest unavailable card instead of fake counts.
+      if(!allVideos.some(v=>v.id===PIECES_VIDEO_ID || v.title==='PIECES')) {
+        allVideos.push({id:PIECES_VIDEO_ID,title:'PIECES',views:0,likes:0,
+          preview_unavailable:true});
+      }
+    }
+    const sortedVideos=allVideos.sort((a,b)=>{
+      const ai=VIDEO_ORDER.indexOf(a.title),bi=VIDEO_ORDER.indexOf(b.title);
+      return (ai<0?999:ai)-(bi<0?999:bi);
+    });
 
     createMilestoneAlerts(
       sortedVideos
@@ -2864,16 +2921,13 @@ async function loadData() {
 
     cards.innerHTML =
       sortedVideos
-        .map(
-          createCard
-        )
+        .map(video => video.preview_unavailable
+          ? `<article class="card"><h2 class="title">PIECES</h2><p>テスト用データを取得できませんでした。再読み込みしてください。</p></article>`
+          : createCard(video))
         .join("");
 
 
-    drawHistory(
-      data.daily_history ||
-      []
-    );
+    drawHistory(allHistory);
 
   } catch (error) {
 
