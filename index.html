@@ -897,6 +897,17 @@
     .bmsg-video-tag{border-radius:5px;background:#e5eaf3;color:#243552;padding:3px 6px;font-size:10px;font-weight:700;overflow-wrap:anywhere}
     @media(max-width:420px){.bmsg-fab{width:60px;height:60px;font-size:12px}.bmsg-dialog{padding:16px}.bmsg-video-grid{gap:9px}.bmsg-video-body{padding:9px}.bmsg-video-title{font-size:12px}}
 
+
+    /* Artist page: back button, prominent title, folder shortcuts */
+    .bmsg-page-head{display:flex;flex-direction:column;align-items:stretch;gap:17px;margin-bottom:14px}
+    .bmsg-page-head .bmsg-back{align-self:flex-start;padding:6px 12px;font-size:11px;min-height:30px}
+    .bmsg-page-head h2{width:100%;font-size:clamp(32px,8vw,48px);font-weight:900;letter-spacing:.07em;text-align:center;line-height:1.2;color:#fff;text-shadow:0 0 18px #c1d5ff80,0 4px 20px #0008;margin:0 0 4px}
+    .bmsg-folder-nav{display:flex;flex-wrap:wrap;justify-content:center;gap:8px;margin:10px 0 23px}
+    .bmsg-folder-chip{border:1px solid #c8d8ff9c;border-radius:999px;background:linear-gradient(135deg,#ffffff22,#c2b9ff1c);color:#fff;font-size:12px;font-weight:800;padding:8px 13px;cursor:pointer;max-width:100%;overflow-wrap:anywhere}
+    .bmsg-folder-chip:active{background:#ffffff55}
+    .bmsg-song-group{scroll-margin-top:18px}
+    #bmsgTypeFilters,#bmsgTagFilters,#bmsgTagFilterLabel,#bmsgResetFilters{display:none!important}
+
   </style>
 </head>
 
@@ -949,12 +960,12 @@
   </header>
 
   <section id="bmsgArtistPage" class="bmsg-artist-page" hidden aria-live="polite">
-    <div class="bmsg-page-head"><button id="bmsgBack" class="bmsg-back" type="button">← STARS BASE</button><h2 id="bmsgPageTitle"></h2></div>
+    <div class="bmsg-page-head"><button id="bmsgBack" class="bmsg-back" type="button">← 戻る</button><h2 id="bmsgPageTitle"></h2></div>
     <div id="bmsgPageStatus" class="bmsg-page-status" role="status"></div>
-    <div class="bmsg-filter-label">動画の種類</div>
-    <div id="bmsgTypeFilters" class="bmsg-filter-list" aria-label="動画の種類で絞り込み"></div>
+    <nav id="bmsgFolderNav" class="bmsg-folder-nav" aria-label="フォルダへ移動"></nav>
+    <div id="bmsgTypeFilters" class="bmsg-filter-list" hidden></div>
     <div id="bmsgTagFilterLabel" class="bmsg-filter-label" hidden>タグ</div>
-    <div id="bmsgTagFilters" class="bmsg-filter-list" hidden aria-label="タグで絞り込み"></div>
+    <div id="bmsgTagFilters" class="bmsg-filter-list" hidden></div>
     <button id="bmsgResetFilters" type="button" class="bmsg-filter bmsg-filter-reset" hidden>絞り込みを解除</button>
     <div id="bmsgVideoGrid" class="bmsg-video-grid"></div>
     <div id="bmsgPageEmpty" class="bmsg-page-note" hidden></div>
@@ -1123,6 +1134,7 @@
   const header=document.getElementById('starsHeader');
   const footer=document.getElementById('starsFooter');
   const grid=document.getElementById('bmsgVideoGrid');
+  const folderNav=document.getElementById('bmsgFolderNav');
   const empty=document.getElementById('bmsgPageEmpty');
   const status=document.getElementById('bmsgPageStatus');
   const filters=document.getElementById('bmsgTagFilters');
@@ -1186,14 +1198,14 @@
     link.append(img,body);card.append(link);return card;
   }
   function renderVideos(){
-    grid.replaceChildren();filters.replaceChildren();typeFilters.replaceChildren();
+    grid.replaceChildren();folderNav.replaceChildren();filters.replaceChildren();typeFilters.replaceChildren();
     const types=[...new Set(artistVideos.map(v=>String(v.category||'').trim()).filter(Boolean))].sort((a,b)=>typeRank(a)-typeRank(b)||a.localeCompare(b,'ja'));
     typeFilters.append(makeFilterButton('ALL','type'));
     for(const type of types)typeFilters.append(makeFilterButton(type,'type'));
     const tags=[...new Set(artistVideos.flatMap(v=>Array.isArray(v.tags)?v.tags:[]))].sort((a,b)=>a.localeCompare(b,'ja'));
-    filters.hidden=tagLabel.hidden=tags.length===0;
+    filters.hidden=true;tagLabel.hidden=true;typeFilters.hidden=true;
     if(tags.length){filters.append(makeFilterButton('ALL','tag'));for(const tag of tags)filters.append(makeFilterButton(tag,'tag'));}
-    resetFilters.hidden=activeType==='ALL'&&activeTag==='ALL';
+    resetFilters.hidden=true;
     const videos=artistVideos.filter(v=>folderFor(v)!==null&&(activeType==='ALL'||v.category===activeType)&&(activeTag==='ALL'||(v.tags||[]).includes(activeTag))&&/^[\w-]{11}$/.test(v.video_id));
     status.textContent=videos.length+' VIDEOS';
     empty.hidden=videos.length>0;
@@ -1210,12 +1222,19 @@
       items.sort((a,b)=>{const ai=a.folder_video_order,bi=b.folder_video_order;return (ai==null?999999:ai)-(bi==null?999999:bi)||Number(a.sort_order||0)-Number(b.sort_order||0);});
       for(const v of items){const card=createVideoCard(v);if(card)row.append(card);}
       section.append(heading,row);grid.append(section);
+      const chip=document.createElement('button');
+      chip.type='button';chip.className='bmsg-folder-chip';chip.textContent=folder.name;
+      chip.addEventListener('click',()=>{
+        section.open=true;
+        section.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});
+      });
+      folderNav.append(chip);
     }
   }
   async function showArtist(name){
     const thisRequest=++requestNumber;currentArtist=name;activeTag='ALL';activeType='ALL';artistVideos=[];artistFolders=[];
     pageTitle.textContent=name;overlay.hidden=true;header.hidden=true;main.hidden=true;footer.hidden=true;page.hidden=false;
-    grid.replaceChildren();filters.hidden=true;tagLabel.hidden=true;typeFilters.replaceChildren();resetFilters.hidden=true;empty.hidden=true;status.textContent='動画を読み込んでいます...';window.scrollTo(0,0);
+    grid.replaceChildren();folderNav.replaceChildren();filters.hidden=true;tagLabel.hidden=true;typeFilters.replaceChildren();resetFilters.hidden=true;empty.hidden=true;status.textContent='動画を読み込んでいます...';window.scrollTo(0,0);
     try{
       const response=await fetch(ADMIN_PUBLIC_API+'/api/videos?artist='+encodeURIComponent(name),{cache:'no-store'});
       if(!response.ok)throw new Error('動画の取得に失敗しました');
