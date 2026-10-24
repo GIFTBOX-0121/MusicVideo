@@ -971,6 +971,35 @@
     .bmsg-vinyl-panel .bmsg-video-tag{background:#ffffff30;color:#fff;border:1px solid #ffffff50}
     .bmsg-vinyl-panel .bmsg-video-card:hover{background:rgba(255,255,255,.23);border-color:#fff}
     @media(max-width:420px){.bmsg-vinyl-title{font-size:clamp(10px,2.8vw,13px);min-height:45px}.bmsg-vinyl-panel .bmsg-video-link{padding:8px;gap:9px}}
+
+    /* Other artists: editorial, full-width folder rows. STARGLOW stays untouched. */
+    .bmsg-video-grid.bmsg-vinyl-grid{display:flex;flex-direction:column;gap:14px}
+    .bmsg-vinyl-tile{isolation:isolate;position:relative;overflow:hidden;width:100%;min-height:112px;display:flex;flex-direction:row;align-items:center;justify-content:space-between;text-align:left;padding:22px 24px;border:1px solid #c6d2e380;border-radius:5px 19px 5px 19px;background:linear-gradient(112deg,#10151f 0%,#263043 52%,#0b101b 100%);box-shadow:0 12px 26px #0008,inset 0 1px #ffffff35;transition:transform .2s,box-shadow .2s,border-color .2s;gap:15px}
+    .bmsg-vinyl-tile::before{content:'';position:absolute;z-index:-1;inset:0;background:repeating-linear-gradient(116deg,transparent 0 18px,#ffffff06 19px 20px),radial-gradient(ellipse at 85% 0%,#aebfd138,transparent 48%);pointer-events:none}
+    .bmsg-vinyl-tile::after{content:'↗';font-size:25px;font-weight:300;color:#e3eaf4;border:1px solid #ffffff85;border-radius:50%;width:42px;height:42px;display:grid;place-items:center;flex:none;background:#ffffff12;transition:background .2s,transform .2s}
+    .bmsg-vinyl-tile:hover{transform:translateY(-3px);border-color:#f2f6ff;box-shadow:0 16px 35px #0009,0 0 22px #c9d8ff24}
+    .bmsg-vinyl-tile:hover::after{background:#ffffff30;transform:rotate(45deg)}
+    .bmsg-vinyl-disc{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:8px;width:auto;min-width:0;aspect-ratio:auto;border:0;border-radius:0;background:none;box-shadow:none;flex:1;overflow:visible}
+    .bmsg-vinyl-disc::before{display:none}
+    .bmsg-vinyl-disc::after{content:'STARS BASE  /  COLLECTION';order:-1;font-size:9px;font-weight:700;letter-spacing:.22em;color:#c4cfdf}
+    .bmsg-vinyl-title{display:block;width:auto;min-height:0;padding:0;border:0;border-radius:0;background:none;box-shadow:none;color:#fff;font-size:clamp(19px,4.6vw,30px);font-weight:850;line-height:1.25;letter-spacing:.04em;text-align:left;text-shadow:0 2px 12px #0008;overflow-wrap:anywhere}
+    .bmsg-vinyl-count{display:block;flex:none;align-self:flex-end;margin-bottom:2px;color:#d4dfed;font-size:10px;font-weight:700;letter-spacing:.11em;white-space:nowrap}
+    .bmsg-artist-search-wrap{margin:12px 0 22px;padding:16px;border:1px solid #ffffff38;border-radius:14px;background:linear-gradient(125deg,#ffffff13,#ffffff06);box-shadow:inset 0 1px #ffffff20}
+    .bmsg-artist-search-wrap[hidden]{display:none}
+    .bmsg-artist-search-label{display:block;color:#d7e2f4;font-size:10px;letter-spacing:.2em;font-weight:800;margin-bottom:9px}
+    .bmsg-artist-search-field{display:flex;align-items:center;gap:10px;padding:9px 12px;border:1px solid #e3eaff8c;border-radius:10px;background:#070d19d9;color:#fff}
+    .bmsg-artist-search-field>span{font-size:25px;line-height:1;color:#dce7ff}
+    .bmsg-artist-search-field input{flex:1;min-width:0;background:transparent;border:0;outline:0;color:#fff;font:inherit;font-size:14px}
+    .bmsg-artist-search-field input::placeholder{color:#b2bfd1}
+    .bmsg-artist-search-field button{background:none;color:#fff;border:0;cursor:pointer;font-size:15px;padding:4px 7px}
+    .bmsg-artist-search-result{font-size:11px;color:#d2ddec;margin-top:8px;min-height:1em}
+    .bmsg-folder-sort-wrap{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;padding:5px 1px 15px;color:#e1e9f5;font-size:12px}
+    .bmsg-folder-sort-wrap[hidden]{display:none}
+    .bmsg-folder-sort-options{display:flex;gap:6px}
+    .bmsg-folder-sort-options button{cursor:pointer;border:1px solid #ffffff6c;border-radius:7px;background:#ffffff12;color:#e5ecf8;padding:8px 11px;font:inherit;font-weight:700}
+    .bmsg-folder-sort-options button[aria-pressed="true"]{background:#e7edf7;color:#111a29;border-color:#fff}
+    @media(max-width:480px){.bmsg-vinyl-tile{min-height:105px;padding:18px 15px;gap:8px}.bmsg-vinyl-tile::after{width:34px;height:34px;font-size:20px}.bmsg-vinyl-title{font-size:clamp(17px,5vw,24px)}.bmsg-vinyl-count{font-size:9px}.bmsg-vinyl-disc::after{font-size:8px;letter-spacing:.14em}}
+
   </style>
 </head>
 
@@ -1025,6 +1054,11 @@
   <section id="bmsgArtistPage" class="bmsg-artist-page" hidden aria-live="polite">
     <div class="bmsg-page-head"><button id="bmsgBack" class="bmsg-back" type="button">← 戻る</button><h2 id="bmsgPageTitle"></h2></div>
     <div id="bmsgPageStatus" class="bmsg-page-status" role="status"></div>
+    <div id="bmsgArtistSearchWrap" class="bmsg-artist-search-wrap" hidden>
+      <label class="bmsg-artist-search-label" for="bmsgArtistSearch">SEARCH THE COLLECTION</label>
+      <div class="bmsg-artist-search-field"><span aria-hidden="true">⌕</span><input id="bmsgArtistSearch" type="search" placeholder="楽曲名・動画タイトル・フォルダ名で検索" autocomplete="off"><button id="bmsgArtistSearchClear" type="button" aria-label="検索をクリア" hidden>✕</button></div>
+      <div id="bmsgArtistSearchResult" class="bmsg-artist-search-result" aria-live="polite"></div>
+    </div>
     <nav id="bmsgFolderNav" class="bmsg-folder-nav" aria-label="フォルダへ移動"></nav>
     <div id="bmsgTypeFilters" class="bmsg-filter-list" hidden></div>
     <div id="bmsgTagFilterLabel" class="bmsg-filter-label" hidden>タグ</div>
@@ -1036,6 +1070,7 @@
   <div id="bmsgFolderModal" class="bmsg-folder-modal" hidden>
     <div class="bmsg-folder-panel" role="dialog" aria-modal="true" aria-labelledby="bmsgFolderModalTitle" tabindex="-1">
       <div class="bmsg-folder-panel-head"><h2 id="bmsgFolderModalTitle" class="bmsg-folder-panel-title"></h2><button id="bmsgFolderModalClose" class="bmsg-folder-panel-close" type="button" aria-label="フォルダを閉じる">✕</button></div>
+      <div id="bmsgFolderSortWrap" class="bmsg-folder-sort-wrap" hidden><span>動画の並び順</span><div class="bmsg-folder-sort-options"><button id="bmsgSortNewest" type="button" aria-pressed="true">新着順 ↑</button><button id="bmsgSortOldest" type="button" aria-pressed="false">古い順 ↓</button></div></div>
       <div id="bmsgFolderModalVideos" class="bmsg-song-videos"></div>
     </div>
   </div>
@@ -1208,16 +1243,39 @@
   const folderModalTitle=document.getElementById('bmsgFolderModalTitle');
   const folderModalVideos=document.getElementById('bmsgFolderModalVideos');
   const folderModalClose=document.getElementById('bmsgFolderModalClose');
+  const sortWrap=document.getElementById('bmsgFolderSortWrap');
+  const sortNewest=document.getElementById('bmsgSortNewest');
+  const sortOldest=document.getElementById('bmsgSortOldest');
+  const searchWrap=document.getElementById('bmsgArtistSearchWrap');
+  const searchInput=document.getElementById('bmsgArtistSearch');
+  const searchClear=document.getElementById('bmsgArtistSearchClear');
+  const searchResult=document.getElementById('bmsgArtistSearchResult');
+  let modalItems=[],modalSort='newest';
+  const dateValue=v=>{const t=Date.parse(v.published_at||'');return Number.isFinite(t)?t:null;};
+  function sortByPublished(items,oldest=false){return [...items].sort((a,b)=>{const ad=dateValue(a),bd=dateValue(b);if(ad===null&&bd!==null)return 1;if(bd===null&&ad!==null)return -1;if(ad!==null&&bd!==null&&ad!==bd)return oldest?ad-bd:bd-ad;return Number(a.sort_order||0)-Number(b.sort_order||0);});}
+  function drawModalItems(){
+    folderModalVideos.replaceChildren();
+    const isOther=currentArtist!=='STARGLOW';
+    const rows=isOther?sortByPublished(modalItems,modalSort==='oldest'):modalItems;
+    for(const v of rows){const card=createVideoCard(v);if(card){if(isOther&&v.published_at){const date=document.createElement('time');date.className='bmsg-vinyl-date';date.textContent='公開日 '+String(v.published_at).slice(0,10);card.querySelector('.bmsg-video-body')?.append(date);}folderModalVideos.append(card);}}
+    if(!rows.length){const msg=document.createElement('p');msg.className='bmsg-page-note';msg.textContent=searchInput.value.trim()?'検索に一致する動画がありません。':'このフォルダにはまだ動画がありません。';folderModalVideos.append(msg);}
+    sortNewest.setAttribute('aria-pressed',String(modalSort==='newest'));
+    sortOldest.setAttribute('aria-pressed',String(modalSort==='oldest'));
+  }
+  sortNewest.addEventListener('click',()=>{modalSort='newest';drawModalItems();});
+  sortOldest.addEventListener('click',()=>{modalSort='oldest';drawModalItems();});
+  searchInput.addEventListener('input',()=>{searchClear.hidden=!searchInput.value;renderVideos();});
+  searchClear.addEventListener('click',()=>{searchInput.value='';searchClear.hidden=true;renderVideos();searchInput.focus();});
   let lastFolderTrigger=null;
   function closeFolderModal(){if(folderModal.hidden)return;folderModal.hidden=true;document.body.style.overflow='';if(lastFolderTrigger?.isConnected)lastFolderTrigger.focus();}
   folderModalClose.addEventListener('click',closeFolderModal);
   folderModal.addEventListener('click',e=>{if(e.target===folderModal)closeFolderModal();});
   document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!folderModal.hidden){e.stopPropagation();closeFolderModal();}});
   function openFolderModal(folder,items,trigger){
-    lastFolderTrigger=trigger;folderModalTitle.textContent=folder.name;folderModalVideos.replaceChildren();
-    const isVinyl=currentArtist!=='STARGLOW';
-    folderModal.querySelector('.bmsg-folder-panel').classList.toggle('bmsg-vinyl-panel',isVinyl);
-    for(const v of items){const card=createVideoCard(v);if(card){if(isVinyl&&v.published_at){const date=document.createElement('time');date.className='bmsg-vinyl-date';date.textContent='公開日 '+String(v.published_at).slice(0,10);card.querySelector('.bmsg-video-body')?.append(date);}folderModalVideos.append(card);}}
+    lastFolderTrigger=trigger;folderModalTitle.textContent=folder.name;
+    const isOther=currentArtist!=='STARGLOW';
+    folderModal.querySelector('.bmsg-folder-panel').classList.toggle('bmsg-vinyl-panel',isOther);
+    sortWrap.hidden=!isOther;modalSort='newest';modalItems=items;drawModalItems();
     folderModal.hidden=false;document.body.style.overflow='hidden';folderModalClose.focus();
   }
 
@@ -1285,6 +1343,10 @@
   }
   function renderVideos(){
     grid.replaceChildren();grid.classList.toggle('bmsg-vinyl-grid',currentArtist!=='STARGLOW');folderNav.replaceChildren();filters.replaceChildren();typeFilters.replaceChildren();
+    const isOther=currentArtist!=='STARGLOW';
+    searchWrap.hidden=!isOther;
+    const query=isOther?searchInput.value.trim().toLocaleLowerCase('ja'):'';
+    const matches=(v,folder)=>!query||[folder.name,v.display_title,v.title,v.original_title,v.category,...(Array.isArray(v.tags)?v.tags:[])].some(x=>String(x||'').toLocaleLowerCase('ja').includes(query));
     const types=[...new Set(artistVideos.map(v=>String(v.category||'').trim()).filter(Boolean))].sort((a,b)=>typeRank(a)-typeRank(b)||a.localeCompare(b,'ja'));
     typeFilters.append(makeFilterButton('ALL','type'));
     for(const type of types)typeFilters.append(makeFilterButton(type,'type'));
@@ -1294,13 +1356,17 @@
     resetFilters.hidden=true;
     const videos=artistVideos.filter(v=>folderFor(v)!==null&&(activeType==='ALL'||v.category===activeType)&&(activeTag==='ALL'||(v.tags||[]).includes(activeTag))&&/^[\w-]{11}$/.test(v.video_id));
     status.textContent=artistFolders.length+' FOLDERS · '+videos.length+' VIDEOS';
+    let visibleFolders=0,visibleVideos=0;
     empty.hidden=artistFolders.length>0;
     if(!artistFolders.length)empty.textContent='フォルダがまだ登録されていません。管理画面の登録内容をご確認ください。';
     // Show only videos explicitly assigned to an existing folder.
     const groups=new Map(artistFolders.map(f=>[Number(f.id),[]]));
     for(const v of videos){const id=folderFor(v);if(groups.has(id))groups.get(id).push(v);}
     for(const folder of artistFolders){
-      const items=groups.get(Number(folder.id))||[];
+      const allItems=groups.get(Number(folder.id))||[];
+      const items=query?allItems.filter(v=>matches(v,folder)):allItems;
+      if(query&&!items.length&&!folder.name.toLocaleLowerCase('ja').includes(query))continue;
+      visibleFolders++;visibleVideos+=items.length;
       // Keep every registered folder visible, even when it currently has no assigned videos.
       if(currentArtist==='STARGLOW'){
         items.sort((a,b)=>{const ai=a.folder_video_order,bi=b.folder_video_order;return (ai==null?999999:ai)-(bi==null?999999:bi)||Number(a.sort_order||0)-Number(b.sort_order||0);});
@@ -1326,9 +1392,11 @@
       const count=document.createElement('span');count.className='bmsg-jacket-count';count.textContent=items.length+' VIDEOS';
       tile.append(art,name,count);tile.addEventListener('click',()=>openFolderModal(folder,items,tile));grid.append(tile);
     }
+    if(isOther){searchResult.textContent=query?visibleFolders+' フォルダ / '+visibleVideos+' 動画が一致':'';empty.hidden=visibleFolders>0;if(!visibleFolders)empty.textContent=query?'検索に一致する楽曲・フォルダはありません。':'フォルダがまだ登録されていません。';}
   }
   async function showArtist(name){
     closeFolderModal();const thisRequest=++requestNumber;currentArtist=name;activeTag='ALL';activeType='ALL';artistVideos=[];artistFolders=[];
+    searchInput.value='';searchClear.hidden=true;searchResult.textContent='';searchWrap.hidden=name==='STARGLOW';
     pageTitle.textContent=name;overlay.hidden=true;header.hidden=true;main.hidden=true;footer.hidden=true;page.hidden=false;
     grid.replaceChildren();folderNav.replaceChildren();filters.hidden=true;tagLabel.hidden=true;typeFilters.replaceChildren();resetFilters.hidden=true;empty.hidden=true;status.textContent='動画を読み込んでいます...';window.scrollTo(0,0);
     try{
