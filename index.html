@@ -908,6 +908,31 @@
     .bmsg-song-group{scroll-margin-top:18px}
     #bmsgTypeFilters,#bmsgTagFilters,#bmsgTagFilterLabel,#bmsgResetFilters{display:none!important}
 
+
+    /* CD jacket folder gallery (artist pages only) */
+    .bmsg-folder-nav{display:none!important}
+    .bmsg-video-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:13px;align-items:start}
+    .bmsg-jacket-tile{appearance:none;display:flex;flex-direction:column;align-items:stretch;gap:7px;width:100%;min-width:0;padding:0;border:0;background:transparent;color:#fff;text-align:center;cursor:pointer;font:inherit}
+    .bmsg-jacket-art{position:relative;display:grid;place-items:center;width:100%;aspect-ratio:1/1;overflow:hidden;border:1px solid #d6e2ff88;border-radius:7px;background:linear-gradient(145deg,#272c39 0%,#07090f 48%,#333949 100%);box-shadow:0 5px 18px #0007, inset 0 0 0 1px #ffffff16}
+    .bmsg-jacket-art::before{content:'';position:absolute;inset:6px;border:1px solid #ffffff25;pointer-events:none}
+    .bmsg-jacket-image{display:block;width:100%;height:100%;object-fit:cover}
+    .bmsg-jacket-fallback{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:8px;padding:8px;text-align:center;overflow-wrap:anywhere}
+    .bmsg-jacket-fallback-mark{font-size:clamp(14px,3.5vw,25px);font-weight:900;letter-spacing:.15em;color:#e6e9f0;text-shadow:0 0 12px #ffffff60}
+    .bmsg-jacket-fallback-small{font-size:8px;letter-spacing:.17em;color:#aeb6c8}
+    .bmsg-jacket-name{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;min-height:2.7em;font-size:clamp(10px,2.6vw,13px);line-height:1.35;font-weight:900;overflow-wrap:anywhere;text-shadow:0 1px 5px #0008}
+    .bmsg-jacket-count{font-size:10px;color:#d4dcf0}
+    .bmsg-jacket-tile:focus-visible .bmsg-jacket-art{outline:3px solid #fff;outline-offset:3px}
+    .bmsg-folder-modal[hidden]{display:none!important}
+    .bmsg-folder-modal{position:fixed;inset:0;z-index:1500;background:#030715db;backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px);display:flex;align-items:center;justify-content:center;padding:12px}
+    .bmsg-folder-panel{width:min(96vw,900px);max-height:90dvh;overflow:auto;overscroll-behavior:contain;background:linear-gradient(160deg,#1b2b4b,#080e20 78%);border:1px solid #c6d4f077;border-radius:16px;color:#fff;box-shadow:0 20px 70px #000b;padding:14px}
+    .bmsg-folder-panel-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;margin-bottom:12px}
+    .bmsg-folder-panel-title{font-size:clamp(17px,4vw,24px);font-weight:900;line-height:1.4;margin:0;overflow-wrap:anywhere}
+    .bmsg-folder-panel-close{flex:none;min-width:36px;min-height:36px;border:1px solid #ffffff80;border-radius:50%;background:#ffffff20;color:#fff;font-size:19px;cursor:pointer}
+    .bmsg-folder-panel .bmsg-song-videos{padding:0;grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+    .bmsg-folder-panel .bmsg-video-body{padding:7px 5px 8px}
+    .bmsg-folder-panel .bmsg-video-title{font-size:clamp(9px,1.7vw,12px)}
+    @media(max-width:420px){.bmsg-video-grid{gap:9px}.bmsg-folder-panel{padding:10px}.bmsg-folder-panel .bmsg-song-videos{gap:5px}.bmsg-folder-panel .bmsg-video-title{font-size:9px}.bmsg-folder-panel .bmsg-video-tags{gap:2px}.bmsg-folder-panel .bmsg-video-tag{font-size:8px;padding:2px 3px}}
+
   </style>
 </head>
 
@@ -970,6 +995,12 @@
     <div id="bmsgVideoGrid" class="bmsg-video-grid"></div>
     <div id="bmsgPageEmpty" class="bmsg-page-note" hidden></div>
   </section>
+  <div id="bmsgFolderModal" class="bmsg-folder-modal" hidden>
+    <div class="bmsg-folder-panel" role="dialog" aria-modal="true" aria-labelledby="bmsgFolderModalTitle" tabindex="-1">
+      <div class="bmsg-folder-panel-head"><h2 id="bmsgFolderModalTitle" class="bmsg-folder-panel-title"></h2><button id="bmsgFolderModalClose" class="bmsg-folder-panel-close" type="button" aria-label="フォルダを閉じる">✕</button></div>
+      <div id="bmsgFolderModalVideos" class="bmsg-song-videos"></div>
+    </div>
+  </div>
 
   <main id="starsMain">
 
@@ -1135,6 +1166,21 @@
   const footer=document.getElementById('starsFooter');
   const grid=document.getElementById('bmsgVideoGrid');
   const folderNav=document.getElementById('bmsgFolderNav');
+  const folderModal=document.getElementById('bmsgFolderModal');
+  const folderModalTitle=document.getElementById('bmsgFolderModalTitle');
+  const folderModalVideos=document.getElementById('bmsgFolderModalVideos');
+  const folderModalClose=document.getElementById('bmsgFolderModalClose');
+  let lastFolderTrigger=null;
+  function closeFolderModal(){if(folderModal.hidden)return;folderModal.hidden=true;document.body.style.overflow='';if(lastFolderTrigger?.isConnected)lastFolderTrigger.focus();}
+  folderModalClose.addEventListener('click',closeFolderModal);
+  folderModal.addEventListener('click',e=>{if(e.target===folderModal)closeFolderModal();});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!folderModal.hidden){e.stopPropagation();closeFolderModal();}});
+  function openFolderModal(folder,items,trigger){
+    lastFolderTrigger=trigger;folderModalTitle.textContent=folder.name;folderModalVideos.replaceChildren();
+    for(const v of items){const card=createVideoCard(v);if(card)folderModalVideos.append(card);}
+    folderModal.hidden=false;document.body.style.overflow='hidden';folderModalClose.focus();
+  }
+
   const empty=document.getElementById('bmsgPageEmpty');
   const status=document.getElementById('bmsgPageStatus');
   const filters=document.getElementById('bmsgTagFilters');
@@ -1157,7 +1203,7 @@
   close.addEventListener('click',hideMenu);
   overlay.addEventListener('click',e=>{if(e.target===overlay)hideMenu();});
   document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!overlay.hidden)hideMenu();});
-  function showHome(){requestNumber++;currentArtist='';page.hidden=true;header.hidden=false;main.hidden=false;footer.hidden=false;window.scrollTo(0,0);}
+  function showHome(){closeFolderModal();requestNumber++;currentArtist='';page.hidden=true;header.hidden=false;main.hidden=false;footer.hidden=false;window.scrollTo(0,0);}
   const TYPE_ORDER=['Music Video','Lyric Video','Live','Teaser','Teaser Pt2','Dance Performance','Mic Performance','Dance Practice','Yakatabune Party','Behind The Scenes (Short Ver.)','ダンプラ'];
   const COMING_ORDER=['RUI','TAIKI','KANON','GOICHI','ADAM'];
   function normalizedType(type){return String(type||'').trim().toLowerCase();}
@@ -1207,41 +1253,39 @@
     if(tags.length){filters.append(makeFilterButton('ALL','tag'));for(const tag of tags)filters.append(makeFilterButton(tag,'tag'));}
     resetFilters.hidden=true;
     const videos=artistVideos.filter(v=>folderFor(v)!==null&&(activeType==='ALL'||v.category===activeType)&&(activeTag==='ALL'||(v.tags||[]).includes(activeTag))&&/^[\w-]{11}$/.test(v.video_id));
-    status.textContent=videos.length+' VIDEOS';
-    empty.hidden=videos.length>0;
-    if(!videos.length)empty.textContent=artistVideos.length?'該当する動画がありません（未分類の動画は表示されません）。':'登録されている動画はまだありません。';
+    status.textContent=artistFolders.length+' FOLDERS · '+videos.length+' VIDEOS';
+    empty.hidden=artistFolders.length>0;
+    if(!artistFolders.length)empty.textContent='フォルダがまだ登録されていません。管理画面の登録内容をご確認ください。';
     // Show only videos explicitly assigned to an existing folder.
     const groups=new Map(artistFolders.map(f=>[Number(f.id),[]]));
     for(const v of videos){const id=folderFor(v);if(groups.has(id))groups.get(id).push(v);}
     for(const folder of artistFolders){
       const items=groups.get(Number(folder.id))||[];
-      if(!items.length)continue;
-      const section=document.createElement('details');section.className='bmsg-song-group';
-      const heading=document.createElement('summary');heading.className='bmsg-song-heading';heading.textContent=folder.name;
-      const row=document.createElement('div');row.className='bmsg-song-videos';
+      // Keep every registered folder visible, even when it currently has no assigned videos.
       items.sort((a,b)=>{const ai=a.folder_video_order,bi=b.folder_video_order;return (ai==null?999999:ai)-(bi==null?999999:bi)||Number(a.sort_order||0)-Number(b.sort_order||0);});
-      for(const v of items){const card=createVideoCard(v);if(card)row.append(card);}
-      section.append(heading,row);grid.append(section);
-      const chip=document.createElement('button');
-      chip.type='button';chip.className='bmsg-folder-chip';chip.textContent=folder.name;
-      chip.addEventListener('click',()=>{
-        section.open=true;
-        section.scrollIntoView({behavior:window.matchMedia('(prefers-reduced-motion: reduce)').matches?'auto':'smooth',block:'start'});
-      });
-      folderNav.append(chip);
+      const tile=document.createElement('button');tile.type='button';tile.className='bmsg-jacket-tile';tile.setAttribute('aria-label',folder.name+' の動画を開く');
+      const art=document.createElement('span');art.className='bmsg-jacket-art';
+      const fallback=()=>{art.replaceChildren();const wrap=document.createElement('span');wrap.className='bmsg-jacket-fallback';const mark=document.createElement('span');mark.className='bmsg-jacket-fallback-mark';mark.textContent='STARS BASE';const sub=document.createElement('span');sub.className='bmsg-jacket-fallback-small';sub.textContent='ARTIST COLLECTION';wrap.append(mark,sub);art.append(wrap);};
+      if(typeof folder.cover_url==='string'&&folder.cover_url.startsWith(ADMIN_PUBLIC_API+'/api/folder-cover/')){
+        const image=document.createElement('img');image.className='bmsg-jacket-image';image.src=folder.cover_url;image.alt='';image.loading='lazy';image.addEventListener('error',fallback,{once:true});art.append(image);
+      }else fallback();
+      const name=document.createElement('span');name.className='bmsg-jacket-name';name.textContent=folder.name;
+      const count=document.createElement('span');count.className='bmsg-jacket-count';count.textContent=items.length+' VIDEOS';
+      tile.append(art,name,count);tile.addEventListener('click',()=>openFolderModal(folder,items,tile));grid.append(tile);
     }
   }
   async function showArtist(name){
-    const thisRequest=++requestNumber;currentArtist=name;activeTag='ALL';activeType='ALL';artistVideos=[];artistFolders=[];
+    closeFolderModal();const thisRequest=++requestNumber;currentArtist=name;activeTag='ALL';activeType='ALL';artistVideos=[];artistFolders=[];
     pageTitle.textContent=name;overlay.hidden=true;header.hidden=true;main.hidden=true;footer.hidden=true;page.hidden=false;
     grid.replaceChildren();folderNav.replaceChildren();filters.hidden=true;tagLabel.hidden=true;typeFilters.replaceChildren();resetFilters.hidden=true;empty.hidden=true;status.textContent='動画を読み込んでいます...';window.scrollTo(0,0);
     try{
       const response=await fetch(ADMIN_PUBLIC_API+'/api/videos?artist='+encodeURIComponent(name),{cache:'no-store'});
-      if(!response.ok)throw new Error('動画の取得に失敗しました');
+      if(!response.ok){let detail='';try{const err=await response.json();detail=err.error||err.message||'';}catch(_e){}throw new Error('API '+response.status+(detail?'：'+detail:''));}
       const data=await response.json();
       if(thisRequest!==requestNumber)return;
       artistVideos=Array.isArray(data.videos)?data.videos:[];
-      artistFolders=Array.isArray(data.folders)?data.folders:[];
+      if(!Array.isArray(data.folders))throw new Error('APIからフォルダ一覧が返されていません');
+      artistFolders=data.folders;
       renderVideos();
     }catch(e){if(thisRequest!==requestNumber)return;console.error('BMSG artist loading error:',e);status.textContent='読み込みエラー';empty.hidden=false;empty.textContent='動画を表示できませんでした：'+String(e && e.message || e);}
   }
