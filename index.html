@@ -1076,10 +1076,12 @@
 @keyframes randomJewelryGlow{from{transform:scale(.95) rotate(-6deg);filter:drop-shadow(0 0 5px #ffe9b8)}to{transform:scale(1.08) rotate(6deg);filter:drop-shadow(0 0 18px #fff0bc)}}
 @keyframes randomAuroraDrift{from{transform:translate(-5%,-3%) rotate(-4deg)}to{transform:translate(5%,3%) rotate(5deg)}}
 @media(prefers-reduced-motion:reduce){.random-video-single::before,.random-video-single .random-star{animation:none}}
-.counter-card{position:relative;padding-top:58px}
-.two-sandwich{position:absolute;top:11px;right:14px;text-align:right;display:flex;flex-direction:column;gap:1px;color:#172647}
-.two-sandwich strong{font-size:15px;font-weight:900}
-.two-sandwich small{font-size:9px;font-weight:650;line-height:1.35}
+/* Lower-brightness random button: soft static pearlescent glow */
+.random-video-single::before{animation:none!important;opacity:.6}
+.random-video-single::after{text-shadow:none;opacity:.48}
+.random-video-single .random-star{animation:none!important;color:#f5e8d8;filter:drop-shadow(0 0 3px rgba(255,231,205,.42));text-shadow:0 0 7px rgba(245,210,233,.32)}
+.random-video-single .random-star::before{background:radial-gradient(circle,rgba(255,238,248,.15),rgba(255,255,255,.03) 65%,transparent 72%);box-shadow:inset 0 0 9px rgba(255,255,255,.1);border-color:rgba(255,246,255,.28)}
+.random-video-single .random-star:active{transform:scale(.95);filter:drop-shadow(0 0 5px rgba(255,231,205,.5))}
 @media(max-width:480px){.bmsg-special-videos{gap:5px}.bmsg-special-title{font-size:9px}.bmsg-special-group{font-size:7px}.random-video-single{gap:8px;min-height:96px;padding:16px 8px}.random-video-single .random-star{font-size:47px;width:60px;height:60px}}
   
     /* Search results appear directly below the artist search bar. */
@@ -1663,7 +1665,8 @@ async function openRandomVideo() {
         .random-stage:before{content:"";position:absolute;inset:-20%;background:radial-gradient(circle at center,#8ca9ff35,transparent 55%);animation:skyBreath 2s ease-in-out infinite alternate;z-index:-1}
         .random-title{position:absolute;top:14%;font-size:14px;font-weight:900;letter-spacing:5px;color:#f9f4d9;text-shadow:0 0 18px #c5d6ff}
         .random-stars-stage{position:relative;width:min(90vw,440px);height:260px;display:grid;grid-template-columns:repeat(3,1fr);align-items:center;justify-items:center;gap:16px}
-        .falling-star{display:block;font-size:clamp(62px,15vw,88px);line-height:1;color:#d9e1ff;opacity:0;filter:drop-shadow(0 0 12px #9dafff);transform:translateY(-90vh) rotate(-50deg) scale(.5);animation:starFall .7s cubic-bezier(.15,.8,.2,1.1) forwards,starScan 1.15s ease-in-out infinite;animation-delay:calc(var(--i)*.23s),calc(1.6s + var(--i)*.19s)}
+        .falling-star{display:block;font-size:clamp(62px,15vw,88px);line-height:1;color:#d9e1ff;opacity:0;filter:drop-shadow(0 0 12px #9dafff);transform:translateY(-90vh) rotate(-50deg) scale(.5);animation:starFall .7s cubic-bezier(.15,.8,.2,1.1) forwards;animation-delay:var(--delay,0s)}
+        .falling-star.scanning{color:#fff7d9;filter:drop-shadow(0 0 14px #ffe5ad) drop-shadow(0 0 23px #c5a8ff)}
         .falling-star.winner{animation:starWinner .7s ease-in-out forwards!important;opacity:1;transform:none}
         .random-caption{position:absolute;bottom:17%;font-size:13px;letter-spacing:3px;font-weight:800;color:#e7eaff;animation:captionPulse 1s ease-in-out infinite alternate}
         @keyframes starFall{to{opacity:1;transform:translateY(0) rotate(0) scale(1)}}
@@ -1686,6 +1689,22 @@ async function openRandomVideo() {
           <span class="falling-star" style="--i:3">★</span><span class="falling-star" style="--i:4">★</span><span class="falling-star" style="--i:5">★</span>
         </div>
         <div class="random-caption" id="randomCaption">SELECTING...</div>
+        <script>
+          (function(){
+            const stars=[...document.querySelectorAll('.falling-star')];
+            const order=[0,1,2,3,4,5];
+            for(let i=order.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[order[i],order[j]]=[order[j],order[i]];}
+            stars.forEach((star,i)=>star.style.setProperty('--delay',(order[i]*.19)+'s'));
+            let previous=-1;
+            window.starScanTimer=setInterval(()=>{
+              if(document.querySelector('.falling-star.winner')){clearInterval(window.starScanTimer);return;}
+              let next=Math.floor(Math.random()*stars.length);
+              if(next===previous)next=(next+1+Math.floor(Math.random()*5))%stars.length;
+              stars.forEach(star=>star.classList.remove('scanning'));
+              stars[next].classList.add('scanning');previous=next;
+            },260);
+          })();
+        <\/script>
       </div>
 
     </body>
@@ -1742,7 +1761,7 @@ async function openRandomVideo() {
     if(!randomWindow.closed){
       try{
         const stars=randomWindow.document.querySelectorAll('.falling-star');
-        if(stars.length){stars[Math.floor(Math.random()*stars.length)].classList.add('winner');}
+        if(stars.length){const winner=stars[Math.floor(Math.random()*stars.length)];stars.forEach(star=>star.classList.remove('scanning'));winner.classList.add('winner');if(randomWindow.starScanTimer)randomWindow.clearInterval(randomWindow.starScanTimer);}
         const caption=randomWindow.document.getElementById('randomCaption');
         if(caption)caption.textContent='SELECTED!';
       }catch(_e){}
@@ -2724,7 +2743,6 @@ function createCard(video) {
 
   return `
     <article class="card counter-card">
-      <div class="two-sandwich"><strong>2挟み</strong><small>1回見たら違う動画を2つ見る</small></div>
       <div class="video-header">
 
         <img
