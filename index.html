@@ -981,7 +981,7 @@
     .bmsg-vinyl-tile:hover::after{background:#ffffff30;transform:rotate(45deg)}
     .bmsg-vinyl-disc{display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:8px;width:auto;min-width:0;aspect-ratio:auto;border:0;border-radius:0;background:none;box-shadow:none;flex:1;overflow:visible}
     .bmsg-vinyl-disc::before{display:none}
-    .bmsg-vinyl-disc::after{content:'STARS BASE  /  COLLECTION';order:-1;font-size:9px;font-weight:700;letter-spacing:.22em;color:#c4cfdf}
+    .bmsg-vinyl-disc::after{content:none}
     .bmsg-vinyl-title{display:block;width:auto;min-height:0;padding:0;border:0;border-radius:0;background:none;box-shadow:none;color:#fff;font-size:clamp(19px,4.6vw,30px);font-weight:850;line-height:1.25;letter-spacing:.04em;text-align:left;text-shadow:0 2px 12px #0008;overflow-wrap:anywhere}
     .bmsg-vinyl-count{display:block;flex:none;align-self:flex-end;margin-bottom:2px;color:#d4dfed;font-size:10px;font-weight:700;letter-spacing:.11em;white-space:nowrap}
     .bmsg-artist-search-wrap{margin:12px 0 22px;padding:16px;border:1px solid #ffffff38;border-radius:14px;background:linear-gradient(125deg,#ffffff13,#ffffff06);box-shadow:inset 0 1px #ffffff20}
@@ -1000,6 +1000,9 @@
     .bmsg-folder-sort-options button[aria-pressed="true"]{background:#e7edf7;color:#111a29;border-color:#fff}
     @media(max-width:480px){.bmsg-vinyl-tile{min-height:105px;padding:18px 15px;gap:8px}.bmsg-vinyl-tile::after{width:34px;height:34px;font-size:20px}.bmsg-vinyl-title{font-size:clamp(17px,5vw,24px)}.bmsg-vinyl-count{font-size:9px}.bmsg-vinyl-disc::after{font-size:8px;letter-spacing:.14em}}
 
+    /* Global BMSG search, above STARGLOW */
+    .bmsg-global-search-wrap{margin:4px 0 16px;padding:12px 13px;border:1px solid #ffffff45;border-radius:12px;background:linear-gradient(115deg,#26354b80,#ffffff0b)}
+    .bmsg-global-artist-name{display:block;color:#e4edff;font-size:10px;letter-spacing:.12em;font-weight:900;margin-bottom:5px}
   </style>
 </head>
 
@@ -1013,6 +1016,11 @@
 <div id="bmsgOverlay" class="bmsg-overlay" hidden>
   <div class="bmsg-dialog" role="dialog" aria-modal="true" aria-labelledby="bmsgMenuTitle">
     <div class="bmsg-dialog-head"><h2 id="bmsgMenuTitle">BMSG ARTIST</h2><button id="bmsgClose" class="bmsg-close" type="button" aria-label="閉じる">✕</button></div>
+    <div class="bmsg-global-search-wrap">
+      <label for="bmsgGlobalSearch" class="bmsg-artist-search-label">SEARCH</label>
+      <div class="bmsg-artist-search-field"><span aria-hidden="true">⌕</span><input id="bmsgGlobalSearch" type="search" placeholder="曲名・動画タイトルで検索" autocomplete="off"><button id="bmsgGlobalSearchClear" type="button" aria-label="検索をクリア" hidden>✕</button></div>
+      <div id="bmsgGlobalSearchStatus" class="bmsg-artist-search-result" role="status"></div>
+    </div>
     <div id="bmsgArtistList" class="bmsg-artist-list"></div>
   </div>
 </div>
@@ -1055,8 +1063,8 @@
     <div class="bmsg-page-head"><button id="bmsgBack" class="bmsg-back" type="button">← 戻る</button><h2 id="bmsgPageTitle"></h2></div>
     <div id="bmsgPageStatus" class="bmsg-page-status" role="status"></div>
     <div id="bmsgArtistSearchWrap" class="bmsg-artist-search-wrap" hidden>
-      <label class="bmsg-artist-search-label" for="bmsgArtistSearch">SEARCH THE COLLECTION</label>
-      <div class="bmsg-artist-search-field"><span aria-hidden="true">⌕</span><input id="bmsgArtistSearch" type="search" placeholder="楽曲名・動画タイトル・フォルダ名で検索" autocomplete="off"><button id="bmsgArtistSearchClear" type="button" aria-label="検索をクリア" hidden>✕</button></div>
+      <label class="bmsg-artist-search-label" for="bmsgArtistSearch">SEARCH</label>
+      <div class="bmsg-artist-search-field"><span aria-hidden="true">⌕</span><input id="bmsgArtistSearch" type="search" placeholder="曲名・動画タイトルで検索" autocomplete="off"><button id="bmsgArtistSearchClear" type="button" aria-label="検索をクリア" hidden>✕</button></div>
       <div id="bmsgArtistSearchResult" class="bmsg-artist-search-result" aria-live="polite"></div>
     </div>
     <nav id="bmsgFolderNav" class="bmsg-folder-nav" aria-label="フォルダへ移動"></nav>
@@ -1231,6 +1239,58 @@
   const overlay=document.getElementById('bmsgOverlay');
   const close=document.getElementById('bmsgClose');
   const list=document.getElementById('bmsgArtistList');
+  const globalSearch=document.getElementById('bmsgGlobalSearch');
+  const globalClear=document.getElementById('bmsgGlobalSearchClear');
+  const globalStatus=document.getElementById('bmsgGlobalSearchStatus');
+  let globalCache=null,globalLoading=null,globalTimer=null,globalSearchSeq=0;
+  const allArtists=[...new Set([...group,...solo])];
+  async function getGlobalVideos(){
+    if(globalCache)return {videos:globalCache,partial:false};
+    if(!globalLoading){
+      globalLoading=(async()=>{
+        const responses=await Promise.allSettled(allArtists.map(async artist=>{
+          const r=await fetch(ADMIN_PUBLIC_API+'/api/videos?artist='+encodeURIComponent(artist),{cache:'no-store'});
+          if(!r.ok)throw new Error(artist+' API '+r.status);
+          const data=await r.json();
+          if(!Array.isArray(data.videos))throw new Error(artist+' 動画データなし');
+          return data.videos.filter(v=>/^[\w-]{11}$/.test(String(v.video_id||''))).map(v=>({...v,artist}));
+        }));
+        const fulfilled=responses.filter(r=>r.status==='fulfilled');
+        if(!fulfilled.length)throw new Error('アーティスト情報を取得できませんでした');
+        const result=fulfilled.flatMap(r=>r.value);
+        if(fulfilled.length===responses.length)globalCache=result;
+        return {videos:result,partial:fulfilled.length!==responses.length};
+      })().finally(()=>{globalLoading=null;});
+    }
+    const result=await globalLoading;
+    return Array.isArray(result)?{videos:result,partial:false}:result;
+  }
+  function showGlobalMatches(videos,query,partial){
+    folderModal.dataset.globalSearch='true';
+    folderModalTitle.textContent='SEARCH RESULTS';
+    folderModal.querySelector('.bmsg-folder-panel').classList.add('bmsg-vinyl-panel');
+    sortWrap.hidden=false;modalSort='newest';
+    modalItems=videos.filter(v=>[v.display_title,v.title,v.original_title].some(t=>String(t||'').toLocaleLowerCase('ja').includes(query)));
+    drawModalItems();
+    globalStatus.textContent=modalItems.length+' 件の動画が見つかりました'+(partial?'（一部アーティストの取得に失敗）':'');
+    lastFolderTrigger=globalSearch;
+    overlay.hidden=true;folderModal.hidden=false;document.body.style.overflow='hidden';folderModalClose.focus();
+  }
+  async function runGlobalSearch(){
+    const query=globalSearch.value.trim().toLocaleLowerCase('ja');
+    const seq=++globalSearchSeq;
+    globalClear.hidden=!query;
+    if(!query){globalStatus.textContent='';return;}
+    globalStatus.textContent='全アーティストから検索しています…';
+    try{
+      const data=await getGlobalVideos();
+      if(seq!==globalSearchSeq)return;
+      showGlobalMatches(data.videos,query,data.partial);
+    }catch(err){if(seq===globalSearchSeq)globalStatus.textContent='検索できませんでした：'+err.message;}
+  }
+  globalSearch.addEventListener('input',()=>{clearTimeout(globalTimer);globalSearchSeq++;globalClear.hidden=!globalSearch.value;if(!globalSearch.value.trim()){globalStatus.textContent='';return;}globalTimer=setTimeout(runGlobalSearch,550);});
+  globalSearch.addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();clearTimeout(globalTimer);runGlobalSearch();}});
+  globalClear.addEventListener('click',()=>{clearTimeout(globalTimer);globalSearchSeq++;globalSearch.value='';globalClear.hidden=true;globalStatus.textContent='';globalSearch.focus();});
   const page=document.getElementById('bmsgArtistPage');
   const pageTitle=document.getElementById('bmsgPageTitle');
   const back=document.getElementById('bmsgBack');
@@ -1255,9 +1315,10 @@
   function sortByPublished(items,oldest=false){return [...items].sort((a,b)=>{const ad=dateValue(a),bd=dateValue(b);if(ad===null&&bd!==null)return 1;if(bd===null&&ad!==null)return -1;if(ad!==null&&bd!==null&&ad!==bd)return oldest?ad-bd:bd-ad;return Number(a.sort_order||0)-Number(b.sort_order||0);});}
   function drawModalItems(){
     folderModalVideos.replaceChildren();
-    const isOther=currentArtist!=='STARGLOW';
+    const isGlobal=folderModal.dataset.globalSearch==='true';
+    const isOther=isGlobal||currentArtist!=='STARGLOW';
     const rows=isOther?sortByPublished(modalItems,modalSort==='oldest'):modalItems;
-    for(const v of rows){const card=createVideoCard(v);if(card){if(isOther&&v.published_at){const date=document.createElement('time');date.className='bmsg-vinyl-date';date.textContent='公開日 '+String(v.published_at).slice(0,10);card.querySelector('.bmsg-video-body')?.append(date);}folderModalVideos.append(card);}}
+    for(const v of rows){const card=createVideoCard(v);if(card){if(isGlobal){const artist=document.createElement('span');artist.className='bmsg-global-artist-name';artist.textContent=v.artist;card.querySelector('.bmsg-video-body')?.prepend(artist);}if(isOther&&v.published_at){const date=document.createElement('time');date.className='bmsg-vinyl-date';date.textContent='公開日 '+String(v.published_at).slice(0,10);card.querySelector('.bmsg-video-body')?.append(date);}folderModalVideos.append(card);}}
     if(!rows.length){const msg=document.createElement('p');msg.className='bmsg-page-note';msg.textContent=searchInput.value.trim()?'検索に一致する動画がありません。':'このフォルダにはまだ動画がありません。';folderModalVideos.append(msg);}
     sortNewest.setAttribute('aria-pressed',String(modalSort==='newest'));
     sortOldest.setAttribute('aria-pressed',String(modalSort==='oldest'));
@@ -1267,12 +1328,12 @@
   searchInput.addEventListener('input',()=>{searchClear.hidden=!searchInput.value;renderVideos();});
   searchClear.addEventListener('click',()=>{searchInput.value='';searchClear.hidden=true;renderVideos();searchInput.focus();});
   let lastFolderTrigger=null;
-  function closeFolderModal(){if(folderModal.hidden)return;folderModal.hidden=true;document.body.style.overflow='';if(lastFolderTrigger?.isConnected)lastFolderTrigger.focus();}
+  function closeFolderModal(){if(folderModal.hidden)return;const wasGlobal=folderModal.dataset.globalSearch==='true';folderModal.hidden=true;document.body.style.overflow='';if(wasGlobal)overlay.hidden=false;if(lastFolderTrigger?.isConnected)lastFolderTrigger.focus();}
   folderModalClose.addEventListener('click',closeFolderModal);
   folderModal.addEventListener('click',e=>{if(e.target===folderModal)closeFolderModal();});
   document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!folderModal.hidden){e.stopPropagation();closeFolderModal();}});
   function openFolderModal(folder,items,trigger){
-    lastFolderTrigger=trigger;folderModalTitle.textContent=folder.name;
+    folderModal.dataset.globalSearch='false';lastFolderTrigger=trigger;folderModalTitle.textContent=folder.name;
     const isOther=currentArtist!=='STARGLOW';
     folderModal.querySelector('.bmsg-folder-panel').classList.toggle('bmsg-vinyl-panel',isOther);
     sortWrap.hidden=!isOther;modalSort='newest';modalItems=items;drawModalItems();
@@ -1297,7 +1358,7 @@
   function endDrag(e){if(!drag||e.pointerId!==drag.id)return;const moved=drag.moved;drag=null;if(moved){try{localStorage.setItem(key,JSON.stringify({x:fab.offsetLeft,y:fab.offsetTop}));}catch(err){}}else{overlay.hidden=false;close.focus();}}
   fab.addEventListener('pointerup',endDrag);
   fab.addEventListener('pointercancel',()=>{drag=null;});
-  function hideMenu(){overlay.hidden=true;fab.focus();}
+  function hideMenu(){overlay.hidden=true;clearTimeout(globalTimer);globalSearchSeq++;fab.focus();}
   close.addEventListener('click',hideMenu);
   overlay.addEventListener('click',e=>{if(e.target===overlay)hideMenu();});
   document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!overlay.hidden)hideMenu();});
