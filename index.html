@@ -1028,7 +1028,70 @@
     .bmsg-unclassified-list .bmsg-video-title{color:#fff!important;font-size:clamp(11px,2.6vw,14px);line-height:1.5;text-align:left;overflow-wrap:anywhere;text-shadow:0 1px 3px #0007}
     .bmsg-unclassified-list .bmsg-video-tag{color:#fff;background:#ffffff26}
     .bmsg-unclassified-list .bmsg-video-card:hover{border-color:#fff;background:#ffffff25}
-  </style>
+
+/* 2026-10: BMSG featured, random, counters */
+.bmsg-menu-separated{margin-top:20px!important}
+.bmsg-special-videos{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin:13px 0 18px}
+.bmsg-special-video{min-width:0;display:block;text-decoration:none;color:#fff;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.24);border-radius:9px;overflow:hidden;padding-bottom:6px}
+.bmsg-special-video img{display:block;width:100%;aspect-ratio:16/9;object-fit:cover}
+.bmsg-special-title{display:block;font-size:10px;font-weight:850;line-height:1.3;padding:6px 5px 0;overflow-wrap:anywhere}
+.bmsg-special-group{display:block;font-size:8px;line-height:1.3;color:#cbd5e7;padding:3px 5px 0;overflow-wrap:anywhere}
+/* RANDOM VIDEO — stardust jewelry / aurora capsule */
+.random-video-single{
+  position:relative;isolation:isolate;overflow:hidden;
+  gap:clamp(9px,3vw,24px);min-height:104px;padding:18px 15px;
+  border:1px solid rgba(242,221,255,.68);border-radius:27px;
+  background:linear-gradient(115deg,rgba(43,30,79,.88) 0%,rgba(65,69,126,.82) 43%,rgba(89,53,103,.82) 75%,rgba(37,34,77,.90) 100%);
+  box-shadow:0 12px 28px rgba(7,10,36,.28),inset 0 1px 0 rgba(255,255,255,.42),inset 0 -1px 0 rgba(255,209,245,.13);
+  backdrop-filter:blur(12px);-webkit-backdrop-filter:blur(12px);
+}
+.random-video-single::before{
+  content:"";position:absolute;inset:-60%;z-index:-1;pointer-events:none;
+  background:radial-gradient(ellipse at 35% 45%,rgba(255,191,224,.25),transparent 35%),radial-gradient(ellipse at 70% 40%,rgba(168,215,255,.25),transparent 37%);
+  animation:randomAuroraDrift 8s ease-in-out infinite alternate;
+}
+.random-video-single::after{
+  content:"✧  ⋆   ✦  ⋆   ✧";position:absolute;left:0;right:0;top:7px;
+  text-align:center;color:#f8e4ff;font-size:12px;letter-spacing:clamp(12px,5vw,30px);
+  text-shadow:0 0 8px #fff;pointer-events:none;opacity:.82;
+}
+.random-video-single .random-label{
+  position:relative;z-index:1;font-size:clamp(10px,2.7vw,13px);font-weight:850;
+  letter-spacing:clamp(.7px,.4vw,2px);color:#fff7ff;text-shadow:0 1px 9px rgba(10,6,37,.65);
+}
+.random-video-single .random-star{
+  position:relative;z-index:1;flex:none;width:76px;height:70px;
+  font-size:57px;line-height:1;color:#fff5c9;
+  filter:drop-shadow(0 0 9px rgba(255,231,168,.85));
+  text-shadow:0 0 5px #fff,0 0 18px #ffdaed,0 0 27px #f3d3ff;
+  animation:randomJewelryGlow 2.6s ease-in-out infinite alternate;
+}
+.random-video-single .random-star::before{
+  content:"";position:absolute;inset:5px;border-radius:50%;z-index:-1;
+  border:1px solid rgba(255,246,255,.45);background:radial-gradient(circle,rgba(255,237,250,.30),rgba(255,255,255,.05) 65%,transparent 72%);
+  box-shadow:0 0 20px rgba(255,197,232,.35),inset 0 0 15px rgba(255,255,255,.17);
+}
+.random-video-single .random-star:focus-visible{outline:2px solid white;outline-offset:3px;border-radius:50%}
+.random-video-single .random-star:active{animation:none;transform:scale(.88);filter:brightness(1.5)}
+@keyframes randomJewelryGlow{from{transform:scale(.95) rotate(-6deg);filter:drop-shadow(0 0 5px #ffe9b8)}to{transform:scale(1.08) rotate(6deg);filter:drop-shadow(0 0 18px #fff0bc)}}
+@keyframes randomAuroraDrift{from{transform:translate(-5%,-3%) rotate(-4deg)}to{transform:translate(5%,3%) rotate(5deg)}}
+@media(prefers-reduced-motion:reduce){.random-video-single::before,.random-video-single .random-star{animation:none}}
+.counter-card{position:relative;padding-top:58px}
+.two-sandwich{position:absolute;top:11px;right:14px;text-align:right;display:flex;flex-direction:column;gap:1px;color:#172647}
+.two-sandwich strong{font-size:15px;font-weight:900}
+.two-sandwich small{font-size:9px;font-weight:650;line-height:1.35}
+@media(max-width:480px){.bmsg-special-videos{gap:5px}.bmsg-special-title{font-size:9px}.bmsg-special-group{font-size:7px}.random-video-single{gap:8px;min-height:96px;padding:16px 8px}.random-video-single .random-star{font-size:47px;width:60px;height:60px}}
+  
+    /* Search results appear directly below the artist search bar. */
+    .bmsg-inline-search-results{width:100%;grid-column:1/-1;margin-top:8px}
+    .bmsg-inline-search-list{display:flex;flex-direction:column;gap:10px}
+    .bmsg-inline-search-list .bmsg-video-card{border:1px solid #ffffff75;border-radius:12px;background:rgba(255,255,255,.14);overflow:hidden;box-shadow:0 8px 20px #0004}
+    .bmsg-inline-search-list .bmsg-video-link{display:flex;align-items:center;gap:12px;padding:8px;text-decoration:none;color:#fff}
+    .bmsg-inline-search-list .bmsg-video-thumb{width:38%;max-width:170px;aspect-ratio:16/9;object-fit:cover;border-radius:8px;flex-shrink:0}
+    .bmsg-inline-search-list .bmsg-video-body{min-width:0;flex:1}
+    .bmsg-inline-search-list .bmsg-video-title{color:#fff!important;font-size:clamp(12px,3vw,15px);line-height:1.5;overflow-wrap:anywhere}
+
+</style>
 </head>
 
 <body>
@@ -1047,6 +1110,12 @@
       <div id="bmsgGlobalSearchStatus" class="bmsg-artist-search-result" role="status"></div>
       <div id="bmsgGlobalSort" class="bmsg-global-sort" hidden><button id="bmsgGlobalNewest" type="button" aria-pressed="true">新着順 ↑</button><button id="bmsgGlobalOldest" type="button" aria-pressed="false">古い順 ↓</button></div>
       <div id="bmsgGlobalResults" class="bmsg-global-results" hidden></div>
+    </div>
+    <div class="bmsg-special-videos" aria-label="ピックアップ動画">
+      <a class="bmsg-special-video" href="https://youtu.be/nn2V3mptPLg" target="_blank" rel="noopener noreferrer"><img src="https://i.ytimg.com/vi/nn2V3mptPLg/hqdefault.jpg" alt="Nameless MythS" loading="lazy"><span class="bmsg-special-title">Nameless MythS</span><span class="bmsg-special-group">MAZZEL × STARGLOW</span></a>
+      <a class="bmsg-special-video" href="https://youtu.be/BrUM1VrWFhM" target="_blank" rel="noopener noreferrer"><img src="https://i.ytimg.com/vi/BrUM1VrWFhM/hqdefault.jpg" alt="ONE WHO GLOWS" loading="lazy"><span class="bmsg-special-title">ONE WHO GLOWS</span><span class="bmsg-special-group">SOUMA × TAIKI</span></a>
+      <a class="bmsg-special-video" href="https://youtu.be/9tkw9U8JKa0" target="_blank" rel="noopener noreferrer"><img src="https://i.ytimg.com/vi/9tkw9U8JKa0/hqdefault.jpg" alt="IPPA" loading="lazy"><span class="bmsg-special-title">IPPA</span><span class="bmsg-special-group">前川一派</span></a>
+      <a class="bmsg-special-video" href="https://youtu.be/HqahsX10kzE" target="_blank" rel="noopener noreferrer"><img src="https://i.ytimg.com/vi/HqahsX10kzE/hqdefault.jpg" alt="Live My Life" loading="lazy"><span class="bmsg-special-title">Live My Life</span><span class="bmsg-special-group">TAIKI × KANON × ADAM</span></a>
     </div>
     <div id="bmsgArtistList" class="bmsg-artist-list"></div>
   </div>
@@ -1125,104 +1194,10 @@
          RANDOM VIDEO
          ==================================== -->
 
-    <div class="random-video">
-
-      <div class="random-label">
-        RANDOM VIDEO
-      </div>
-
-      <div class="random-stars">
-
-        <button
-          class="random-star"
-          type="button"
-          onclick="openRandomVideo()"
-          aria-label="ランダム動画を再生"
-        >★</button>
-
-        <button
-          class="random-star"
-          type="button"
-          onclick="openRandomVideo()"
-          aria-label="ランダム動画を再生"
-        >★</button>
-
-        <button
-          class="random-star"
-          type="button"
-          onclick="openRandomVideo()"
-          aria-label="ランダム動画を再生"
-        >★</button>
-
-        <button
-          class="random-star"
-          type="button"
-          onclick="openRandomVideo()"
-          aria-label="ランダム動画を再生"
-        >★</button>
-
-        <button
-          class="random-star"
-          type="button"
-          onclick="openRandomVideo()"
-          aria-label="ランダム動画を再生"
-        >★</button>
-
-        <button
-          class="random-star"
-          type="button"
-          onclick="openRandomVideo()"
-          aria-label="ランダム動画を再生"
-        >★</button>
-
-      </div>
-
-    </div>
-
-    <!-- ====================================
-         FEATURED VIDEO
-         ==================================== -->
-
-    <div class="featured-videos">
-
-      <div class="featured-video">
-        <a
-          href="https://youtu.be/BrUM1VrWFhM?si=pseq9b-LhlcKxiB5"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <img
-            class="featured-thumbnail"
-            src="https://i.ytimg.com/vi/BrUM1VrWFhM/hqdefault.jpg"
-            alt="ONE WHO GLOWS"
-            loading="lazy"
-          >
-          <div class="featured-text">
-            <div class="featured-group">SOUMA (ONE OR EIGHT) × TAIKI (STARGLOW)</div>
-            <div class="featured-title">ONE WHO GLOWS</div>
-          </div>
-        </a>
-      </div>
-
-      <div class="featured-video">
-        <a
-          href="https://youtu.be/nn2V3mptPLg?si=4dBZRl3AFPu_klI7"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <img
-            class="featured-thumbnail"
-            src="https://i.ytimg.com/vi/nn2V3mptPLg/hqdefault.jpg"
-            alt="Nameless MythS"
-            loading="lazy"
-          >
-          <div class="featured-text">
-            <div class="featured-group">MAZZEL × STARGLOW</div>
-            <div class="featured-title">Nameless MythS</div>
-          </div>
-        </a>
-      </div>
-
+    <div class="random-video random-video-single">
+      <span class="random-label">STARGLOW</span>
+      <button class="random-star" type="button" onclick="openRandomVideo()" aria-label="STARGLOWのランダム動画を選ぶ">★</button>
+      <span class="random-label">RANDOM VIDEO</span>
     </div>
 
     <div
@@ -1260,7 +1235,7 @@
 /* BMSG artist navigation — independent of existing statistics */
 (function initBmsgNavigation(){
   const ADMIN_PUBLIC_API='https://starsbase-artist-admin.starsx0601.workers.dev';
-  const solo=['SKY-HI','Novel Core','Aile The Shota','edhiii boi','REIKO','SALU','ふみの','Ayumu Imazu'];
+  const solo=['SKY-HI','Novel Core','Aile The Shota','edhiii boi','REIKO','Ayumu Imazu','ふみの','BANVOX','SALU'];
   const group=['STARGLOW','BMSG','BE:FIRST','MAZZEL','HANA','ShowMinorSavage','BMSG TRAINEE'];
   const fab=document.getElementById('bmsgFab');
   const overlay=document.getElementById('bmsgOverlay');
@@ -1358,8 +1333,8 @@
   const searchClear=document.getElementById('bmsgArtistSearchClear');
   const searchResult=document.getElementById('bmsgArtistSearchResult');
   let modalItems=[],modalSort='newest';
-  const dateValue=v=>{const t=Date.parse(v.published_at||'');return Number.isFinite(t)?t:null;};
-  function sortByPublished(items,oldest=false){return [...items].sort((a,b)=>{const ad=dateValue(a),bd=dateValue(b);if(ad===null&&bd!==null)return 1;if(bd===null&&ad!==null)return -1;if(ad!==null&&bd!==null&&ad!==bd)return oldest?ad-bd:bd-ad;return Number(a.sort_order||0)-Number(b.sort_order||0);});}
+  const dateValue=v=>{const raw=v.published_at||v.publishedAt||v.youtube_published_at||'';const t=Date.parse(raw);return Number.isFinite(t)?t:null;};
+  function sortByPublished(items,oldest=false){return [...items].sort((a,b)=>{const ad=dateValue(a),bd=dateValue(b);if(ad===null&&bd!==null)return 1;if(bd===null&&ad!==null)return -1;if(ad!==null&&bd!==null&&ad!==bd)return oldest?ad-bd:bd-ad;const tie=Number(a.sort_order||0)-Number(b.sort_order||0);return oldest?-tie:tie;});}
   function drawModalItems(){
     folderModalVideos.replaceChildren();
     const isGlobal=folderModal.dataset.globalSearch==='true';
@@ -1467,6 +1442,23 @@
     let visibleFolders=0,visibleVideos=0;
     empty.hidden=artistFolders.length>0||isOther&&videos.length>0;
     if(!artistFolders.length)empty.textContent='フォルダがまだ登録されていません。管理画面の登録内容をご確認ください。';
+    // Search mode: show matching videos directly beneath the search bar, not folder counts.
+    if(isOther&&query){
+      const matching=sortByPublished(videos.filter(v=>[v.display_title,v.title,v.original_title].some(x=>String(x||'').toLocaleLowerCase('ja').includes(query))));
+      const results=document.createElement('section');results.className='bmsg-inline-search-results';
+      const list=document.createElement('div');list.className='bmsg-inline-search-list';
+      for(const v of matching){const card=createVideoCard(v);if(card){
+        if(v.published_at){const date=document.createElement('time');date.className='bmsg-vinyl-date';date.textContent='公開日 '+String(v.published_at).slice(0,10);card.querySelector('.bmsg-video-body')?.append(date);}
+        list.append(card);
+      }}
+      results.append(list);grid.append(results);
+      status.textContent=matching.length+' VIDEOS';
+      searchResult.textContent=matching.length+' 件の動画が見つかりました';
+      empty.hidden=matching.length>0;
+      if(!matching.length)empty.textContent='検索に一致する動画はありません。';
+      return;
+    }
+    searchResult.textContent='';
     // Show only videos explicitly assigned to an existing folder.
     const groups=new Map(artistFolders.map(f=>[Number(f.id),[]]));
     for(const v of videos){const id=folderFor(v);if(groups.has(id))groups.get(id).push(v);}
@@ -1541,7 +1533,7 @@
   const soloColumn=document.createElement('div');soloColumn.className='bmsg-menu-column';
   const soloHeading=document.createElement('div');soloHeading.className='bmsg-menu-heading';soloHeading.textContent='SOLO ARTIST';
   soloColumn.append(soloHeading);
-  for(const name of solo)soloColumn.append(artistButton(name));
+  for(const name of solo){const b=artistButton(name);if(name==='BANVOX')b.classList.add('bmsg-menu-separated');soloColumn.append(b);}
   const groupColumn=document.createElement('div');groupColumn.className='bmsg-menu-column';
   // Intentionally no heading above the group column.
   const groupSpacer=document.createElement('div');groupSpacer.className='bmsg-menu-heading';groupSpacer.setAttribute('aria-hidden','true');
@@ -1667,42 +1659,19 @@ async function openRandomVideo() {
           overflow: hidden;
         }
 
-        .random-start {
-          text-align: center;
-
-          padding: 30px;
-
-          font-size: 18px;
-          font-weight: 900;
-          letter-spacing: 1px;
-
-          text-shadow:
-            0 0 8px rgba(255, 255, 255, 0.20);
-
-          animation:
-            randomPulse
-            1.1s
-            ease-in-out
-            infinite alternate;
-        }
-
-        @keyframes randomPulse {
-
-          from {
-            opacity: 0.48;
-
-            transform:
-              scale(0.97);
-          }
-
-          to {
-            opacity: 1;
-
-            transform:
-              scale(1.03);
-          }
-
-        }
+        .random-stage{position:relative;width:100%;height:100dvh;min-height:450px;display:flex;align-items:center;justify-content:center;flex-direction:column;isolation:isolate;overflow:hidden}
+        .random-stage:before{content:"";position:absolute;inset:-20%;background:radial-gradient(circle at center,#8ca9ff35,transparent 55%);animation:skyBreath 2s ease-in-out infinite alternate;z-index:-1}
+        .random-title{position:absolute;top:14%;font-size:14px;font-weight:900;letter-spacing:5px;color:#f9f4d9;text-shadow:0 0 18px #c5d6ff}
+        .random-stars-stage{position:relative;width:min(90vw,440px);height:260px;display:grid;grid-template-columns:repeat(3,1fr);align-items:center;justify-items:center;gap:16px}
+        .falling-star{display:block;font-size:clamp(62px,15vw,88px);line-height:1;color:#d9e1ff;opacity:0;filter:drop-shadow(0 0 12px #9dafff);transform:translateY(-90vh) rotate(-50deg) scale(.5);animation:starFall .7s cubic-bezier(.15,.8,.2,1.1) forwards,starScan 1.15s ease-in-out infinite;animation-delay:calc(var(--i)*.23s),calc(1.6s + var(--i)*.19s)}
+        .falling-star.winner{animation:starWinner .7s ease-in-out forwards!important;opacity:1;transform:none}
+        .random-caption{position:absolute;bottom:17%;font-size:13px;letter-spacing:3px;font-weight:800;color:#e7eaff;animation:captionPulse 1s ease-in-out infinite alternate}
+        @keyframes starFall{to{opacity:1;transform:translateY(0) rotate(0) scale(1)}}
+        @keyframes starScan{0%,72%,100%{filter:drop-shadow(0 0 8px #91aaff);color:#cbd7ff}82%{filter:drop-shadow(0 0 22px white) drop-shadow(0 0 42px #ffea88);color:white}}
+        @keyframes starWinner{0%{transform:scale(1);filter:brightness(1)}50%{transform:scale(2.15);filter:brightness(3) drop-shadow(0 0 35px white) drop-shadow(0 0 95px #ffe881)}100%{transform:scale(2.6);filter:brightness(4) drop-shadow(0 0 55px white) drop-shadow(0 0 130px #ffe881)}}
+        @keyframes captionPulse{from{opacity:.5}to{opacity:1}}
+        @keyframes skyBreath{from{opacity:.5}to{opacity:1}}
+        @media(prefers-reduced-motion:reduce){.falling-star{animation:none;opacity:1;transform:none}.random-stage:before,.random-caption{animation:none}}
 
       </style>
 
@@ -1710,8 +1679,13 @@ async function openRandomVideo() {
 
     <body>
 
-      <div class="random-start">
-        ✦ RANDOM VIDEO SELECTING... ✦
+      <div class="random-stage">
+        <div class="random-title">STARGLOW</div>
+        <div class="random-stars-stage" id="randomStarsStage">
+          <span class="falling-star" style="--i:0">★</span><span class="falling-star" style="--i:1">★</span><span class="falling-star" style="--i:2">★</span>
+          <span class="falling-star" style="--i:3">★</span><span class="falling-star" style="--i:4">★</span><span class="falling-star" style="--i:5">★</span>
+        </div>
+        <div class="random-caption" id="randomCaption">SELECTING...</div>
       </div>
 
     </body>
@@ -1720,7 +1694,7 @@ async function openRandomVideo() {
   `);
 
   randomWindow.document.close();
-
+  const selectingStarted=Date.now();
 
   try {
 
@@ -1763,9 +1737,18 @@ async function openRandomVideo() {
       待機画面と同じタブでYouTubeへ
     */
 
-    randomWindow.location.replace(
-      data.url
-    );
+    // Give the six stars time to fall and light up, even if the API responds immediately.
+    await new Promise(resolve=>setTimeout(resolve,Math.max(0,3300-(Date.now()-selectingStarted))));
+    if(!randomWindow.closed){
+      try{
+        const stars=randomWindow.document.querySelectorAll('.falling-star');
+        if(stars.length){stars[Math.floor(Math.random()*stars.length)].classList.add('winner');}
+        const caption=randomWindow.document.getElementById('randomCaption');
+        if(caption)caption.textContent='SELECTED!';
+      }catch(_e){}
+    }
+    await new Promise(resolve=>setTimeout(resolve,850));
+    if(!randomWindow.closed)randomWindow.location.replace(data.url);
 
 
   } catch (error) {
@@ -2740,8 +2723,8 @@ function createCard(video) {
       ?.likes;
 
   return `
-    <article class="card">
-
+    <article class="card counter-card">
+      <div class="two-sandwich"><strong>2挟み</strong><small>1回見たら違う動画を2つ見る</small></div>
       <div class="video-header">
 
         <img
