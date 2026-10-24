@@ -1505,10 +1505,9 @@
       const unclassified=sortByPublished(videos.filter(v=>!groups.has(folderFor(v))).filter(v=>!query||[v.display_title,v.title,v.original_title,v.category,...(Array.isArray(v.tags)?v.tags:[])].some(x=>String(x||'').toLocaleLowerCase('ja').includes(query))));
       if(unclassified.length){
         const section=document.createElement('section');section.className='bmsg-unclassified-section';
-        const heading=document.createElement('h3');heading.className='bmsg-unclassified-heading';heading.textContent='未分類 · '+unclassified.length+' VIDEOS';
         const list=document.createElement('div');list.className='bmsg-unclassified-list';
         for(const v of unclassified){const card=createVideoCard(v);if(card)list.append(card);}
-        section.append(heading,list);grid.append(section);
+        section.append(list);grid.append(section);
       }
       searchResult.textContent=query?visibleFolders+' フォルダ / '+(visibleVideos+unclassified.length)+' 動画が一致':'';
       empty.hidden=visibleFolders>0||unclassified.length>0;
