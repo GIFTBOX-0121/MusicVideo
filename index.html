@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -1524,7 +1525,7 @@
   // Artist data: immediate memory/local cache, background refresh after 10 minutes.
   const artistDataCache=new Map();
   const ARTIST_CACHE_TTL=10*60*1000;
-  const artistCacheKey=name=>'starsbase-artist-videos-v1:'+encodeURIComponent(name);
+  const artistCacheKey=name=>'starsbase-artist-videos-v2:'+encodeURIComponent(name);
   function readArtistCache(name){
     if(artistDataCache.has(name))return artistDataCache.get(name);
     try{
