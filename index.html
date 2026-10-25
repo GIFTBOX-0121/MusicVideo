@@ -1918,16 +1918,16 @@ const API_URL =
 const PIECES_VIDEO_ID = '5dzBSPmQdL4';
 
 const VIDEO_ORDER = [
+  "Slam Dunk",
   "WISHES",
   "Moonchaser",
   "StarWish",
   "USOTSUKI",
   "Drivin' My Life",
+  "PIECES",
   "Green Light",
   "Good Boys Anthem",
-  "PIECES",
-  "GOTH",
-  "Slam Dunk"
+  "GOTH"
 ];
 
 
@@ -3522,6 +3522,11 @@ async function loadData() {
     // All MV counters, including PIECES, now use the production statistics Worker.
     const allVideos=[...data.videos];
     const allHistory=[...(data.daily_history||[])];
+    // Keep PIECES visible even before the updated Worker is deployed.
+    // Do not fabricate counts while production data is unavailable.
+    if(!allVideos.some(v=>v.id===PIECES_VIDEO_ID || v.title==='PIECES')) {
+      allVideos.push({id:PIECES_VIDEO_ID,title:'PIECES',pending_pieces:true});
+    }
     // Show the new MV card before the YouTube ID is available. Never show fabricated zero counts.
     if(!allVideos.some(v=>v.title==='Slam Dunk')) {
       allVideos.push({title:'Slam Dunk',pending_mv:true});
@@ -3532,7 +3537,7 @@ async function loadData() {
     });
 
     createMilestoneAlerts(
-      sortedVideos.filter(v=>!v.pending_mv)
+      sortedVideos.filter(v=>!v.pending_mv && !v.pending_pieces)
     );
 
 
@@ -3540,6 +3545,8 @@ async function loadData() {
       sortedVideos
         .map(video => video.pending_mv
           ? `<article class="card"><h2 class="title">Slam Dunk</h2><p style="text-align:center;padding:26px 12px;color:#c9c8de;letter-spacing:.08em">2026.10.26 21:00 公開予定</p><p style="text-align:center;color:#aeb3c9;font-size:12px">カウンター準備中</p></article>`
+          : video.pending_pieces
+          ? `<article class="card"><h2 class="title">PIECES</h2><p style="text-align:center;padding:20px 12px;color:#555">本番カウンターの接続待ち</p></article>`
           : createCard(video))
         .join("");
 
