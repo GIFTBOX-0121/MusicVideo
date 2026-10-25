@@ -1,9 +1,11 @@
+
 const VIDEOS = [
   { title: "WISHES", id: "3gsVVVndUKM" },
   { title: "Moonchaser", id: "FTXk6epFQdM" },
   { title: "StarWish", id: "-Fhuw0VzelM" },
   { title: "USOTSUKI", id: "Nk3b5KnL4hg" },
   { title: "Drivin' My Life", id: "zbSQaKFjyXI" },
+  { title: "PIECES", id: "5dzBSPmQdL4" },
   { title: "Green Light", id: "FKtMzDOV08M" },
   { title: "Good Boys Anthem", id: "jK_uGTE66oo" },
   { title: "GOTH", id: "-PZ1eaqqb04" }
