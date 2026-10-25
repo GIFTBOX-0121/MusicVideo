@@ -1484,11 +1484,11 @@
       if(query&&!items.length&&!folder.name.toLocaleLowerCase('ja').includes(query))continue;
       visibleFolders++;visibleVideos+=items.length;
       // Keep every registered folder visible, even when it currently has no assigned videos.
-      if(currentArtist==='STARGLOW'){
-        items.sort((a,b)=>{const ai=a.folder_video_order,bi=b.folder_video_order;return (ai==null?999999:ai)-(bi==null?999999:bi)||Number(a.sort_order||0)-Number(b.sort_order||0);});
-      }else{
-        items.sort((a,b)=>{const ad=Date.parse(a.published_at||'')||0,bd=Date.parse(b.published_at||'')||0;return bd-ad||Number(a.sort_order||0)-Number(b.sort_order||0);});
-      }
+      // Honor manual drag order first; append newly assigned videos at the bottom (oldest registration first).
+      items.sort((a,b)=>{
+        const ai=a.folder_video_order,bi=b.folder_video_order;
+        return (ai==null?999999:ai)-(bi==null?999999:bi)||Number(a.id||0)-Number(b.id||0);
+      });
       if(currentArtist!=='STARGLOW'){
         const tile=document.createElement('button');tile.type='button';tile.className='bmsg-vinyl-tile';tile.setAttribute('aria-label',folder.name+' の動画を開く');
         const disc=document.createElement('span');disc.className='bmsg-vinyl-disc';
@@ -1525,7 +1525,7 @@
   // Artist data: immediate memory/local cache, background refresh after 10 minutes.
   const artistDataCache=new Map();
   const ARTIST_CACHE_TTL=10*60*1000;
-  const artistCacheKey=name=>'starsbase-artist-videos-v2:'+encodeURIComponent(name);
+  const artistCacheKey=name=>'starsbase-artist-videos-v3:'+encodeURIComponent(name);
   function readArtistCache(name){
     if(artistDataCache.has(name))return artistDataCache.get(name);
     try{
