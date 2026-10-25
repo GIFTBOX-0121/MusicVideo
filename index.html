@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -1029,6 +1028,91 @@
     .bmsg-unclassified-list .bmsg-video-title{color:#fff!important;font-size:clamp(11px,2.6vw,14px);line-height:1.5;text-align:left;overflow-wrap:anywhere;text-shadow:0 1px 3px #0007}
     .bmsg-unclassified-list .bmsg-video-tag{color:#fff;background:#ffffff26}
     .bmsg-unclassified-list .bmsg-video-card:hover{border-color:#fff;background:#ffffff25}
+
+
+    /* 2026-10-25: Other artist folder gallery — STARGLOW is unchanged */
+    .bmsg-video-grid.bmsg-vinyl-grid{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:12px;
+      align-items:start;
+    }
+    .bmsg-vinyl-tile{
+      display:grid;
+      place-items:center;
+      aspect-ratio:1/1;
+      min-height:0;
+      width:100%;
+      padding:12px 8px;
+      gap:0;
+      text-align:center;
+      border:1px solid rgba(216,229,249,.48);
+      border-radius:8px;
+      background:linear-gradient(145deg,#263146 0%,#111927 52%,#1b2638 100%);
+      box-shadow:0 5px 18px #0006,inset 0 1px #ffffff20;
+      overflow:hidden;
+    }
+    .bmsg-vinyl-tile::before{
+      background:radial-gradient(circle at 50% 15%,#c9d9f01a,transparent 65%);
+    }
+    .bmsg-vinyl-tile::after{display:none}
+    .bmsg-vinyl-disc{
+      display:grid;
+      place-items:center;
+      width:100%;
+      min-width:0;
+      flex:none;
+      gap:0;
+      text-align:center;
+    }
+    .bmsg-vinyl-title{
+      display:block;
+      width:100%;
+      min-height:0;
+      padding:0;
+      border:0;
+      border-radius:0;
+      background:none;
+      box-shadow:none;
+      font-size:clamp(11px,2.8vw,16px);
+      font-weight:500;
+      line-height:1.5;
+      letter-spacing:.045em;
+      text-align:center;
+      overflow-wrap:anywhere;
+      text-shadow:0 1px 6px #0007;
+    }
+    .bmsg-vinyl-count{
+      display:block;
+      position:absolute;
+      left:6px;
+      right:6px;
+      bottom:10px;
+      align-self:auto;
+      margin:0;
+      color:#b8c8df;
+      font-size:clamp(8px,1.8vw,10px);
+      font-weight:400;
+      letter-spacing:.11em;
+      text-align:center;
+    }
+    .bmsg-unclassified-list{
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:9px;
+    }
+    .bmsg-unclassified-list .bmsg-video-body{padding:7px 6px}
+    .bmsg-unclassified-list .bmsg-video-title{
+      font-size:clamp(9px,2.2vw,12px);
+      line-height:1.4;
+      font-weight:500;
+    }
+    @media(max-width:480px){
+      .bmsg-video-grid.bmsg-vinyl-grid{gap:9px}
+      .bmsg-vinyl-tile{min-height:0;padding:12px 7px 20px}
+      .bmsg-vinyl-title{font-size:clamp(10px,2.8vw,13px);font-weight:500}
+      .bmsg-vinyl-count{bottom:7px;font-size:8px}
+      .bmsg-unclassified-list{gap:7px}
+    }
 
 /* 2026-10: BMSG featured, random, counters */
 .bmsg-menu-separated{margin-top:20px!important}
