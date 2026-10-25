@@ -1328,6 +1328,21 @@
   .bmsg-video-grid.bmsg-vinyl-grid .bmsg-vinyl-disc::after{font-size:10px;width:70%}
 }
 
+
+/* Matching upper/lower ornaments: use identical real elements, not mismatched pseudo-elements. */
+.bmsg-video-grid.bmsg-vinyl-grid .bmsg-vinyl-disc::before,
+.bmsg-video-grid.bmsg-vinyl-grid .bmsg-vinyl-disc::after{content:none!important;display:none!important}
+.bmsg-video-grid.bmsg-vinyl-grid .bmsg-folder-ornament{
+  display:block;position:static;flex:none;width:65%;height:auto;
+  color:#e4dafa;font-size:clamp(9px,2.1vw,13px);line-height:1;
+  letter-spacing:0;text-align:center;opacity:.88;
+  background:linear-gradient(90deg,transparent 0%,rgba(225,213,255,.5) 25%,rgba(225,213,255,.5) 75%,transparent 100%) center / 100% 1px no-repeat;
+  text-shadow:0 0 8px rgba(225,213,255,.55);
+}
+@media(max-width:480px){
+  .bmsg-video-grid.bmsg-vinyl-grid .bmsg-folder-ornament{font-size:10px;width:70%}
+}
+
 /* 2026-10: BMSG featured, random, counters */
 .bmsg-menu-separated{margin-top:20px!important}
 .bmsg-special-videos{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin:13px 0 18px}
@@ -1791,7 +1806,8 @@
         const tile=document.createElement('button');tile.type='button';tile.className='bmsg-vinyl-tile';tile.setAttribute('aria-label',folder.name+' の動画を開く');
         const disc=document.createElement('span');disc.className='bmsg-vinyl-disc';
         const label=document.createElement('span');label.className='bmsg-vinyl-title';label.textContent=folder.name;
-        disc.append(label);
+        const ornament=()=>{const el=document.createElement('span');el.className='bmsg-folder-ornament';el.setAttribute('aria-hidden','true');el.textContent='✦';return el;};
+        disc.append(ornament(),label,ornament());
         const count=document.createElement('span');count.className='bmsg-vinyl-count';count.textContent=items.length+' VIDEOS';
         tile.append(disc,count);tile.addEventListener('click',()=>openFolderModal(folder,items,tile));grid.append(tile);
         continue;
