@@ -1410,6 +1410,10 @@
 .random-compact-slash{color:#a99aba;font-weight:400}
 @media(max-width:380px){.random-video-compact{gap:6px;letter-spacing:0;padding:9px 10px}}
 
+    /* Unfiled thumbnails span the full folder gallery width: three per row. */
+    .bmsg-video-grid.bmsg-vinyl-grid > .bmsg-unclassified-section{grid-column:1 / -1;min-width:0;width:100%}
+    .bmsg-video-grid.bmsg-vinyl-grid .bmsg-unclassified-list{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:9px}
+
     /* Search results appear directly below the artist search bar. */
     .bmsg-inline-search-results{width:100%;grid-column:1/-1;margin-top:8px}
     .bmsg-inline-search-list{display:flex;flex-direction:column;gap:10px}
