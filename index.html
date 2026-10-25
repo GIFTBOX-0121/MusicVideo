@@ -1166,6 +1166,67 @@
   box-shadow:0 5px 15px rgba(0,0,0,.18);
 }
 
+/* 2026-10-25: opaque metallic jacket-style folder art (other artists only) */
+.bmsg-video-grid.bmsg-vinyl-grid .bmsg-vinyl-tile{
+  position:relative;
+  isolation:isolate;
+  overflow:hidden;
+  aspect-ratio:1/1;
+  padding:15px 8px 25px;
+  border:1px solid rgba(245,245,250,.72);
+  border-radius:5px;
+  background:linear-gradient(133deg,#f5f2ef 0%,#c9d1df 19%,#aeb8cb 36%,#f7f5f2 53%,#a9b5c9 76%,#e8e8ed 100%);
+  box-shadow:0 6px 19px rgba(0,0,0,.3),inset 0 0 0 3px rgba(255,255,255,.23),inset 0 0 0 4px rgba(76,92,121,.14);
+}
+.bmsg-video-grid.bmsg-vinyl-grid .bmsg-vinyl-tile::before{
+  content:'';
+  display:block;
+  position:absolute;
+  inset:0;
+  z-index:0;
+  pointer-events:none;
+  background:
+    radial-gradient(circle at 18% 23%,#fff 0 1px,transparent 2px),
+    radial-gradient(circle at 80% 18%,#fff 0 1.5px,transparent 3px),
+    radial-gradient(circle at 74% 74%,#fff 0 1px,transparent 2px),
+    radial-gradient(circle at 27% 78%,#fff 0 1.2px,transparent 3px),
+    linear-gradient(115deg,transparent 17%,#fff9 18%,transparent 19%,transparent 61%,#fff7 62%,transparent 63%);
+  opacity:.9;
+}
+.bmsg-video-grid.bmsg-vinyl-grid .bmsg-vinyl-tile::after{
+  content:'';
+  display:block;
+  position:absolute;
+  inset:7px;
+  width:auto;
+  height:auto;
+  border:1px solid rgba(255,255,255,.62);
+  border-radius:1px;
+  background:transparent;
+  pointer-events:none;
+  transform:none;
+}
+.bmsg-video-grid.bmsg-vinyl-grid .bmsg-vinyl-tile .bmsg-vinyl-disc{
+  position:relative;
+  z-index:1;
+}
+.bmsg-video-grid.bmsg-vinyl-grid .bmsg-vinyl-title{
+  color:#283348;
+  font-weight:600;
+  text-align:center;
+  text-shadow:0 1px 0 #ffffffa6;
+  letter-spacing:.035em;
+}
+.bmsg-video-grid.bmsg-vinyl-grid .bmsg-vinyl-count{
+  z-index:1;
+  color:#4e5c72;
+  font-weight:500;
+}
+.bmsg-video-grid.bmsg-vinyl-grid .bmsg-vinyl-tile:hover{
+  background:linear-gradient(133deg,#fffdfa,#dbe3ef 19%,#bac5d7 36%,#fff 53%,#bdcbe0 76%,#f5f4f7);
+  box-shadow:0 8px 24px rgba(0,0,0,.32),0 0 18px rgba(226,236,255,.3);
+}
+
 /* 2026-10: BMSG featured, random, counters */
 .bmsg-menu-separated{margin-top:20px!important}
 .bmsg-special-videos{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:7px;margin:13px 0 18px}
