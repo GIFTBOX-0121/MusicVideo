@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -1254,6 +1253,59 @@
   border-color:rgba(228,204,248,.85);
   background:linear-gradient(110deg,#26314a,#433754,#26314a);
   box-shadow:inset 0 1px 0 rgba(255,255,255,.17),0 4px 14px rgba(5,9,25,.22);
+}
+
+/* 2026-10-25: B + E + F folder jackets — opaque glass, minimal typography, fine luminous frame. */
+.bmsg-video-grid.bmsg-vinyl-grid .bmsg-vinyl-tile{
+  position:relative;isolation:isolate;box-sizing:border-box;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  width:100%;aspect-ratio:1/1;min-height:0;padding:14px 10px 23px;
+  border:1px solid rgba(205,207,247,.70);border-radius:10px;
+  background:linear-gradient(145deg,#41435f 0%,#282c46 48%,#33334f 100%);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.29),inset 0 -1px 0 rgba(255,255,255,.07),0 4px 14px rgba(5,7,24,.22);
+  color:#f7f4ff;overflow:hidden;text-align:center;
+  transition:border-color .2s ease,box-shadow .2s ease,transform .2s ease;
+}
+/* Thin inner frame: subtle shine without decorative patterns or background stars showing through. */
+.bmsg-video-grid.bmsg-vinyl-grid .bmsg-vinyl-tile::before{
+  content:'';display:block;position:absolute;inset:5px;z-index:0;
+  border:1px solid rgba(229,223,255,.20);border-radius:6px;
+  background:none;pointer-events:none;
+}
+.bmsg-video-grid.bmsg-vinyl-grid .bmsg-vinyl-tile::after{
+  content:'';display:block;position:absolute;right:8px;top:8px;left:auto;bottom:auto;
+  width:17px;height:17px;z-index:0;
+  background:radial-gradient(circle,rgba(255,255,255,.8) 0 1px,transparent 2px),
+    linear-gradient(90deg,transparent 46%,rgba(236,226,255,.55) 50%,transparent 54%),
+    linear-gradient(0deg,transparent 46%,rgba(236,226,255,.55) 50%,transparent 54%);
+  opacity:.55;pointer-events:none;
+}
+.bmsg-video-grid.bmsg-vinyl-grid .bmsg-vinyl-tile .bmsg-vinyl-disc{
+  position:relative;z-index:1;display:flex;align-items:center;justify-content:center;
+  width:100%;min-width:0;text-align:center;
+}
+.bmsg-video-grid.bmsg-vinyl-grid .bmsg-vinyl-title{
+  display:block;width:100%;margin:0;padding:0;
+  font-size:clamp(10px,2.7vw,15px);font-weight:500;line-height:1.55;
+  letter-spacing:.035em;text-align:center;color:#f7f4ff;
+  text-shadow:0 1px 5px rgba(0,0,0,.16);overflow-wrap:anywhere;
+}
+.bmsg-video-grid.bmsg-vinyl-grid .bmsg-vinyl-count{
+  position:absolute;z-index:1;bottom:10px;left:5px;right:5px;
+  font-size:clamp(8px,1.8vw,10px);font-weight:400;letter-spacing:.10em;
+  text-align:center;color:#c8c7df;
+}
+.bmsg-video-grid.bmsg-vinyl-grid .bmsg-vinyl-tile:hover,
+.bmsg-video-grid.bmsg-vinyl-grid .bmsg-vinyl-tile:focus-visible{
+  border-color:rgba(241,229,255,.95);
+  background:linear-gradient(145deg,#4b4b6a,#30334f 50%,#3e395a);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.34),0 0 16px rgba(193,169,246,.20),0 5px 16px rgba(5,7,24,.28);
+}
+@media(max-width:480px){
+  .bmsg-video-grid.bmsg-vinyl-grid .bmsg-vinyl-tile{padding:12px 7px 22px}
+  .bmsg-video-grid.bmsg-vinyl-grid .bmsg-vinyl-tile::before{inset:4px}
+  .bmsg-video-grid.bmsg-vinyl-grid .bmsg-vinyl-title{font-size:clamp(10px,2.75vw,13px)}
+  .bmsg-video-grid.bmsg-vinyl-grid .bmsg-vinyl-count{bottom:8px}
 }
 
 /* 2026-10: BMSG featured, random, counters */
