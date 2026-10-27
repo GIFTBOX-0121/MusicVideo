@@ -1,5 +1,6 @@
 
 
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -1590,6 +1591,8 @@
 (function initFirstWeek(){
  const ROOT='https://starsbase-artist-admin.starsx0601.workers.dev';
  const SLAM_ID='tFTeMdvyfBs';
+ const STATE_KEY='starsbase-first-week-sheet-v1';
+ const IMAGE_CACHE='starsbase-first-week-images-v1';
  const LINKS=[
   ...Array.from({length:6},()=>({kind:'mv',url:'https://youtu.be/tFTeMdvyfBs?si=fzehALlw6i11skaB'})),
   ...Array.from({length:2},()=>({kind:'channel',url:'https://youtube.com/@starglow_bmsg?si=KcLrHPECPV7GaC31'})),
@@ -1599,70 +1602,123 @@
  const grid=document.getElementById('firstWeekGrid');
  let imagePool=[];
  let sheetId=0;
+ let state=null;
+ const imageUrls=new Map();
  const shuffle=items=>{
   const out=[...items];
   for(let i=out.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[out[i],out[j]]=[out[j],out[i]];}
   return out;
  };
+ function save(){try{localStorage.setItem(STATE_KEY,JSON.stringify(state));}catch(error){console.warn('FIRST WEEK save:',error);}}
+ function read(){
+  try{
+   const saved=JSON.parse(localStorage.getItem(STATE_KEY));
+   if(saved&&Number.isSafeInteger(saved.number)&&saved.number>=1&&Array.isArray(saved.tiles)&&saved.tiles.length===10&&
+      saved.tiles.every(t=>t&&['mv','channel','youtube'].includes(t.kind)&&typeof t.url==='string'&&typeof t.opened==='boolean'&&
+       (t.image===null||typeof t.image==='string'))&&
+      saved.tiles.filter(t=>t.kind==='mv').length===6&&saved.tiles.filter(t=>t.kind==='channel').length===2&&saved.tiles.filter(t=>t.kind==='youtube').length===2){
+    return saved;
+   }
+  }catch(error){console.warn('FIRST WEEK restore:',error);}
+  return null;
+ }
+ // Cache image bytes on the device. A cached image is never downloaded again unless the browser evicts it.
+ async function cachedImage(url){
+  if(!url)return null;
+  if(imageUrls.has(url))return imageUrls.get(url);
+  if(!('caches' in window))return url;
+  try{
+   const cache=await caches.open(IMAGE_CACHE);
+   let response=await cache.match(url);
+   if(!response){
+    const fetched=await fetch(url,{cache:'force-cache'});
+    if(!fetched.ok)return url;
+    response=fetched;
+    await cache.put(url,fetched.clone());
+   }
+   const blob=await response.blob();
+   const objectUrl=URL.createObjectURL(blob);
+   imageUrls.set(url,objectUrl);
+   return objectUrl;
+  }catch(error){console.warn('FIRST WEEK image cache:',error);return url;}
+ }
+ function reveal(tile,entry){
+  tile.classList.add('fw-revealed');
+  tile.replaceChildren();
+  if(entry.kind==='mv'&&entry.image){
+   const picture=document.createElement('img');
+   picture.alt='';picture.loading='lazy';
+   tile.append(picture);
+   cachedImage(entry.image).then(url=>{if(url&&picture.isConnected)picture.src=url;});
+  }else{
+   const star=document.createElement('span');star.className='fw-white-star';star.textContent='★';tile.append(star);
+  }
+ }
  function newSheet(){
-  sheetId++;
-  const currentSheet=sheetId;
-  grid.replaceChildren();
+  const previous=state;
   const links=shuffle(LINKS);
   const images=shuffle(imagePool).slice(0,6);
   let imageIndex=0;
-  let opened=0;
-  links.forEach((link,index)=>{
+  state={number:previous?previous.number+1:1,tiles:links.map(link=>({
+   kind:link.kind,url:link.url,image:link.kind==='mv'?(images[imageIndex++]||null):null,opened:false
+  }))};
+  save();
+  renderSheet();
+ }
+ function renderSheet(){
+  sheetId++;
+  const currentSheet=sheetId;
+  grid.replaceChildren();
+  state.tiles.forEach((entry,index)=>{
    const tile=document.createElement('a');
-   tile.className='fw-tile';
-   tile.href=link.url;
-   tile.target='_blank';
-   tile.rel='noopener noreferrer';
+   tile.className='fw-tile';tile.href=entry.url;tile.target='_blank';tile.rel='noopener noreferrer';
    tile.setAttribute('aria-label','星 '+(index+1)+' を開く');
    tile.textContent='★';
-   const image=link.kind==='mv' ? images[imageIndex++] : null;
-   let clicked=false;
+   if(entry.opened)reveal(tile,entry);
    tile.addEventListener('click',()=>{
-    if(clicked)return;
-    clicked=true;
-    if(link.kind==='mv'){
-     // The same /play endpoint used by existing MV buttons.
+    if(entry.opened)return;
+    entry.opened=true;
+    save(); // Save immediately, even if the browser closes before the visitor returns.
+    if(entry.kind==='mv'){
      try{recordPlay(SLAM_ID);}catch(error){console.warn('FIRST WEEK play record:',error);}
     }
-    // Reveal only after returning to this tab.
     let returned=false;
-    const reveal=()=>{
+    const onFocus=()=>{
      if(returned||currentSheet!==sheetId)return;
      returned=true;
-     tile.classList.add('fw-revealed');
-     tile.replaceChildren();
-     if(link.kind==='mv'&&image){
-      const picture=document.createElement('img');picture.src=image;picture.alt='';picture.loading='lazy';tile.append(picture);
-     }else{
-      const star=document.createElement('span');star.className='fw-white-star';star.textContent='★';tile.append(star);
-     }
-     opened++;
-     if(opened===10)setTimeout(()=>{if(currentSheet===sheetId)newSheet();},900);
+     window.removeEventListener('focus',onFocus);
+     document.removeEventListener('visibilitychange',onVisibility);
+     reveal(tile,entry);
+     if(state.tiles.every(t=>t.opened))setTimeout(()=>{if(currentSheet===sheetId)newSheet();},900);
     };
-    const onFocus=()=>{window.removeEventListener('focus',onFocus);document.removeEventListener('visibilitychange',onVisibility);reveal();};
     const onVisibility=()=>{if(!document.hidden)onFocus();};
     window.addEventListener('focus',onFocus);
     document.addEventListener('visibilitychange',onVisibility);
    });
    grid.append(tile);
   });
+  // A fully completed sheet survives reload and advances automatically.
+  if(state.tiles.every(t=>t.opened))setTimeout(()=>{if(currentSheet===sheetId)newSheet();},900);
  }
  (async()=>{
+  // FIRST WEEK stays visible throughout the campaign: no ON/OFF API request.
+  area.hidden=false;
+  state=read();
+  if(state)renderSheet();
+  else newSheet();
   try{
-   const response=await fetch(ROOT+'/api/first-week',{cache:'no-store'});
+   const response=await fetch(ROOT+'/api/first-week/images',{cache:'no-store'});
    if(!response.ok)return;
-   const settings=await response.json();
-   if(!settings.enabled)return;
-   const poolResponse=await fetch(ROOT+'/api/first-week/images',{cache:'no-store'});
-   if(poolResponse.ok){const pool=await poolResponse.json();imagePool=Array.isArray(pool.images)?pool.images.filter(url=>typeof url==='string'&&url.startsWith(ROOT+'/api/first-week/images/file?')):[];}
-   area.hidden=false;
-   newSheet();
-  }catch(error){console.warn('FIRST WEEK unavailable:',error);}
+   const pool=await response.json();
+   imagePool=Array.isArray(pool.images)?pool.images.filter(url=>typeof url==='string'&&url.startsWith(ROOT+'/api/first-week/images/file?')):[];
+   // Newly added images enter the random pool for the next sheet.
+   // The current sheet and its saved images never change mid-progress.
+   if(state.number===1&&!state.tiles.some(t=>t.opened)&&state.tiles.every(t=>t.image===null)){
+    const images=shuffle(imagePool).slice(0,6);let i=0;
+    state.tiles.forEach(t=>{if(t.kind==='mv')t.image=images[i++]||null;});
+    save();
+   }
+  }catch(error){console.warn('FIRST WEEK images:',error);}
  })();
 })();
 
