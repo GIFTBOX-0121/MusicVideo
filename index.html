@@ -1430,11 +1430,11 @@
     .fw-area{margin:0 0 20px;padding:17px 13px;border:1px solid rgba(224,231,255,.45);border-radius:18px;background:rgba(11,19,45,.64);color:#fff}
     .fw-heading{text-align:center;font-size:17px;letter-spacing:.2em;margin:0 0 16px;color:#fff}
     .fw-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
-    .fw-tile{position:relative;display:grid;place-items:center;aspect-ratio:1/1;min-width:0;overflow:hidden;border:1px solid rgba(232,225,255,.45);border-radius:10px;background:linear-gradient(145deg,#252c56,#3a3569);color:#ffe9a7;text-decoration:none;font-size:clamp(20px,5vw,39px);text-shadow:0 0 10px #ffe3ad;box-shadow:inset 0 0 14px #ffffff10;cursor:pointer;transition:filter .25s}
+    .fw-tile{position:relative;display:grid;place-items:center;aspect-ratio:1/1;min-width:0;overflow:hidden;border:1px solid rgba(232,225,255,.45);border-radius:10px;background:linear-gradient(145deg,#252c56,#3a3569);color:#fff;text-decoration:none;font-size:clamp(20px,5vw,39px);text-shadow:0 0 5px rgba(255,255,255,.6);box-shadow:inset 0 0 14px #ffffff10;cursor:pointer;transition:filter .25s}
     .fw-tile:focus-visible{outline:2px solid white;outline-offset:2px}
     .fw-tile.fw-revealed{background:radial-gradient(circle,#4c547b,#222b51);color:white;animation:fwReveal .5s ease-out}
     .fw-tile img{width:100%;height:100%;object-fit:cover;display:block}
-    .fw-white-star{font-size:clamp(26px,6vw,46px);color:#fff;text-shadow:0 0 8px #fff,0 0 18px #d3e5ff,0 0 28px #fff;animation:fwSparkle 1.7s ease-in-out infinite alternate}
+    .fw-white-star{font-size:clamp(26px,6vw,46px);color:#fff;text-shadow:0 0 5px rgba(255,255,255,.65),0 0 12px rgba(255,255,255,.35);animation:fwSparkle 1.7s ease-in-out infinite alternate}
     @keyframes fwReveal{from{filter:brightness(2.5);transform:scale(.93)}to{filter:brightness(1);transform:scale(1)}}
     @keyframes fwSparkle{from{filter:brightness(.8);transform:scale(.94)}to{filter:brightness(1.6);transform:scale(1.08)}}
     @media(max-width:420px){.fw-grid{gap:5px}.fw-area{padding:13px 9px}.fw-tile{border-radius:7px}}
@@ -1503,12 +1503,6 @@
 
   </header>
 
-  <!-- FIRST WEEK: existing homepage, isolated from existing sections -->
-  <section id="firstWeekArea" class="fw-area" hidden aria-label="FIRST WEEK">
-    <h2 class="fw-heading">FIRST WEEK</h2>
-    <div id="firstWeekGrid" class="fw-grid" aria-label="10個の星のリンク"></div>
-  </section>
-
   <section id="bmsgArtistPage" class="bmsg-artist-page" hidden aria-live="polite">
     <div class="bmsg-page-head"><button id="bmsgBack" class="bmsg-back" type="button">← 戻る</button><h2 id="bmsgPageTitle"></h2></div>
     <div id="bmsgPageStatus" class="bmsg-page-status" role="status"></div>
@@ -1555,6 +1549,12 @@
         <span class="random-compact-star" aria-hidden="true">★</span>
       </button>
     </div>
+
+  <!-- FIRST WEEK: existing homepage, isolated from existing sections -->
+  <section id="firstWeekArea" class="fw-area" hidden aria-label="FIRST WEEK">
+    <h2 class="fw-heading">FIRST WEEK</h2>
+    <div id="firstWeekGrid" class="fw-grid" aria-label="10個の星のリンク"></div>
+  </section>
 
     <div
       id="cards"
@@ -1639,7 +1639,7 @@
      if(link.kind==='mv'&&image){
       const picture=document.createElement('img');picture.src=image;picture.alt='';picture.loading='lazy';tile.append(picture);
      }else{
-      const star=document.createElement('span');star.className='fw-white-star';star.textContent='✦';tile.append(star);
+      const star=document.createElement('span');star.className='fw-white-star';star.textContent='★';tile.append(star);
      }
      opened++;
      if(opened===10)setTimeout(()=>{if(currentSheet===sheetId)newSheet();},900);
