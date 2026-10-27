@@ -1487,6 +1487,8 @@
 
   </header>
 
+  <a id="firstWeekPublicLink" href="#" target="_blank" rel="noopener noreferrer" hidden style="display:none;margin:12px auto 18px;max-width:480px;padding:15px 20px;border:1px solid rgba(225,235,255,.55);border-radius:12px;background:rgba(18,28,58,.8);color:#fff;text-decoration:none;text-align:center;font-weight:800;letter-spacing:.12em">FIRST WEEK</a>
+
   <section id="bmsgArtistPage" class="bmsg-artist-page" hidden aria-live="polite">
     <div class="bmsg-page-head"><button id="bmsgBack" class="bmsg-back" type="button">← 戻る</button><h2 id="bmsgPageTitle"></h2></div>
     <div id="bmsgPageStatus" class="bmsg-page-status" role="status"></div>
@@ -1564,7 +1566,18 @@
 </div>
 
 <script>
-
+/* FIRST WEEK: public ON/OFF and destination only */
+(async()=>{
+ const link=document.getElementById('firstWeekPublicLink');
+ try{
+  const response=await fetch('https://starsbase-artist-admin.starsx0601.workers.dev/api/first-week',{cache:'no-store'});
+  if(!response.ok)return;
+  const setting=await response.json();
+  if(setting.enabled && typeof setting.url==='string' && setting.url.startsWith('https://')){
+   link.href=setting.url;link.hidden=false;link.style.display='block';
+  }
+ }catch(error){console.warn('FIRST WEEK settings unavailable',error);}
+})();
 
 /* BMSG artist navigation — independent of existing statistics */
 (function initBmsgNavigation(){
