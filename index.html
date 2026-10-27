@@ -1,4 +1,5 @@
 
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -1423,6 +1424,21 @@
     .bmsg-inline-search-list .bmsg-video-body{min-width:0;flex:1}
     .bmsg-inline-search-list .bmsg-video-title{color:#fff!important;font-size:clamp(12px,3vw,15px);line-height:1.5;overflow-wrap:anywhere}
 
+
+    /* FIRST WEEK: scoped styles only */
+    .fw-area[hidden]{display:none!important}
+    .fw-area{margin:0 0 20px;padding:17px 13px;border:1px solid rgba(224,231,255,.45);border-radius:18px;background:rgba(11,19,45,.64);color:#fff}
+    .fw-heading{text-align:center;font-size:17px;letter-spacing:.2em;margin:0 0 16px;color:#fff}
+    .fw-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
+    .fw-tile{position:relative;display:grid;place-items:center;aspect-ratio:1/1;min-width:0;overflow:hidden;border:1px solid rgba(232,225,255,.45);border-radius:10px;background:linear-gradient(145deg,#252c56,#3a3569);color:#ffe9a7;text-decoration:none;font-size:clamp(20px,5vw,39px);text-shadow:0 0 10px #ffe3ad;box-shadow:inset 0 0 14px #ffffff10;cursor:pointer;transition:filter .25s}
+    .fw-tile:focus-visible{outline:2px solid white;outline-offset:2px}
+    .fw-tile.fw-revealed{background:radial-gradient(circle,#4c547b,#222b51);color:white;animation:fwReveal .5s ease-out}
+    .fw-tile img{width:100%;height:100%;object-fit:cover;display:block}
+    .fw-white-star{font-size:clamp(26px,6vw,46px);color:#fff;text-shadow:0 0 8px #fff,0 0 18px #d3e5ff,0 0 28px #fff;animation:fwSparkle 1.7s ease-in-out infinite alternate}
+    @keyframes fwReveal{from{filter:brightness(2.5);transform:scale(.93)}to{filter:brightness(1);transform:scale(1)}}
+    @keyframes fwSparkle{from{filter:brightness(.8);transform:scale(.94)}to{filter:brightness(1.6);transform:scale(1.08)}}
+    @media(max-width:420px){.fw-grid{gap:5px}.fw-area{padding:13px 9px}.fw-tile{border-radius:7px}}
+    @media(prefers-reduced-motion:reduce){.fw-tile.fw-revealed,.fw-white-star{animation:none}}
 </style>
 </head>
 
@@ -1487,7 +1503,11 @@
 
   </header>
 
-  <a id="firstWeekPublicLink" href="#" target="_blank" rel="noopener noreferrer" hidden style="display:none;margin:12px auto 18px;max-width:480px;padding:15px 20px;border:1px solid rgba(225,235,255,.55);border-radius:12px;background:rgba(18,28,58,.8);color:#fff;text-decoration:none;text-align:center;font-weight:800;letter-spacing:.12em">FIRST WEEK</a>
+  <!-- FIRST WEEK: existing homepage, isolated from existing sections -->
+  <section id="firstWeekArea" class="fw-area" hidden aria-label="FIRST WEEK">
+    <h2 class="fw-heading">FIRST WEEK</h2>
+    <div id="firstWeekGrid" class="fw-grid" aria-label="10個の星のリンク"></div>
+  </section>
 
   <section id="bmsgArtistPage" class="bmsg-artist-page" hidden aria-live="polite">
     <div class="bmsg-page-head"><button id="bmsgBack" class="bmsg-back" type="button">← 戻る</button><h2 id="bmsgPageTitle"></h2></div>
@@ -1566,17 +1586,84 @@
 </div>
 
 <script>
-/* FIRST WEEK: public ON/OFF and destination only */
-(async()=>{
- const link=document.getElementById('firstWeekPublicLink');
- try{
-  const response=await fetch('https://starsbase-artist-admin.starsx0601.workers.dev/api/first-week',{cache:'no-store'});
-  if(!response.ok)return;
-  const setting=await response.json();
-  if(setting.enabled && typeof setting.url==='string' && setting.url.startsWith('https://')){
-   link.href=setting.url;link.hidden=false;link.style.display='block';
-  }
- }catch(error){console.warn('FIRST WEEK settings unavailable',error);}
+/* FIRST WEEK: isolated 10-tile sheet. Existing features below are unchanged. */
+(function initFirstWeek(){
+ const ROOT='https://starsbase-artist-admin.starsx0601.workers.dev';
+ const SLAM_ID='tFTeMdvyfBs';
+ const LINKS=[
+  ...Array.from({length:6},()=>({kind:'mv',url:'https://youtu.be/tFTeMdvyfBs?si=fzehALlw6i11skaB'})),
+  ...Array.from({length:2},()=>({kind:'channel',url:'https://youtube.com/@starglow_bmsg?si=KcLrHPECPV7GaC31'})),
+  ...Array.from({length:2},()=>({kind:'youtube',url:'https://www.youtube.com/'}))
+ ];
+ const area=document.getElementById('firstWeekArea');
+ const grid=document.getElementById('firstWeekGrid');
+ let imagePool=[];
+ let sheetId=0;
+ const shuffle=items=>{
+  const out=[...items];
+  for(let i=out.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[out[i],out[j]]=[out[j],out[i]];}
+  return out;
+ };
+ function newSheet(){
+  sheetId++;
+  const currentSheet=sheetId;
+  grid.replaceChildren();
+  const links=shuffle(LINKS);
+  const images=shuffle(imagePool).slice(0,6);
+  let imageIndex=0;
+  let opened=0;
+  links.forEach((link,index)=>{
+   const tile=document.createElement('a');
+   tile.className='fw-tile';
+   tile.href=link.url;
+   tile.target='_blank';
+   tile.rel='noopener noreferrer';
+   tile.setAttribute('aria-label','星 '+(index+1)+' を開く');
+   tile.textContent='★';
+   const image=link.kind==='mv' ? images[imageIndex++] : null;
+   let clicked=false;
+   tile.addEventListener('click',()=>{
+    if(clicked)return;
+    clicked=true;
+    if(link.kind==='mv'){
+     // The same /play endpoint used by existing MV buttons.
+     try{recordPlay(SLAM_ID);}catch(error){console.warn('FIRST WEEK play record:',error);}
+    }
+    // Reveal only after returning to this tab.
+    let returned=false;
+    const reveal=()=>{
+     if(returned||currentSheet!==sheetId)return;
+     returned=true;
+     tile.classList.add('fw-revealed');
+     tile.replaceChildren();
+     if(link.kind==='mv'&&image){
+      const picture=document.createElement('img');picture.src=image;picture.alt='';picture.loading='lazy';tile.append(picture);
+     }else{
+      const star=document.createElement('span');star.className='fw-white-star';star.textContent='✦';tile.append(star);
+     }
+     opened++;
+     if(opened===10)setTimeout(()=>{if(currentSheet===sheetId)newSheet();},900);
+    };
+    const onFocus=()=>{window.removeEventListener('focus',onFocus);document.removeEventListener('visibilitychange',onVisibility);reveal();};
+    const onVisibility=()=>{if(!document.hidden)onFocus();};
+    window.addEventListener('focus',onFocus);
+    document.addEventListener('visibilitychange',onVisibility);
+   });
+   grid.append(tile);
+  });
+ }
+ (async()=>{
+  try{
+   const response=await fetch(ROOT+'/api/first-week',{cache:'no-store'});
+   if(!response.ok)return;
+   const settings=await response.json();
+   if(!settings.enabled)return;
+   const poolResponse=await fetch(ROOT+'/api/first-week/images',{cache:'no-store'});
+   if(poolResponse.ok){const pool=await poolResponse.json();imagePool=Array.isArray(pool.images)?pool.images.filter(url=>typeof url==='string'&&url.startsWith(ROOT+'/api/first-week/images/file?')):[];}
+   area.hidden=false;
+   newSheet();
+  }catch(error){console.warn('FIRST WEEK unavailable:',error);}
+ })();
 })();
 
 /* BMSG artist navigation — independent of existing statistics */
