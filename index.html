@@ -1430,6 +1430,8 @@
     .fw-area[hidden]{display:none!important}
     .fw-area{margin:0 0 20px;padding:17px 13px;border:1px solid rgba(224,231,255,.45);border-radius:18px;background:rgba(11,19,45,.64);color:#fff}
     .fw-heading{text-align:center;font-size:17px;letter-spacing:.2em;margin:0 0 16px;color:#fff}
+    .fw-next{display:block;margin:15px auto 0;padding:11px 25px;border:1px solid #e5cf93;border-radius:999px;background:#e5cf93;color:#101424;font:700 13px/1.4 inherit;letter-spacing:.1em;cursor:pointer}
+    .fw-next[hidden]{display:none}
     .fw-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px}
     .fw-tile{position:relative;display:grid;place-items:center;aspect-ratio:1/1;min-width:0;overflow:hidden;border:1px solid rgba(232,225,255,.45);border-radius:10px;background:linear-gradient(145deg,#252c56,#3a3569);color:#fff;text-decoration:none;font-size:clamp(20px,5vw,39px);text-shadow:0 0 5px rgba(255,255,255,.6);box-shadow:inset 0 0 14px #ffffff10;cursor:pointer;transition:filter .25s}
     .fw-tile:focus-visible{outline:2px solid white;outline-offset:2px}
@@ -1556,6 +1558,7 @@
   <section id="firstWeekArea" class="fw-area" hidden aria-label="FIRST WEEK">
     <h2 class="fw-heading">FIRST WEEK</h2>
     <div id="firstWeekGrid" class="fw-grid" aria-label="10個の星のリンク"></div>
+    <button id="firstWeekNext" class="fw-next" type="button" hidden>NEXT SHEET →</button>
   </section>
 
     <div
@@ -1601,6 +1604,7 @@
  ];
  const area=document.getElementById('firstWeekArea');
  const grid=document.getElementById('firstWeekGrid');
+ const nextButton=document.getElementById('firstWeekNext');
  let imagePool=[];
  let sheetId=0;
  let state=null;
@@ -1678,6 +1682,7 @@
   });
   save();
  }
+ nextButton.addEventListener('click',()=>{if(state&&state.tiles.every(t=>t.opened))newSheet();});
  function newSheet(){
   const previous=state;
   const links=shuffle(LINKS);
@@ -1693,6 +1698,7 @@
   sheetId++;
   const currentSheet=sheetId;
   grid.replaceChildren();
+  nextButton.hidden=!state.tiles.every(t=>t.opened);
   state.tiles.forEach((entry,index)=>{
    const tile=document.createElement('a');
    tile.className='fw-tile';tile.href=entry.url;tile.target='_blank';tile.rel='noopener noreferrer';
@@ -1713,7 +1719,7 @@
      window.removeEventListener('focus',onFocus);
      document.removeEventListener('visibilitychange',onVisibility);
      reveal(tile,entry);
-     if(state.tiles.every(t=>t.opened))setTimeout(()=>{if(currentSheet===sheetId)newSheet();},900);
+     if(state.tiles.every(t=>t.opened))nextButton.hidden=false;
     };
     const onVisibility=()=>{if(!document.hidden)onFocus();};
     window.addEventListener('focus',onFocus);
@@ -1723,8 +1729,7 @@
   });
   // Prepare the six assigned pictures before the user returns from YouTube.
   state.tiles.filter(t=>t.kind==='mv'&&t.image).forEach(t=>{cachedImage(t.image).catch(()=>{});});
-  // A fully completed sheet survives reload and advances automatically.
-  if(state.tiles.every(t=>t.opened))setTimeout(()=>{if(currentSheet===sheetId)newSheet();},900);
+  // Keep completed sheet visible, including after a reload, until NEXT SHEET is pressed.
  }
  (async()=>{
   // FIRST WEEK stays visible throughout the campaign: no ON/OFF API request.
