@@ -1435,7 +1435,8 @@
     .fw-tile:focus-visible{outline:2px solid white;outline-offset:2px}
     .fw-tile.fw-revealed{background:radial-gradient(circle,#4c547b,#222b51);color:white;animation:fwReveal .5s ease-out}
     .fw-tile img{width:100%;height:100%;object-fit:cover;display:block}
-    .fw-white-star{font-size:clamp(26px,6vw,46px);color:#fff;text-shadow:0 0 5px rgba(255,255,255,.65),0 0 12px rgba(255,255,255,.35);animation:fwSparkle 1.7s ease-in-out infinite alternate}
+    .fw-tile.fw-revealed.fw-non-mv{background:#fff;border-color:#fff;color:#f4c400;text-shadow:none}
+    .fw-white-star{font-size:clamp(26px,6vw,46px);color:#f4c400;text-shadow:0 0 5px rgba(255,207,0,.45),0 0 12px rgba(255,207,0,.25);animation:none}
     @keyframes fwReveal{from{filter:brightness(2.5);transform:scale(.93)}to{filter:brightness(1);transform:scale(1)}}
     @keyframes fwSparkle{from{filter:brightness(.8);transform:scale(.94)}to{filter:brightness(1.6);transform:scale(1.08)}}
     @media(max-width:420px){.fw-grid{gap:5px}.fw-area{padding:13px 9px}.fw-tile{border-radius:7px}}
@@ -1604,6 +1605,7 @@
  let sheetId=0;
  let state=null;
  const imageUrls=new Map();
+ const imagePending=new Map();
  const shuffle=items=>{
   const out=[...items];
   for(let i=out.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[out[i],out[j]]=[out[j],out[i]];}
@@ -1623,7 +1625,14 @@
   return null;
  }
  // Cache image bytes on the device. A cached image is never downloaded again unless the browser evicts it.
- async function cachedImage(url){
+ function cachedImage(url){
+  if(imagePending.has(url))return imagePending.get(url);
+  const pending=loadCachedImage(url);
+  imagePending.set(url,pending);
+  pending.finally(()=>imagePending.delete(url));
+  return pending;
+ }
+ async function loadCachedImage(url){
   if(!url)return null;
   if(imageUrls.has(url))return imageUrls.get(url);
   if(!('caches' in window))return url;
@@ -1644,15 +1653,30 @@
  }
  function reveal(tile,entry){
   tile.classList.add('fw-revealed');
+  tile.classList.toggle('fw-non-mv',entry.kind!=='mv');
   tile.replaceChildren();
-  if(entry.kind==='mv'&&entry.image){
+  if(entry.kind==='mv'){
+   // MV squares never turn into a star, even while their image is loading.
+   if(!entry.image){tile.textContent='';return;}
    const picture=document.createElement('img');
-   picture.alt='';picture.loading='lazy';
+   picture.alt='';picture.loading='eager';picture.decoding='async';
    tile.append(picture);
-   cachedImage(entry.image).then(url=>{if(url&&picture.isConnected)picture.src=url;});
+   if(imageUrls.has(entry.image))picture.src=imageUrls.get(entry.image);
+   else cachedImage(entry.image).then(url=>{if(url&&picture.isConnected)picture.src=url;});
   }else{
    const star=document.createElement('span');star.className='fw-white-star';star.textContent='★';tile.append(star);
   }
+ }
+ function fillMissingImages(){
+  if(!state||!imagePool.length)return;
+  const used=new Set(state.tiles.filter(t=>t.kind==='mv'&&t.image).map(t=>t.image));
+  const candidates=shuffle(imagePool.filter(url=>!used.has(url)));
+  state.tiles.forEach(t=>{
+   if(t.kind==='mv'&&!t.image){
+    t.image=candidates.shift()||imagePool[Math.floor(Math.random()*imagePool.length)];
+   }
+  });
+  save();
  }
  function newSheet(){
   const previous=state;
@@ -1660,7 +1684,7 @@
   const images=shuffle(imagePool).slice(0,6);
   let imageIndex=0;
   state={number:previous?previous.number+1:1,tiles:links.map(link=>({
-   kind:link.kind,url:link.url,image:link.kind==='mv'?(images[imageIndex++]||null):null,opened:false
+   kind:link.kind,url:link.url,image:link.kind==='mv'?(images[imageIndex++]||imagePool[Math.floor(Math.random()*imagePool.length)]||null):null,opened:false
   }))};
   save();
   renderSheet();
@@ -1697,6 +1721,8 @@
    });
    grid.append(tile);
   });
+  // Prepare the six assigned pictures before the user returns from YouTube.
+  state.tiles.filter(t=>t.kind==='mv'&&t.image).forEach(t=>{cachedImage(t.image).catch(()=>{});});
   // A fully completed sheet survives reload and advances automatically.
   if(state.tiles.every(t=>t.opened))setTimeout(()=>{if(currentSheet===sheetId)newSheet();},900);
  }
@@ -1705,20 +1731,22 @@
   area.hidden=false;
   state=read();
   if(state)renderSheet();
-  else newSheet();
   try{
    const response=await fetch(ROOT+'/api/first-week/images',{cache:'no-store'});
-   if(!response.ok)return;
-   const pool=await response.json();
-   imagePool=Array.isArray(pool.images)?pool.images.filter(url=>typeof url==='string'&&url.startsWith(ROOT+'/api/first-week/images/file?')):[];
-   // Newly added images enter the random pool for the next sheet.
-   // The current sheet and its saved images never change mid-progress.
-   if(state.number===1&&!state.tiles.some(t=>t.opened)&&state.tiles.every(t=>t.image===null)){
-    const images=shuffle(imagePool).slice(0,6);let i=0;
-    state.tiles.forEach(t=>{if(t.kind==='mv')t.image=images[i++]||null;});
-    save();
+   if(response.ok){
+    const pool=await response.json();
+    imagePool=Array.isArray(pool.images)?pool.images.filter(url=>typeof url==='string'&&url.startsWith(ROOT+'/api/first-week/images/file?')):[];
    }
   }catch(error){console.warn('FIRST WEEK images:',error);}
+  // Never create the first sheet before image assignments are available.
+  if(!state)newSheet();
+  else{
+   const missing=state.tiles.some(t=>t.kind==='mv'&&!t.image);
+   if(missing){
+    fillMissingImages();
+    renderSheet();
+   }
+  }
  })();
 })();
 
