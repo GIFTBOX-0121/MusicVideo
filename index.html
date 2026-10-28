@@ -3,6 +3,7 @@
 
 
 
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -1600,10 +1601,9 @@
  const STATE_KEY='starsbase-first-week-sheet-v1';
  const IMAGE_CACHE='starsbase-first-week-images-v1';
  const LINKS=[
-  ...Array.from({length:5},()=>({kind:'mv',url:'https://youtu.be/tFTeMdvyfBs?si=fzehALlw6i11skaB'})),
-  ...Array.from({length:2},()=>({kind:'pv',url:'https://youtu.be/NRYFF_mj_2Q?si=PJ8CkcRvtWPxpRH4'})),
+  ...Array.from({length:6},()=>({kind:'mv',url:'https://youtu.be/tFTeMdvyfBs?si=fzehALlw6i11skaB'})),
   ...Array.from({length:2},()=>({kind:'channel',url:'https://youtube.com/@starglow_bmsg?si=KcLrHPECPV7GaC31'})),
-  ...Array.from({length:1},()=>({kind:'youtube',url:'https://www.youtube.com/'}))
+  ...Array.from({length:2},()=>({kind:'youtube',url:'https://www.youtube.com/'}))
  ];
  const area=document.getElementById('firstWeekArea');
  const grid=document.getElementById('firstWeekGrid');
@@ -1623,9 +1623,9 @@
   try{
    const saved=JSON.parse(localStorage.getItem(STATE_KEY));
    if(saved&&Number.isSafeInteger(saved.number)&&saved.number>=1&&Array.isArray(saved.tiles)&&saved.tiles.length===10&&
-      saved.tiles.every(t=>t&&['mv','pv','channel','youtube'].includes(t.kind)&&typeof t.url==='string'&&typeof t.opened==='boolean'&&
+      saved.tiles.every(t=>t&&['mv','channel','youtube'].includes(t.kind)&&typeof t.url==='string'&&typeof t.opened==='boolean'&&
        (t.image===null||typeof t.image==='string'))&&
-      saved.tiles.filter(t=>t.kind==='mv').length===5&&saved.tiles.filter(t=>t.kind==='pv').length===2&&saved.tiles.filter(t=>t.kind==='channel').length===2&&saved.tiles.filter(t=>t.kind==='youtube').length===1){
+      saved.tiles.filter(t=>t.kind==='mv').length===6&&saved.tiles.filter(t=>t.kind==='channel').length===2&&saved.tiles.filter(t=>t.kind==='youtube').length===2){
     return saved;
    }
   }catch(error){console.warn('FIRST WEEK restore:',error);}
@@ -1660,10 +1660,10 @@
  }
  function reveal(tile,entry){
   tile.classList.add('fw-revealed');
-  tile.classList.toggle('fw-non-mv',!['mv','pv'].includes(entry.kind));
+  tile.classList.toggle('fw-non-mv',entry.kind!=='mv');
   tile.replaceChildren();
-  if(entry.kind==='mv'||entry.kind==='pv'){
-   // MV/PV squares never turn into a star, even while their image is loading.
+  if(entry.kind==='mv'){
+   // MV squares never turn into a star, even while their image is loading.
    if(!entry.image){tile.textContent='';return;}
    const picture=document.createElement('img');
    picture.alt='';picture.loading='eager';picture.decoding='async';
@@ -1676,10 +1676,10 @@
  }
  function fillMissingImages(){
   if(!state||!imagePool.length)return;
-  const used=new Set(state.tiles.filter(t=>(t.kind==='mv'||t.kind==='pv')&&t.image).map(t=>t.image));
+  const used=new Set(state.tiles.filter(t=>t.kind==='mv'&&t.image).map(t=>t.image));
   const candidates=shuffle(imagePool.filter(url=>!used.has(url)));
   state.tiles.forEach(t=>{
-   if((t.kind==='mv'||t.kind==='pv')&&!t.image){
+   if(t.kind==='mv'&&!t.image){
     t.image=candidates.shift()||imagePool[Math.floor(Math.random()*imagePool.length)];
    }
   });
@@ -1689,10 +1689,10 @@
  function newSheet(){
   const previous=state;
   const links=shuffle(LINKS);
-  const images=shuffle(imagePool).slice(0,7);
+  const images=shuffle(imagePool).slice(0,6);
   let imageIndex=0;
   state={number:previous?previous.number+1:1,tiles:links.map(link=>({
-   kind:link.kind,url:link.url,image:(link.kind==='mv'||link.kind==='pv')?(images[imageIndex++]||imagePool[Math.floor(Math.random()*imagePool.length)]||null):null,opened:false
+   kind:link.kind,url:link.url,image:link.kind==='mv'?(images[imageIndex++]||imagePool[Math.floor(Math.random()*imagePool.length)]||null):null,opened:false
   }))};
   save();
   renderSheet();
@@ -1731,7 +1731,7 @@
    grid.append(tile);
   });
   // Prepare the six assigned pictures before the user returns from YouTube.
-  state.tiles.filter(t=>(t.kind==='mv'||t.kind==='pv')&&t.image).forEach(t=>{cachedImage(t.image).catch(()=>{});});
+  state.tiles.filter(t=>t.kind==='mv'&&t.image).forEach(t=>{cachedImage(t.image).catch(()=>{});});
   // Keep completed sheet visible, including after a reload, until NEXT SHEET is pressed.
  }
  (async()=>{
@@ -1749,7 +1749,7 @@
   // Never create the first sheet before image assignments are available.
   if(!state)newSheet();
   else{
-   const missing=state.tiles.some(t=>(t.kind==='mv'||t.kind==='pv')&&!t.image);
+   const missing=state.tiles.some(t=>t.kind==='mv'&&!t.image);
    if(missing){
     fillMissingImages();
     renderSheet();
@@ -3626,3 +3626,172 @@ function drawHistory(history) {
                 }
 
               }
+
+            }
+
+          },
+
+          scales: {
+
+            y: {
+
+              ticks: {
+
+                callback(value) {
+
+                  return Number(
+                    value
+                  ).toLocaleString(
+                    "ja-JP",
+                    {
+                      notation:
+                        "compact"
+                    }
+                  );
+
+                }
+
+              }
+
+            },
+
+            x: {
+
+              ticks: {
+                maxRotation: 0
+              }
+
+            }
+
+          }
+
+        }
+
+      }
+    );
+
+}
+
+
+/* ========================================
+   データ取得
+   ======================================== */
+
+async function loadData() {
+
+  const cards =
+    document.getElementById(
+      "cards"
+    );
+
+  try {
+
+    const response =
+      await fetch(
+        API_URL +
+        "?t=" +
+        Date.now(),
+        {
+          cache: "no-store"
+        }
+      );
+
+    if (
+      !response.ok
+    ) {
+
+      throw new Error(
+        "API error"
+      );
+
+    }
+
+    const data =
+      await response.json();
+
+
+    showUpdatedTime(
+      data.updated_at
+    );
+
+
+    // All MV counters, including PIECES, now use the production statistics Worker.
+    const allVideos=[...data.videos];
+    const allHistory=[...(data.daily_history||[])];
+    // Keep PIECES visible even before the updated Worker is deployed.
+    // Do not fabricate counts while production data is unavailable.
+    if(!allVideos.some(v=>v.id===PIECES_VIDEO_ID || v.title==='PIECES')) {
+      allVideos.push({id:PIECES_VIDEO_ID,title:'PIECES',pending_pieces:true});
+    }
+    // Show the new MV card before the YouTube ID is available. Never show fabricated zero counts.
+    if(!allVideos.some(v=>v.title==='Slam Dunk')) {
+      allVideos.push({title:'Slam Dunk',pending_mv:true});
+    }
+    const sortedVideos=allVideos.sort((a,b)=>{
+      const ai=VIDEO_ORDER.indexOf(a.title),bi=VIDEO_ORDER.indexOf(b.title);
+      return (ai<0?999:ai)-(bi<0?999:bi);
+    });
+
+    createMilestoneAlerts(
+      sortedVideos.filter(v=>!v.pending_mv && !v.pending_pieces)
+    );
+
+
+    cards.innerHTML =
+      sortedVideos
+        .map(video => video.pending_mv
+          ? `<article class="card"><h2 class="title">Slam Dunk</h2><p style="text-align:center;padding:26px 12px;color:#c9c8de;letter-spacing:.08em">2026.10.26 21:00 公開予定</p><p style="text-align:center;color:#aeb3c9;font-size:12px">カウンター準備中</p></article>`
+          : video.pending_pieces
+          ? `<article class="card"><h2 class="title">PIECES</h2><p style="text-align:center;padding:20px 12px;color:#555">本番カウンターの接続待ち</p></article>`
+          : createCard(video))
+        .join("");
+
+
+    drawHistory(allHistory);
+
+  } catch (error) {
+
+    console.error(
+      error
+    );
+
+    cards.innerHTML = `
+      <div class="error">
+        データを取得できませんでした。<br>
+        少し時間を置いて再読み込みしてください。
+      </div>
+    `;
+
+  }
+
+}
+
+
+/* ========================================
+   起動
+   ======================================== */
+
+loadData();
+
+loadRecentPlays();
+
+
+/* リアルタイム欄：10秒ごと */
+
+setInterval(
+  loadRecentPlays,
+  10000
+);
+
+
+/* MVデータ：5分ごと */
+
+setInterval(
+  loadData,
+  300000
+);
+
+</script>
+
+</body>
+</html>
