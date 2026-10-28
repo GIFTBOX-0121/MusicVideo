@@ -1,9 +1,4 @@
 
-
-
-
-
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -1601,9 +1596,10 @@
  const STATE_KEY='starsbase-first-week-sheet-v1';
  const IMAGE_CACHE='starsbase-first-week-images-v1';
  const LINKS=[
-  ...Array.from({length:6},()=>({kind:'mv',url:'https://youtu.be/tFTeMdvyfBs?si=fzehALlw6i11skaB'})),
+  ...Array.from({length:5},()=>({kind:'mv',url:'https://youtu.be/tFTeMdvyfBs?si=fzehALlw6i11skaB'})),
+  ...Array.from({length:2},()=>({kind:'pv',url:'https://youtu.be/NRYFF_mj_2Q?si=PJ8CkcRvtWPxpRH4'})),
   ...Array.from({length:2},()=>({kind:'channel',url:'https://youtube.com/@starglow_bmsg?si=KcLrHPECPV7GaC31'})),
-  ...Array.from({length:2},()=>({kind:'youtube',url:'https://www.youtube.com/'}))
+  ...Array.from({length:1},()=>({kind:'youtube',url:'https://www.youtube.com/'}))
  ];
  const area=document.getElementById('firstWeekArea');
  const grid=document.getElementById('firstWeekGrid');
@@ -1623,9 +1619,9 @@
   try{
    const saved=JSON.parse(localStorage.getItem(STATE_KEY));
    if(saved&&Number.isSafeInteger(saved.number)&&saved.number>=1&&Array.isArray(saved.tiles)&&saved.tiles.length===10&&
-      saved.tiles.every(t=>t&&['mv','channel','youtube'].includes(t.kind)&&typeof t.url==='string'&&typeof t.opened==='boolean'&&
+      saved.tiles.every(t=>t&&['mv','pv','channel','youtube'].includes(t.kind)&&typeof t.url==='string'&&typeof t.opened==='boolean'&&
        (t.image===null||typeof t.image==='string'))&&
-      saved.tiles.filter(t=>t.kind==='mv').length===6&&saved.tiles.filter(t=>t.kind==='channel').length===2&&saved.tiles.filter(t=>t.kind==='youtube').length===2){
+      saved.tiles.filter(t=>t.kind==='mv').length===5&&saved.tiles.filter(t=>t.kind==='pv').length===2&&saved.tiles.filter(t=>t.kind==='channel').length===2&&saved.tiles.filter(t=>t.kind==='youtube').length===1){
     return saved;
    }
   }catch(error){console.warn('FIRST WEEK restore:',error);}
@@ -1660,9 +1656,9 @@
  }
  function reveal(tile,entry){
   tile.classList.add('fw-revealed');
-  tile.classList.toggle('fw-non-mv',entry.kind!=='mv');
+  tile.classList.toggle('fw-non-mv',entry.kind!=='mv'&&entry.kind!=='pv');
   tile.replaceChildren();
-  if(entry.kind==='mv'){
+  if(entry.kind==='mv'||entry.kind==='pv'){
    // MV squares never turn into a star, even while their image is loading.
    if(!entry.image){tile.textContent='';return;}
    const picture=document.createElement('img');
@@ -1676,10 +1672,10 @@
  }
  function fillMissingImages(){
   if(!state||!imagePool.length)return;
-  const used=new Set(state.tiles.filter(t=>t.kind==='mv'&&t.image).map(t=>t.image));
+  const used=new Set(state.tiles.filter(t=>(t.kind==='mv'||t.kind==='pv')&&t.image).map(t=>t.image));
   const candidates=shuffle(imagePool.filter(url=>!used.has(url)));
   state.tiles.forEach(t=>{
-   if(t.kind==='mv'&&!t.image){
+   if((t.kind==='mv'||t.kind==='pv')&&!t.image){
     t.image=candidates.shift()||imagePool[Math.floor(Math.random()*imagePool.length)];
    }
   });
@@ -1689,10 +1685,10 @@
  function newSheet(){
   const previous=state;
   const links=shuffle(LINKS);
-  const images=shuffle(imagePool).slice(0,6);
+  const images=shuffle(imagePool).slice(0,7);
   let imageIndex=0;
   state={number:previous?previous.number+1:1,tiles:links.map(link=>({
-   kind:link.kind,url:link.url,image:link.kind==='mv'?(images[imageIndex++]||imagePool[Math.floor(Math.random()*imagePool.length)]||null):null,opened:false
+   kind:link.kind,url:link.url,image:(link.kind==='mv'||link.kind==='pv')?(images[imageIndex++]||imagePool[Math.floor(Math.random()*imagePool.length)]||null):null,opened:false
   }))};
   save();
   renderSheet();
@@ -1731,7 +1727,7 @@
    grid.append(tile);
   });
   // Prepare the six assigned pictures before the user returns from YouTube.
-  state.tiles.filter(t=>t.kind==='mv'&&t.image).forEach(t=>{cachedImage(t.image).catch(()=>{});});
+  state.tiles.filter(t=>(t.kind==='mv'||t.kind==='pv')&&t.image).forEach(t=>{cachedImage(t.image).catch(()=>{});});
   // Keep completed sheet visible, including after a reload, until NEXT SHEET is pressed.
  }
  (async()=>{
@@ -1749,7 +1745,7 @@
   // Never create the first sheet before image assignments are available.
   if(!state)newSheet();
   else{
-   const missing=state.tiles.some(t=>t.kind==='mv'&&!t.image);
+   const missing=state.tiles.some(t=>(t.kind==='mv'||t.kind==='pv')&&!t.image);
    if(missing){
     fillMissingImages();
     renderSheet();
