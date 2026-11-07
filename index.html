@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -1440,6 +1441,76 @@
     @keyframes fwSparkle{from{filter:brightness(.8);transform:scale(.94)}to{filter:brightness(1.6);transform:scale(1.08)}}
     @media(max-width:420px){.fw-grid{gap:5px}.fw-area{padding:13px 9px}.fw-tile{border-radius:7px}}
     @media(prefers-reduced-motion:reduce){.fw-tile.fw-revealed,.fw-white-star{animation:none}}
+
+/* ================================================================
+   STARSBASE 300万回チャレンジ専用CSS（既存CSSへの上書きなし）
+   ================================================================ */
+#sgGoalTracker,#sgGoalDetail{font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif}
+#sgGoalTracker *,#sgGoalDetail *{box-sizing:border-box}
+#sgGoalTracker button,#sgGoalDetail button,#sgGoalDetail select{cursor:pointer;font:inherit}
+#sgGoalTracker{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:9px;margin:0 0 17px}
+#sgGoalTracker .sggoal-card{min-width:0;padding:12px 10px 11px;border:1px solid #f2cab3;border-radius:12px;background:linear-gradient(145deg,#fffaf6,#f8e3d7);color:#26344a}
+#sgGoalTracker .sggoal-card.dml{border-color:#e1e7ad;background:linear-gradient(145deg,#fffef6,#edf3d5)}
+#sgGoalTracker .sggoal-first{display:flex;align-items:center;gap:6px;min-width:0;margin-bottom:10px}
+#sgGoalTracker .sggoal-icon{width:32px;height:32px;flex:none;color:#b77957}
+#sgGoalTracker .dml .sggoal-icon{color:#859743}
+#sgGoalTracker .sggoal-icon svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}
+#sgGoalTracker .sggoal-name{font-size:clamp(10px,2.6vw,15px);font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.04em;min-width:0;flex:1}
+#sgGoalTracker .sggoal-open{flex:none;padding:4px 5px;background:#fff9;border:1px solid #ffffffc0;border-radius:6px;color:#38425a;font-size:clamp(8px,1.9vw,10px);font-weight:800;white-space:nowrap}
+#sgGoalTracker .sggoal-line2{display:flex;justify-content:space-between;align-items:center;gap:5px;min-width:0;margin-bottom:10px}
+#sgGoalTracker .sggoal-date{background:#fff;border:1px solid #ffffffec;color:#384255;border-radius:5px;padding:5px 5px;font-size:clamp(8px,1.65vw,10px);font-weight:800;white-space:nowrap;flex:none}
+#sgGoalTracker .sggoal-numbers{font-size:clamp(9px,2.3vw,16px);font-weight:900;text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap;letter-spacing:-.055em;min-width:0}
+#sgGoalTracker .sggoal-bar{position:relative;height:17px;border-radius:999px;background:#ffffffa8;overflow:hidden;border:1px solid #ffffffd8}
+#sgGoalTracker .sggoal-fill{height:100%;background:linear-gradient(90deg,#c6835e,#e8a781);width:0;transition:width .4s}
+#sgGoalTracker .dml .sggoal-fill{background:linear-gradient(90deg,#92a754,#b2c87b)}
+#sgGoalTracker .sggoal-pct{position:absolute;inset:0 6px 0 auto;display:flex;align-items:center;font-size:10px;font-weight:900;color:#303746;text-shadow:0 1px #ffffffa0;font-variant-numeric:tabular-nums}
+#sgGoalTracker .sggoal-error{grid-column:1/-1;color:#fff;font-size:11px;text-align:center}
+#sgGoalDetail[hidden]{display:none!important}
+#sgGoalDetail{position:fixed;inset:0;z-index:1450;background:radial-gradient(ellipse at 20% 0%,#334b7a,#1c2f54 51%,#101d3a);color:white;overflow-y:auto;overscroll-behavior:contain;padding:17px 10px 45px}
+#sgGoalDetail .sggoal-page{width:min(100%,700px);margin:0 auto}
+#sgGoalDetail .sggoal-nav{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:15px}
+#sgGoalDetail .sggoal-brand{font-weight:900;font-size:15px;letter-spacing:.13em}
+#sgGoalDetail .sggoal-back{font-size:11px;padding:8px 10px;border-radius:8px;background:#293e62;color:#fff;border:1px solid #607696}
+#sgGoalDetail .sggoal-tabs{display:grid;grid-template-columns:1fr 1fr;gap:4px;background:#11223e;border:1px solid #596e8f;border-radius:10px;padding:4px;margin-bottom:15px}
+#sgGoalDetail .sggoal-tab{border:0;border-radius:7px;background:transparent;color:#b9cae2;font-size:12px;font-weight:800;padding:10px 5px}
+#sgGoalDetail .sggoal-tab[aria-selected=true]{background:#fff;color:#273955}
+#sgGoalDetail .sggoal-songhead{display:flex;gap:10px;align-items:center;margin-bottom:15px}
+#sgGoalDetail .sggoal-songicon{width:43px;height:43px;flex:none;padding:7px;border-radius:11px;background:#f7e6dc;color:#b67950}
+#sgGoalDetail .sggoal-songicon svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:2.3;stroke-linecap:round;stroke-linejoin:round}
+#sgGoalDetail .sggoal-songname{font-size:21px;font-weight:900;letter-spacing:-.04em;line-height:1.2}
+#sgGoalDetail .sggoal-deadline{font-size:11px;color:#d6e2f3;margin-top:4px}
+#sgGoalDetail .sggoal-box{background:white;color:#27384e;border:1px solid #e4eaf0;border-radius:12px;padding:13px 11px;margin:0 0 11px}
+#sgGoalDetail .sggoal-average{display:flex;justify-content:space-between;align-items:center;gap:10px}
+#sgGoalDetail .sggoal-average-label{font-size:12px;font-weight:850}
+#sgGoalDetail .sggoal-small{font-size:10px;color:#8090a3;margin-top:4px;line-height:1.6}
+#sgGoalDetail .sggoal-average-val{font-size:23px;font-weight:900;font-variant-numeric:tabular-nums;letter-spacing:-.05em;white-space:nowrap}
+#sgGoalDetail .sggoal-boxhead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:7px}
+#sgGoalDetail .sggoal-boxname{font-size:13px;font-weight:900}
+#sgGoalDetail .sggoal-select{border:1px solid #c9d6e5;background:#f5f8fc;color:#2b405d;border-radius:7px;padding:7px 9px;font-size:12px;font-weight:800}
+#sgGoalDetail .sggoal-legend{display:flex;flex-wrap:wrap;gap:12px;margin:11px 0;font-size:10px;color:#62758c}
+#sgGoalDetail .sggoal-legend i{display:inline-block;width:12px;height:9px;border-radius:2px;vertical-align:middle;margin-right:4px}
+#sgGoalDetail .sggoal-legend .sggoal-legend-line{width:14px;height:0;border-top:3px solid var(--sggoal-accent,#d99570)}
+#sgGoalDetail .sggoal-plotwrap{max-height:490px;overflow:auto;border:1px solid #e9edf4;border-radius:8px;background:#fff;scrollbar-width:thin}
+#sgGoalDetail .sggoal-plot{display:block;max-width:none}
+#sgGoalDetail .sggoal-plotnote{font-size:10px;color:#8191a4;margin-top:9px;line-height:1.6}
+#sgGoalDetail .sggoal-hourgroup{margin-top:7px;border:1px solid #e1e7ee;background:#f7f9fc;border-radius:9px;overflow:hidden}
+#sgGoalDetail .sggoal-hourgroup summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;padding:11px 12px;font-size:12px;font-weight:800;color:#354963}
+#sgGoalDetail .sggoal-hourgroup summary::-webkit-details-marker{display:none}
+#sgGoalDetail .sggoal-hourgroup summary:after{content:'＋';font-size:16px;color:#8495a7}
+#sgGoalDetail .sggoal-hourgroup[open] summary:after{content:'－'}
+#sgGoalDetail .sggoal-hourwrap{overflow-x:auto;scrollbar-width:thin}
+#sgGoalDetail .sggoal-hourtable{min-width:385px;padding:0 6px 7px}
+#sgGoalDetail .sggoal-hrow{display:grid;grid-template-columns:42px repeat(4,minmax(0,1fr));gap:4px;align-items:center;padding:10px 4px;border-top:1px solid #e7ecf3;background:#fff;font-size:10px;color:#31445d;font-variant-numeric:tabular-nums;white-space:nowrap}
+#sgGoalDetail .sggoal-hrow.sggoal-header{background:#f0f4f8;font-size:9px;font-weight:750;color:#8593a5;padding-top:8px;padding-bottom:8px}
+#sgGoalDetail .sggoal-hrow span:not(:first-child){text-align:right}
+#sgGoalDetail .sggoal-hrow .sggoal-hhour{font-weight:850}
+#sgGoalDetail .sggoal-hrow .sggoal-havg{color:#62748d}
+#sgGoalDetail .sggoal-hrow .sggoal-htarget{color:var(--sggoal-ink,#ae714d);font-weight:850}
+#sgGoalDetail .sggoal-hrow .sggoal-positive{color:#278365;font-weight:850}
+#sgGoalDetail .sggoal-hrow .sggoal-negative{color:#c45e68;font-weight:850}
+#sgGoalDetail .sggoal-foot{color:#b5c5db;font-size:10px;line-height:1.7;margin-top:14px;text-align:center}
+@media(max-width:420px){#sgGoalTracker{gap:7px}#sgGoalTracker .sggoal-card{padding:10px 7px}#sgGoalTracker .sggoal-icon{width:27px;height:27px}#sgGoalTracker .sggoal-first{gap:4px}#sgGoalTracker .sggoal-numbers{font-size:clamp(9px,2.9vw,12px)}#sgGoalDetail .sggoal-box{padding:11px 8px}#sgGoalDetail .sggoal-hrow{gap:3px}}
+
 </style>
 </head>
 
@@ -1551,6 +1622,34 @@
       </button>
     </div>
 
+    <!-- STARSBASE 300万回チャレンジ: RANDOM VIDEOの直下に追加 -->
+    <section id="sgGoalTracker" aria-label="11月16日300万回再生チャレンジ">
+      <article class="sggoal-card" data-song="sd">
+        <div class="sggoal-first">
+          <span class="sggoal-icon" data-icon="sd" aria-hidden="true"></span>
+          <span class="sggoal-name">SlamDunk</span>
+          <button class="sggoal-open" type="button" data-open-song="sd">詳細 ›</button>
+        </div>
+        <div class="sggoal-line2">
+          <span class="sggoal-date" data-day-label="sd">目標進捗</span>
+          <strong class="sggoal-numbers" data-goal-numbers="sd">取得中…</strong>
+        </div>
+        <div class="sggoal-bar"><div class="sggoal-fill" data-goal-fill="sd"></div><span class="sggoal-pct" data-goal-percent="sd">—</span></div>
+      </article>
+      <article class="sggoal-card dml" data-song="dml">
+        <div class="sggoal-first">
+          <span class="sggoal-icon" data-icon="dml" aria-hidden="true"></span>
+          <span class="sggoal-name">Drivin’ My Life</span>
+          <button class="sggoal-open" type="button" data-open-song="dml">詳細 ›</button>
+        </div>
+        <div class="sggoal-line2">
+          <span class="sggoal-date" data-day-label="dml">目標進捗</span>
+          <strong class="sggoal-numbers" data-goal-numbers="dml">取得中…</strong>
+        </div>
+        <div class="sggoal-bar"><div class="sggoal-fill" data-goal-fill="dml"></div><span class="sggoal-pct" data-goal-percent="dml">—</span></div>
+      </article>
+    </section>
+
   <!-- FIRST WEEK: existing homepage, isolated from existing sections -->
   <section id="firstWeekArea" class="fw-area" hidden aria-label="FIRST WEEK">
     <h2 class="fw-heading">FIRST WEEK</h2>
@@ -1586,6 +1685,41 @@
   </footer>
 
 </div>
+
+<!-- STARSBASE 300万回チャレンジ: 独立した詳細画面（既存画面には影響しない） -->
+<section id="sgGoalDetail" hidden aria-label="300万回再生チャレンジ詳細">
+  <div class="sggoal-page">
+    <div class="sggoal-nav"><span class="sggoal-brand">STARS BASE</span><button class="sggoal-back" type="button" id="sgGoalBack">← TOPに戻る</button></div>
+    <div class="sggoal-tabs" role="tablist" aria-label="楽曲を選択">
+      <button class="sggoal-tab" type="button" data-detail-song="sd" role="tab" aria-selected="true">SlamDunk</button>
+      <button class="sggoal-tab" type="button" data-detail-song="dml" role="tab" aria-selected="false">Drivin' My Life</button>
+    </div>
+    <div class="sggoal-songhead">
+      <span class="sggoal-songicon" id="sgGoalDetailIcon" aria-hidden="true"></span>
+      <div><div class="sggoal-songname" id="sgGoalDetailName"></div><div class="sggoal-deadline">11/16 20:00までに300万回再生を目指す</div></div>
+    </div>
+    <div class="sggoal-box sggoal-average">
+      <div><div class="sggoal-average-label">過去の1日平均</div><div class="sggoal-small">11/3〜11/6 の4日間</div></div>
+      <div class="sggoal-average-val" id="sgGoalAvg">—</div>
+    </div>
+    <div class="sggoal-box">
+      <div class="sggoal-boxhead"><span class="sggoal-boxname" id="sgGoalChartTitle">時間帯別グラフ</span><select class="sggoal-select" id="sgGoalDate" aria-label="表示する日付">
+        <option value="0">11/7</option><option value="1">11/8</option><option value="2">11/9</option><option value="3">11/10</option><option value="4">11/11</option><option value="5">11/12</option><option value="6">11/13</option><option value="7">11/14</option><option value="8">11/15</option><option value="9">11/16</option>
+      </select></div>
+      <div class="sggoal-small">1時間ごとの再生増加数。目標は短い横線、実績は青い棒。</div>
+      <div class="sggoal-legend"><span><i style="background:#a3afc0"></i>過去平均</span><span><i class="sggoal-legend-line"></i>目標</span><span><i style="background:#6497c7"></i>実績</span></div>
+      <div class="sggoal-plotwrap"><svg class="sggoal-plot" id="sgGoalChart" role="img" aria-label="1時間ごとの再生回数グラフ"></svg></div>
+      <div class="sggoal-plotnote">← 横にスクロールして各時間を表示 →<br>再生回数：主目盛500回・補助目盛100回</div>
+      <div class="sggoal-plotnote" id="sgGoalDataUpdated"></div>
+    </div>
+    <div class="sggoal-box">
+      <div class="sggoal-boxhead"><span class="sggoal-boxname">時間別データ</span><span class="sggoal-small">6時間ごとに開閉</span></div>
+      <div class="sggoal-small">時間｜過去平均｜目標｜実績｜±差分（実績−目標）</div>
+      <div id="sgGoalHours"></div>
+    </div>
+    <div class="sggoal-foot">※保存記録から算出。途中の時間帯の実績は暫定値、±差分はその時間が確定してから表示します。<br>時間帯別の目標は、300万回までの残りと過去4日間の平均パターンをもとに毎時調整します。</div>
+  </div>
+</section>
 
 <script>
 /* FIRST WEEK: isolated 10-tile sheet. Existing features below are unchanged. */
@@ -3792,6 +3926,309 @@ setInterval(
   300000
 );
 
+</script>
+
+<script>
+/* STARSBASE 300万回チャレンジ: 完全独立の追加処理（既存関数は上書きしない） */
+(function initStarsGoalTracker(){
+  'use strict';
+  const root=document.getElementById('sgGoalTracker');
+  const detail=document.getElementById('sgGoalDetail');
+  if(!root||!detail)return;
+  const $=id=>document.getElementById(id);
+  const one=(selector,context=root)=>context.querySelector(selector);
+  const all=(selector,context=root)=>Array.from(context.querySelectorAll(selector));
+  const fmt=n=>Math.round(n).toLocaleString('ja-JP');
+  const HOUR=3600000;
+  const START=Date.parse('2026-11-06T15:00:00.000Z'); // JST 11/7 00:00
+  const SLOTS=236; // JST 11/7 00:00 ～ 11/16 20:00
+  const TOTAL=3000000;
+  const SONGS={
+    sd:{video_id:'tFTeMdvyfBs',name:'SlamDunk',color:'#d99570',ink:'#b47753',icon:'<svg viewBox="0 0 48 48"><circle cx="31" cy="13" r="8"/><path d="M23 13h16M31 5v16M10 9l5 5 6-6M15 14l7 7M9 29h30M14 30l6 11h8l6-11M20 30l4 11 4-11"/></svg>'},
+    dml:{video_id:'zbSQaKFjyXI',name:"Drivin' My Life",color:'#9bac65',ink:'#788e49',icon:'<svg viewBox="0 0 48 48"><path d="M5 29v-6l5-8h18l6 8v6zM11 23h23"/><circle cx="13" cy="30" r="4"/><circle cx="29" cy="30" r="4"/><path d="m37 6 2 5 5 1-5 2-2 5-5-2-5-2 5-1zM5 38h32"/></svg>'}
+  };
+  let latestPayload=null;
+  let calculations={};
+  let selectedSong='sd';
+  let selectedDay=null; // null = 日本時間に追従（過去日の手動選択は保持）
+  let pendingFetch=null;
+  let previousOverflow='';
+  function jstHourKey(ms){return new Date(ms+9*HOUR).toISOString().slice(0,13).replace('T',' ');}
+  function jstCurrentDay(){
+    const index=Math.floor((Date.now()-START)/HOUR);
+    return Math.max(0,Math.min(9,Math.floor(index/24)));
+  }
+  function currentSlot(){return Math.floor((Date.now()-START)/HOUR);}
+  function weightedAllocation(total,weights){
+    const weightSum=weights.reduce((a,b)=>a+b,0);
+    if(!weights.length)return [];
+    if(weightSum<=0)return weights.map(()=>0);
+    let cumulative=0,last=0;
+    return weights.map(weight=>{
+      cumulative+=weight;
+      const next=Math.round(total*cumulative/weightSum);
+      const value=next-last;
+      last=next;
+      return value;
+    });
+  }
+  function calculateSong(payload,song){
+    const config=SONGS[song];
+    const records=Array.isArray(payload.hourly_first)?payload.hourly_first:[];
+    const byHour=new Map(records.filter(r=>r.video_id===config.video_id).map(r=>[String(r.jst_hour),{views:Number(r.views),at:r.recorded_at}]));
+    const at=ms=>byHour.get(jstHourKey(ms));
+    const averages=[];
+    const HIST_START=Date.parse('2026-11-02T15:00:00.000Z');
+    for(let h=0;h<24;h++){
+      const values=[];
+      for(let d=0;d<4;d++){
+        const time=HIST_START+(d*24+h)*HOUR;
+        const a=at(time),b=at(time+HOUR);
+        if(a&&b&&Number.isFinite(a.views)&&Number.isFinite(b.views))values.push(b.views-a.views);
+      }
+      averages[h]=values.length===4?values.reduce((a,b)=>a+b,0)/4:null;
+    }
+    const usable=averages.every(x=>x!==null&&Number.isFinite(x));
+    const latest=Array.isArray(payload.latest)?payload.latest.find(r=>r.video_id===config.video_id):null;
+    if(!usable||!latest||!Number.isFinite(Number(latest.views))||!latest.recorded_at)return {usable:false,avg:averages};
+    const latestViews=Number(latest.views);
+    const latestMs=Date.parse(latest.recorded_at);
+    const weights=Array.from({length:SLOTS},(_,i)=>Math.max(0,averages[i%24]));
+    const suffix=Array(SLOTS+1).fill(0);
+    for(let i=SLOTS-1;i>=0;i--)suffix[i]=suffix[i+1]+weights[i];
+    const starts=Array.from({length:SLOTS+1},(_,i)=>at(START+i*HOUR));
+    const realCurrent=currentSlot();
+    const current=Math.max(-1,Math.min(SLOTS,realCurrent));
+    const goals=Array(SLOTS).fill(null);
+    const actuals=Array(SLOTS).fill(null);
+    const states=Array(SLOTS).fill('未取得');
+    for(let i=0;i<SLOTS;i++){
+      const start=starts[i],end=starts[i+1];
+      if(i<=current&&start&&suffix[i]>0){
+        goals[i]=Math.round(Math.max(0,TOTAL-start.views)*weights[i]/suffix[i]);
+      }
+      if(start&&end&&i<current){
+        actuals[i]=end.views-start.views;
+        states[i]='確定';
+      }else if(i===current&&start&&latestMs>=START+i*HOUR){
+        actuals[i]=latestViews-start.views;
+        states[i]='集計中';
+      }
+    }
+    // 時刻が切り替わった直後、当該時間の最初の保存値が未着でも
+    // 実績を捏造せず、目標のみ暫定配分して表示を継続する。
+    if(current>=0&&current<SLOTS&&goals[current]===null&&suffix[current]>0){
+      goals[current]=Math.round(Math.max(0,TOTAL-latestViews)*weights[current]/suffix[current]);
+    }
+    // 現在進行中の時間の目標は、その時刻の開始値で固定。
+    // 10分ごとの保存記録では「次の時間以降」だけ再配分する。
+    const next=Math.max(0,Math.min(SLOTS,current+1));
+    const slotGoal=current>=0&&current<SLOTS&&goals[current]!==null?goals[current]:0;
+    const currentViews=current>=0&&current<SLOTS&&actuals[current]!==null?Math.max(0,actuals[current]):0;
+    const pendingInCurrent=current>=0&&current<SLOTS?Math.max(0,slotGoal-currentViews):0;
+    const futureNeed=Math.max(0,TOTAL-latestViews-pendingInCurrent);
+    const future=weightedAllocation(futureNeed,weights.slice(next));
+    future.forEach((v,k)=>{goals[next+k]=v;});
+    return {usable:true,avg:averages,dailyAverage:averages.reduce((a,b)=>a+b,0),starts,goals,actuals,states,latestViews,latestMs,at};
+  }
+  function dailyData(calc,day){
+    const start=day*24;
+    const end=Math.min(SLOTS,start+24);
+    const goals=calc.goals.slice(start,end);
+    const target=goals.every(v=>v!==null)?goals.reduce((a,b)=>a+b,0):null;
+    const currentDay=jstCurrentDay();
+    const first=calc.starts[start];
+    let actual=null;
+    if(first){
+      if(day<currentDay&&calc.starts[end])actual=calc.starts[end].views-first.views;
+      if(day===currentDay&&calc.latestMs>=START+start*HOUR){
+        actual=calc.latestViews-first.views;
+      }
+      if(day===9&&currentSlot()>=SLOTS&&calc.starts[SLOTS]){
+        actual=calc.starts[SLOTS].views-first.views;
+      }
+    }
+    return {target,actual};
+  }
+  function renderTop(){
+    const day=jstCurrentDay();
+    for(const song of Object.keys(SONGS)){
+      const calc=calculations[song];
+      const label=one('[data-day-label="'+song+'"]');
+      label.textContent='11/'+(7+day)+' 目標進捗';
+      const numbers=one('[data-goal-numbers="'+song+'"]');
+      const fill=one('[data-goal-fill="'+song+'"]');
+      const percent=one('[data-goal-percent="'+song+'"]');
+      if(!calc?.usable){numbers.textContent='取得待ち';fill.style.width='0%';percent.textContent='—';continue;}
+      const {target,actual}=dailyData(calc,day);
+      numbers.textContent=(actual===null?'—':fmt(actual))+' / '+(target===null?'—':fmt(target));
+      const progress=target===0?100:target===null||actual===null?null:Math.max(0,actual/target*100);
+      fill.style.width=progress===null?'0%':Math.min(100,progress)+'%';
+      percent.textContent=progress===null?'—':Math.round(progress)+'%';
+    }
+  }
+  function renderChart(rows,config){
+    const W=1070,L=64,R=17,T=19,B=43;
+    const maximum=Math.max(500,...rows.flatMap(r=>[r.avg??0,r.goal??0,r.actual??0]));
+    const top=Math.ceil(maximum/500)*500;
+    const plotHeight=Math.max(320,(top/500)*20);
+    const H=T+plotHeight+B;
+    const y=v=>T+plotHeight*(1-v/top);
+    const slot=(W-L-R)/24;
+    let svg='<title>各時間の過去平均・目標の短い横線・再生数実績</title>';
+    for(let v=0;v<=top;v+=100){
+      const yy=y(v),major=v%500===0;
+      if(major){
+        svg+='<line x1="'+L+'" x2="'+(W-R)+'" y1="'+yy+'" y2="'+yy+'" stroke="#dbe3ed" stroke-width="1"/>';
+        svg+='<text x="'+(L-9)+'" y="'+(yy+3.5)+'" text-anchor="end" font-size="10" fill="#718299">'+fmt(v)+'</text>';
+      }else{
+        svg+='<line x1="'+(L-4)+'" x2="'+L+'" y1="'+yy+'" y2="'+yy+'" stroke="#aebccd" stroke-width=".9"/>';
+      }
+    }
+    svg+='<text x="12" y="12" font-size="10" fill="#718299">回</text>';
+    for(const r of rows){
+      const cx=L+slot*(r.hour+.5);
+      if(r.avg!==null){
+        const h=Math.max(0,r.avg/top*plotHeight);
+        svg+='<rect x="'+(cx-17)+'" y="'+y(r.avg)+'" width="12" height="'+h+'" rx="1.5" fill="#a3afc0"><title>'+r.hour+'時 過去平均 '+fmt(r.avg)+'回</title></rect>';
+      }
+      if(r.actual!==null){
+        const h=Math.max(0,r.actual/top*plotHeight);
+        svg+='<rect x="'+(cx+3)+'" y="'+y(Math.max(0,r.actual))+'" width="15" height="'+h+'" rx="1.5" fill="#6497c7" opacity="'+(r.state==='集計中'?.64:1)+'"><title>'+r.hour+'時 実績 '+fmt(r.actual)+'回（'+r.state+'）</title></rect>';
+      }
+      if(r.goal!==null){
+        const gy=y(r.goal);
+        svg+='<line x1="'+cx+'" x2="'+(cx+21)+'" y1="'+gy+'" y2="'+gy+'" stroke="#fff" stroke-width="6" stroke-linecap="round"/>';
+        svg+='<line x1="'+cx+'" x2="'+(cx+21)+'" y1="'+gy+'" y2="'+gy+'" stroke="'+config.color+'" stroke-width="3.5" stroke-linecap="round"><title>'+r.hour+'時 目標 '+fmt(r.goal)+'回</title></line>';
+      }
+      svg+='<text x="'+cx+'" y="'+(H-18)+'" text-anchor="middle" font-size="10" fill="#64778d">'+String(r.hour).padStart(2,'0')+'</text>';
+    }
+    const chart=$('sgGoalChart');
+    chart.setAttribute('width',W);
+    chart.setAttribute('height',H);
+    chart.setAttribute('viewBox','0 0 '+W+' '+H);
+    chart.innerHTML=svg;
+  }
+  function renderHourTable(rows){
+    const host=$('sgGoalHours');
+    const opened=all('.sggoal-hourgroup[open]',host).map(d=>d.dataset.group);
+    host.replaceChildren();
+    for(let i=0;i<rows.length;i+=6){
+      const groupRows=rows.slice(i,i+6);
+      const details=document.createElement('details');
+      details.className='sggoal-hourgroup';details.dataset.group=String(i);
+      details.open=opened.length?opened.includes(String(i)):i===0;
+      const summary=document.createElement('summary');
+      summary.textContent=String(i).padStart(2,'0')+':00 ～ '+String(groupRows[groupRows.length-1].hour+1).padStart(2,'0')+':00';
+      details.appendChild(summary);
+      const scroll=document.createElement('div');scroll.className='sggoal-hourwrap';
+      const table=document.createElement('div');table.className='sggoal-hourtable';
+      const head=document.createElement('div');head.className='sggoal-hrow sggoal-header';
+      ['時間','過去平均','目標','実績','±差分'].forEach(label=>{const e=document.createElement('span');e.textContent=label;head.appendChild(e);});
+      table.appendChild(head);
+      for(const r of groupRows){
+        const diff=r.state==='確定'&&r.actual!==null&&r.goal!==null?r.actual-r.goal:null;
+        const values=[String(r.hour).padStart(2,'0')+':00',r.avg===null?'—':fmt(r.avg),r.goal===null?'—':fmt(r.goal),r.actual===null?'—':fmt(r.actual)+(r.state==='集計中'?'※':''),diff===null?'—':(diff>0?'+':'')+fmt(diff)];
+        const row=document.createElement('div');row.className='sggoal-hrow';
+        values.forEach((value,column)=>{
+          const span=document.createElement('span');span.textContent=value;
+          if(column===0)span.className='sggoal-hhour';
+          if(column===1)span.className='sggoal-havg';
+          if(column===2)span.className='sggoal-htarget';
+          if(column===4&&diff!==null)span.className=diff>=0?'sggoal-positive':'sggoal-negative';
+          row.appendChild(span);
+        });
+        table.appendChild(row);
+      }
+      scroll.appendChild(table);details.appendChild(scroll);host.appendChild(details);
+    }
+  }
+  function renderDetail(){
+    if(detail.hidden)return;
+    const config=SONGS[selectedSong],calc=calculations[selectedSong];
+    detail.style.setProperty('--sggoal-accent',config.color);
+    detail.style.setProperty('--sggoal-ink',config.ink);
+    $('sgGoalDetailName').textContent=config.name;
+    $('sgGoalDetailIcon').innerHTML=config.icon;
+    $('sgGoalDetailIcon').style.color=selectedSong==='sd'?'#b67950':'#7b9450';
+    $('sgGoalDetailIcon').style.background=selectedSong==='sd'?'#f7e6dc':'#edf3d9';
+    all('[data-detail-song]',detail).forEach(b=>b.setAttribute('aria-selected',String(b.dataset.detailSong===selectedSong)));
+    const day=selectedDay===null?jstCurrentDay():selectedDay;
+    $('sgGoalDate').value=String(day);
+    $('sgGoalChartTitle').textContent='11/'+(7+day)+'｜時間帯別グラフ';
+    if(!calc?.usable){
+      $('sgGoalAvg').textContent='取得待ち';$('sgGoalChart').innerHTML='';$('sgGoalHours').replaceChildren();
+      $('sgGoalDataUpdated').textContent='保存データの読み込みを確認しています。';return;
+    }
+    $('sgGoalAvg').textContent=fmt(calc.dailyAverage)+' 回';
+    const start=day*24;
+    const end=Math.min(start+24,SLOTS);
+    const rows=Array.from({length:end-start},(_,hour)=>({
+      hour,avg:calc.avg[hour],goal:calc.goals[start+hour],actual:calc.actuals[start+hour],state:calc.states[start+hour]
+    }));
+    renderChart(rows,config);
+    renderHourTable(rows);
+    const at=new Intl.DateTimeFormat('ja-JP',{timeZone:'Asia/Tokyo',month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date(calc.latestMs));
+    $('sgGoalDataUpdated').textContent='保存データ '+at+' JST時点（※印は集計途中）';
+  }
+  function render(){renderTop();renderDetail();}
+  async function load(){
+    if(pendingFetch)return pendingFetch;
+    pendingFetch=(async()=>{
+      try{
+        const response=await fetch('https://musicvideo-views.starsx0601.workers.dev/goal-tracker?t='+Date.now(),{cache:'no-store'});
+        if(!response.ok)throw new Error('HTTP '+response.status);
+        const payload=await response.json();
+        latestPayload=payload;
+        for(const key of Object.keys(SONGS))calculations[key]=calculateSong(payload,key);
+        render();
+      }catch(error){
+        console.warn('STARSBASE goal tracker read:',error);
+        // 新機能のみのエラー。既存カウンターやFIRST WEEKの表示は触らない。
+        if(!latestPayload){
+          for(const key of Object.keys(SONGS)){
+            one('[data-goal-numbers="'+key+'"]').textContent='取得待ち';
+            one('[data-goal-percent="'+key+'"]').textContent='—';
+          }
+          if(!detail.hidden)$('sgGoalDataUpdated').textContent='目標データを取得できませんでした。';
+        }
+      }
+    })().finally(()=>{pendingFetch=null;});
+    return pendingFetch;
+  }
+  function openDetail(song){
+    selectedSong=song;selectedDay=null;
+    previousOverflow=document.body.style.overflow;
+    detail.hidden=false;document.body.style.overflow='hidden';
+    detail.scrollTop=0;renderDetail();
+    $('sgGoalBack').focus();
+  }
+  function closeDetail(){
+    detail.hidden=true;document.body.style.overflow=previousOverflow;
+  }
+  for(const key of Object.keys(SONGS))one('[data-icon="'+key+'"]').innerHTML=SONGS[key].icon;
+  all('[data-open-song]').forEach(button=>button.addEventListener('click',()=>openDetail(button.dataset.openSong)));
+  all('[data-detail-song]',detail).forEach(button=>button.addEventListener('click',()=>{selectedSong=button.dataset.detailSong;renderDetail();}));
+  $('sgGoalBack').addEventListener('click',closeDetail);
+  detail.addEventListener('keydown',event=>{if(event.key==='Escape')closeDetail();});
+  $('sgGoalDate').addEventListener('change',event=>{
+    const value=Number(event.target.value);
+    selectedDay=value===jstCurrentDay()?null:value;
+    renderDetail();
+  });
+  // 既存サイトの loadData / loadRecentPlays には手を触れない。
+  load();
+  setInterval(load,600000); // 10分ごとに最新D1保存値を取得
+  let lastJstDay=jstCurrentDay();
+  setInterval(()=>{
+    const today=jstCurrentDay();
+    if(today!==lastJstDay){
+      lastJstDay=today;
+      render(); // 過去日の手動選択中はその表示を維持
+      load();
+    }
+  },60000);
+})();
 </script>
 
 </body>
