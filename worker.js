@@ -1,4 +1,5 @@
 
+
 const VIDEOS = [
   { title: "Slam Dunk", id: "tFTeMdvyfBs" },
   { title: "WISHES", id: "3gsVVVndUKM" },
@@ -1404,6 +1405,68 @@ async function finalizePastDays(
 // Worker
 // ========================================
 
+// ============================================================
+// STARSBASE 300万回チャレンジ: 読み取り専用データ取得（追加機能）
+// 既存の動画保存、日次確定、統計取得などには影響しない。
+// ============================================================
+async function getStarsGoalTrackerData(env) {
+  const ids = ["tFTeMdvyfBs", "zbSQaKFjyXI"];
+
+  // JST 11/3 00:00 から 11/16 20:00 の直後まで。
+  // 各時間の「最初の保存記録」を1行ずつ取得し、
+  // ブラウザ側で次の時刻との差を1時間実績として計算する。
+  // 既存データの更新・挿入は一切行わない。
+  const hourlyResult = await env.DB.prepare(`
+    WITH numbered AS (
+      SELECT
+        video_id,
+        views,
+        recorded_at,
+        strftime('%Y-%m-%d %H', recorded_at, '+9 hours') AS jst_hour,
+        ROW_NUMBER() OVER (
+          PARTITION BY video_id, strftime('%Y-%m-%d %H', recorded_at, '+9 hours')
+          ORDER BY recorded_at ASC
+        ) AS rn
+      FROM video_stats
+      WHERE video_id IN (?, ?)
+        AND recorded_at >= ?
+        AND recorded_at < ?
+    )
+    SELECT video_id, jst_hour, views, recorded_at
+    FROM numbered
+    WHERE rn = 1
+    ORDER BY video_id, jst_hour
+  `).bind(
+    ids[0],
+    ids[1],
+    "2026-11-02T15:00:00.000Z",
+    "2026-11-16T11:15:00.000Z"
+  ).all();
+
+  const latestRows = await Promise.all(ids.map(id =>
+    env.DB.prepare(`
+      SELECT views, recorded_at
+      FROM video_stats
+      WHERE video_id = ?
+        AND recorded_at <= ?
+      ORDER BY recorded_at DESC
+      LIMIT 1
+    `).bind(id, "2026-11-16T11:01:00.000Z").first()
+  ));
+
+  return {
+    updated_at: new Date().toISOString(),
+    target_views: 3000000,
+    deadline_jst: "2026-11-16T20:00:00+09:00",
+    hourly_first: hourlyResult.results || [],
+    latest: ids.map((video_id, i) => ({
+      video_id,
+      views: latestRows[i] ? Number(latestRows[i].views) : null,
+      recorded_at: latestRows[i]?.recorded_at || null
+    }))
+  };
+}
+
 export default {
 
   // ======================================
@@ -1655,6 +1718,24 @@ export default {
 
     }
 
+
+    // ========================================================
+    // 300万回チャレンジ専用: 既存APIとは独立した GET ルート
+    // ========================================================
+    if (url.pathname === "/goal-tracker" && request.method === "GET") {
+      try {
+        const goalData = await getStarsGoalTrackerData(env);
+        return new Response(JSON.stringify(goalData), {
+          headers: getCorsHeaders()
+        });
+      } catch (error) {
+        console.error("Goal tracker read error:", error);
+        return new Response(JSON.stringify({ error: "Goal tracker unavailable" }), {
+          status: 500,
+          headers: getCorsHeaders()
+        });
+      }
+    }
 
     // ======================================
     // 統計API
