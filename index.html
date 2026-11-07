@@ -1477,7 +1477,7 @@
 #sgGoalDetail .sggoal-songhead{display:flex;gap:10px;align-items:center;margin-bottom:15px}
 #sgGoalDetail .sggoal-songicon{width:43px;height:43px;flex:none;padding:7px;border-radius:11px;background:#f7e6dc;color:#b67950}
 #sgGoalDetail .sggoal-songicon svg{width:100%;height:100%;fill:none;stroke:currentColor;stroke-width:2.3;stroke-linecap:round;stroke-linejoin:round}
-#sgGoalDetail .sggoal-songname{font-size:21px;font-weight:900;letter-spacing:-.04em;line-height:1.2}
+#sgGoalDetail .sggoal-songname{font-size:clamp(27px,7vw,34px);font-weight:900;letter-spacing:-.04em;line-height:1.2}
 #sgGoalDetail .sggoal-deadline{font-size:11px;color:#d6e2f3;margin-top:4px}
 #sgGoalDetail .sggoal-box{background:white;color:#27384e;border:1px solid #e4eaf0;border-radius:12px;padding:13px 11px;margin:0 0 11px}
 #sgGoalDetail .sggoal-average{display:flex;justify-content:space-between;align-items:center;gap:10px}
@@ -1696,7 +1696,7 @@
     </div>
     <div class="sggoal-songhead">
       <span class="sggoal-songicon" id="sgGoalDetailIcon" aria-hidden="true"></span>
-      <div><div class="sggoal-songname" id="sgGoalDetailName"></div><div class="sggoal-deadline">11/16 20:00までに300万回再生を目指す</div></div>
+      <div><div class="sggoal-songname" id="sgGoalDetailName"></div></div>
     </div>
     <div class="sggoal-box sggoal-average">
       <div><div class="sggoal-average-label">過去の1日平均</div><div class="sggoal-small">11/3〜11/6 の4日間</div></div>
@@ -1706,7 +1706,6 @@
       <div class="sggoal-boxhead"><span class="sggoal-boxname" id="sgGoalChartTitle">時間帯別グラフ</span><select class="sggoal-select" id="sgGoalDate" aria-label="表示する日付">
         <option value="0">11/7</option><option value="1">11/8</option><option value="2">11/9</option><option value="3">11/10</option><option value="4">11/11</option><option value="5">11/12</option><option value="6">11/13</option><option value="7">11/14</option><option value="8">11/15</option><option value="9">11/16</option>
       </select></div>
-      <div class="sggoal-small">1時間ごとの再生増加数。目標は短い横線、実績は青い棒。</div>
       <div class="sggoal-legend"><span><i style="background:#a3afc0"></i>過去平均</span><span><i class="sggoal-legend-line"></i>目標</span><span><i style="background:#6497c7"></i>実績</span></div>
       <div class="sggoal-plotwrap"><svg class="sggoal-plot" id="sgGoalChart" role="img" aria-label="1時間ごとの再生回数グラフ"></svg></div>
       <div class="sggoal-plotnote">← 横にスクロールして各時間を表示 →</div>
@@ -1715,7 +1714,7 @@
       <div class="sggoal-boxhead"><span class="sggoal-boxname">時間別データ</span></div>
       <div id="sgGoalHours"></div>
     </div>
-    <div class="sggoal-foot">※時間帯別の目標は、300万回再生までの残りと直近4日間の平均値をもとに算出中<br>※調整は反映遅れにより増減している場合もあります</div>
+    <div class="sggoal-foot">※時間帯別の目標は、300万回再生までの残りと直近4日間の平均値をもとに算出中<br>※調整や反映の遅れにより増減している場合もあります</div>
   </div>
 </section>
 
