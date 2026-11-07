@@ -1468,9 +1468,9 @@
 #sgGoalDetail[hidden]{display:none!important}
 #sgGoalDetail{position:fixed;inset:0;z-index:1450;background:radial-gradient(ellipse at 20% 0%,#334b7a,#1c2f54 51%,#101d3a);color:white;overflow-y:auto;overscroll-behavior:contain;padding:17px 10px 45px}
 #sgGoalDetail .sggoal-page{width:min(100%,700px);margin:0 auto}
-#sgGoalDetail .sggoal-nav{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:15px}
+#sgGoalDetail .sggoal-nav{position:sticky;top:0;z-index:3;display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:15px;padding:6px 0;background:#23395f;border-radius:9px}
 #sgGoalDetail .sggoal-brand{font-weight:900;font-size:15px;letter-spacing:.13em}
-#sgGoalDetail .sggoal-back{font-size:11px;padding:8px 10px;border-radius:8px;background:#293e62;color:#fff;border:1px solid #607696}
+#sgGoalDetail .sggoal-back{display:grid;place-items:center;width:42px;height:42px;flex:none;font-size:25px;font-weight:800;line-height:1;border-radius:50%;background:#fff;color:#23395f;border:2px solid #e6edff;box-shadow:0 2px 12px #0005}
 #sgGoalDetail .sggoal-tabs{display:grid;grid-template-columns:1fr 1fr;gap:4px;background:#11223e;border:1px solid #596e8f;border-radius:10px;padding:4px;margin-bottom:15px}
 #sgGoalDetail .sggoal-tab{border:0;border-radius:7px;background:transparent;color:#b9cae2;font-size:12px;font-weight:800;padding:10px 5px}
 #sgGoalDetail .sggoal-tab[aria-selected=true]{background:#fff;color:#273955}
@@ -1689,7 +1689,7 @@
 <!-- STARSBASE 300万回チャレンジ: 独立した詳細画面（既存画面には影響しない） -->
 <section id="sgGoalDetail" hidden aria-label="300万回再生チャレンジ詳細">
   <div class="sggoal-page">
-    <div class="sggoal-nav"><span class="sggoal-brand">STARS BASE</span><button class="sggoal-back" type="button" id="sgGoalBack">← TOPに戻る</button></div>
+    <div class="sggoal-nav"><span class="sggoal-brand">STARS BASE</span><button class="sggoal-back" type="button" id="sgGoalBack" aria-label="詳細画面を閉じる" title="閉じる">✕</button></div>
     <div class="sggoal-tabs" role="tablist" aria-label="楽曲を選択">
       <button class="sggoal-tab" type="button" data-detail-song="sd" role="tab" aria-selected="true">SlamDunk</button>
       <button class="sggoal-tab" type="button" data-detail-song="dml" role="tab" aria-selected="false">Drivin' My Life</button>
@@ -1709,15 +1709,13 @@
       <div class="sggoal-small">1時間ごとの再生増加数。目標は短い横線、実績は青い棒。</div>
       <div class="sggoal-legend"><span><i style="background:#a3afc0"></i>過去平均</span><span><i class="sggoal-legend-line"></i>目標</span><span><i style="background:#6497c7"></i>実績</span></div>
       <div class="sggoal-plotwrap"><svg class="sggoal-plot" id="sgGoalChart" role="img" aria-label="1時間ごとの再生回数グラフ"></svg></div>
-      <div class="sggoal-plotnote">← 横にスクロールして各時間を表示 →<br>再生回数：主目盛500回・補助目盛100回</div>
-      <div class="sggoal-plotnote" id="sgGoalDataUpdated"></div>
+      <div class="sggoal-plotnote">← 横にスクロールして各時間を表示 →</div>
     </div>
     <div class="sggoal-box">
-      <div class="sggoal-boxhead"><span class="sggoal-boxname">時間別データ</span><span class="sggoal-small">6時間ごとに開閉</span></div>
-      <div class="sggoal-small">時間｜過去平均｜目標｜実績｜±差分（実績−目標）</div>
+      <div class="sggoal-boxhead"><span class="sggoal-boxname">時間別データ</span></div>
       <div id="sgGoalHours"></div>
     </div>
-    <div class="sggoal-foot">※保存記録から算出。途中の時間帯の実績は暫定値、±差分はその時間が確定してから表示します。<br>時間帯別の目標は、300万回までの残りと過去4日間の平均パターンをもとに毎時調整します。</div>
+    <div class="sggoal-foot">※時間帯別の目標は、300万回再生までの残りと直近4日間の平均値をもとに算出中<br>※調整は反映遅れにより増減している場合もあります</div>
   </div>
 </section>
 
@@ -4117,7 +4115,7 @@ setInterval(
       const groupRows=rows.slice(i,i+6);
       const details=document.createElement('details');
       details.className='sggoal-hourgroup';details.dataset.group=String(i);
-      details.open=opened.length?opened.includes(String(i)):i===0;
+      details.open=opened.includes(String(i));
       const summary=document.createElement('summary');
       summary.textContent=String(i).padStart(2,'0')+':00 ～ '+String(groupRows[groupRows.length-1].hour+1).padStart(2,'0')+':00';
       details.appendChild(summary);
@@ -4158,7 +4156,7 @@ setInterval(
     $('sgGoalChartTitle').textContent='11/'+(7+day)+'｜時間帯別グラフ';
     if(!calc?.usable){
       $('sgGoalAvg').textContent='取得待ち';$('sgGoalChart').innerHTML='';$('sgGoalHours').replaceChildren();
-      $('sgGoalDataUpdated').textContent='保存データの読み込みを確認しています。';return;
+      return;
     }
     $('sgGoalAvg').textContent=fmt(calc.dailyAverage)+' 回';
     const start=day*24;
@@ -4168,8 +4166,6 @@ setInterval(
     }));
     renderChart(rows,config);
     renderHourTable(rows);
-    const at=new Intl.DateTimeFormat('ja-JP',{timeZone:'Asia/Tokyo',month:'numeric',day:'numeric',hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date(calc.latestMs));
-    $('sgGoalDataUpdated').textContent='保存データ '+at+' JST時点（※印は集計途中）';
   }
   function render(){renderTop();renderDetail();}
   async function load(){
@@ -4190,7 +4186,6 @@ setInterval(
             one('[data-goal-numbers="'+key+'"]').textContent='取得待ち';
             one('[data-goal-percent="'+key+'"]').textContent='—';
           }
-          if(!detail.hidden)$('sgGoalDataUpdated').textContent='目標データを取得できませんでした。';
         }
       }
     })().finally(()=>{pendingFetch=null;});
@@ -4200,7 +4195,9 @@ setInterval(
     selectedSong=song;selectedDay=null;
     previousOverflow=document.body.style.overflow;
     detail.hidden=false;document.body.style.overflow='hidden';
-    detail.scrollTop=0;renderDetail();
+    detail.scrollTop=0;
+    all('.sggoal-hourgroup',detail).forEach(group=>{group.open=false;});
+    renderDetail();
     $('sgGoalBack').focus();
   }
   function closeDetail(){
