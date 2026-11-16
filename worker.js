@@ -1,6 +1,7 @@
 
 
 const VIDEOS = [
+  { title: "Aurora", id: "pEn9DmzsQJw" },
   { title: "Slam Dunk", id: "tFTeMdvyfBs" },
   { title: "WISHES", id: "3gsVVVndUKM" },
   { title: "Moonchaser", id: "FTXk6epFQdM" },
