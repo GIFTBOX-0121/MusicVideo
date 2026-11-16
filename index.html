@@ -1442,6 +1442,20 @@
     @media(max-width:420px){.fw-grid{gap:5px}.fw-area{padding:13px 9px}.fw-tile{border-radius:7px}}
     @media(prefers-reduced-motion:reduce){.fw-tile.fw-revealed,.fw-white-star{animation:none}}
 
+
+/* Aurora/Slam Dunk graph — isolated styles */
+.mvcompare-btn{margin-top:8px;padding:7px 13px;border:1px solid #b8a7ff;border-radius:999px;background:#342656;color:white;font:inherit;font-size:12px;cursor:pointer}
+.mvcompare-overlay[hidden]{display:none!important}
+.mvcompare-overlay{position:fixed;inset:0;z-index:999999;background:#050510d9;display:flex;align-items:center;justify-content:center;padding:14px}
+.mvcompare-panel{width:min(960px,100%);max-height:92vh;overflow:auto;background:#101222;color:#f7f5ff;border:1px solid #b4a5d6;border-radius:18px;padding:18px;box-shadow:0 18px 65px #000a}
+.mvcompare-head{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.mvcompare-head h2{font-size:19px;margin:0}
+.mvcompare-close{background:transparent;color:white;border:1px solid #aaa;border-radius:50%;width:34px;height:34px;font-size:24px;cursor:pointer}
+.mvcompare-legend{display:flex;gap:20px;font-size:13px;margin:15px 0 8px}
+.mvcompare-legend span:before{content:'';display:inline-block;width:17px;height:3px;vertical-align:middle;margin-right:7px;background:var(--line)}
+.mvcompare-scroll{overflow-x:auto;overflow-y:hidden;border:1px solid #ffffff22;border-radius:9px}
+.mvcompare-scroll svg{display:block;min-width:760px;width:100%;height:auto}
+.mvcompare-note{font-size:12px;line-height:1.7;color:#c5c3d4;margin:10px 0 0}
 </style>
 </head>
 
@@ -3328,6 +3342,7 @@ function createCard(video) {
           </h2>
 
           ${createTrending(video)}
+          ${video.id === 'pEn9DmzsQJw' ? '<button type="button" class="mvcompare-btn" onclick="openMvCompare()">📈 グラフ</button>' : ''}
 
           <div>
 
@@ -3749,7 +3764,7 @@ async function loadData() {
     cards.innerHTML =
       sortedVideos
         .map(video => video.pending_aurora
-          ? `<article class="card counter-card"><div class="video-header"><img class="thumbnail" src="${getThumbnail('pEn9DmzsQJw')}" alt="Aurora" loading="lazy"><div class="video-info"><h2 class="title">Aurora</h2><div><a class="youtube-button" href="${getYouTubeUrl('pEn9DmzsQJw')}" target="_blank" rel="noopener noreferrer" onclick="handlePlayClick(event, 'pEn9DmzsQJw')">▶ YouTubeでMVを見る</a></div></div></div><div class="stats"><div class="stat"><div class="stat-label">▶ 再生回数</div><div class="stat-number">―</div></div><div class="stat"><div class="stat-label">👍 高評価</div><div class="stat-number">―</div></div></div><p style="text-align:center;color:#c9c8de;font-size:12px">データ取得待ち・取得後は自動で数字を表示</p></article>`
+          ? `<article class="card counter-card"><div class="video-header"><img class="thumbnail" src="${getThumbnail('pEn9DmzsQJw')}" alt="Aurora" loading="lazy"><div class="video-info"><h2 class="title">Aurora</h2><button type="button" class="mvcompare-btn" onclick="openMvCompare()">📈 グラフ</button><div><a class="youtube-button" href="${getYouTubeUrl('pEn9DmzsQJw')}" target="_blank" rel="noopener noreferrer" onclick="handlePlayClick(event, 'pEn9DmzsQJw')">▶ YouTubeでMVを見る</a></div></div></div><div class="stats"><div class="stat"><div class="stat-label">▶ 再生回数</div><div class="stat-number">―</div></div><div class="stat"><div class="stat-label">👍 高評価</div><div class="stat-number">―</div></div></div><p style="text-align:center;color:#c9c8de;font-size:12px">データ取得待ち・取得後は自動で数字を表示</p></article>`
           : video.pending_mv
           ? `<article class="card"><h2 class="title">Slam Dunk</h2><p style="text-align:center;padding:26px 12px;color:#c9c8de;letter-spacing:.08em">2026.10.26 21:00 公開予定</p><p style="text-align:center;color:#aeb3c9;font-size:12px">カウンター準備中</p></article>`
           : video.pending_pieces
@@ -3804,5 +3819,53 @@ setInterval(
 
 </script>
 
+
+<!-- Aurora / Slam Dunk graph: self-contained overlay -->
+<div id="mvcompareOverlay" class="mvcompare-overlay" role="dialog" aria-modal="true" aria-labelledby="mvcompareTitle" hidden>
+ <section class="mvcompare-panel">
+  <div class="mvcompare-head"><h2 id="mvcompareTitle">MV公開からの再生数比較</h2><button type="button" class="mvcompare-close" onclick="closeMvCompare()" aria-label="閉じる">×</button></div>
+  <div class="mvcompare-legend"><span style="--line:#bb8bff">Aurora</span><span style="--line:#ffa44e">Slam Dunk</span></div>
+  <div class="mvcompare-scroll" id="mvcompareScroll"><svg id="mvcompareSvg" viewBox="0 0 850 380" aria-label="再生回数比較折れ線グラフ"></svg></div>
+  <p id="mvcompareStatus" class="mvcompare-note" aria-live="polite">データを読み込み中…</p>
+  <p class="mvcompare-note">横軸：MV公開からの経過時間（時間）／縦軸：累計再生回数。記録のない時間帯は線を表示しません。10分ごとに更新。</p>
+ </section>
+</div>
+<script>
+(function(){
+ const url='https://musicvideo-views.starsx0601.workers.dev/mv-compare-history';
+ const starts={'pEn9DmzsQJw':Date.parse('2026-11-16T12:00:00Z'),'tFTeMdvyfBs':Date.parse('2026-10-26T12:00:00Z')};
+ const colors={'pEn9DmzsQJw':'#bb8bff','tFTeMdvyfBs':'#ffa44e'};
+ let refresh=null;
+ const svg=()=>document.getElementById('mvcompareSvg');
+ const status=()=>document.getElementById('mvcompareStatus');
+ const esc=x=>String(x).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ async function load(){
+  try{
+   const res=await fetch(url,{cache:'no-store'});if(!res.ok)throw Error('HTTP '+res.status);
+   const data=await res.json();if(!Array.isArray(data.series))throw Error('データ形式が異なります');
+   const series=data.series.map(s=>({id:s.video_id,pts:(s.records||[]).map(r=>({x:(Date.parse(r.recorded_at)-starts[s.video_id])/3600000,y:Number(r.views)})).filter(p=>Number.isFinite(p.x)&&Number.isFinite(p.y)&&p.x>=0&&p.x<=48).sort((a,b)=>a.x-b.x)}));
+   const maxY=Math.max(1,...series.flatMap(s=>s.pts.map(p=>p.y)));
+   const topY=Math.ceil(maxY/100000)*100000;
+   const left=78,right=20,top=22,bottom=49,W=850,H=380,iw=W-left-right,ih=H-top-bottom;
+   const xp=x=>left+x/48*iw,yp=y=>top+ih-(y/topY)*ih;
+   let out='';
+   for(let i=0;i<=5;i++){let y=top+i*ih/5,v=Math.round(topY*(1-i/5));out+=`<line x1="${left}" y1="${y}" x2="${W-right}" y2="${y}" stroke="#ffffff2c"/><text x="${left-9}" y="${y+4}" text-anchor="end" font-size="12" fill="#ddd">${esc(v.toLocaleString('ja-JP'))}</text>`}
+   for(let h=0;h<=48;h+=6){let x=xp(h);out+=`<line x1="${x}" y1="${top}" x2="${x}" y2="${H-bottom}" stroke="#ffffff18"/><text x="${x}" y="${H-bottom+22}" text-anchor="middle" font-size="12" fill="#ddd">${h}h</text>`}
+   for(const s of series){if(!s.pts.length)continue;
+    // Do not bridge missing records longer than 30 minutes.
+    let parts=[],chunk=[];for(const p of s.pts){if(chunk.length&&p.x-chunk[chunk.length-1].x>0.5){parts.push(chunk);chunk=[]}chunk.push(p)}if(chunk.length)parts.push(chunk);
+    for(const group of parts){const d=group.map((p,i)=>(i?'L':'M')+xp(p.x).toFixed(2)+' '+yp(p.y).toFixed(2)).join(' ');out+=`<path d="${d}" fill="none" stroke="${colors[s.id]||'#fff'}" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>`;if(group.length===1)out+=`<circle cx="${xp(group[0].x)}" cy="${yp(group[0].y)}" r="3" fill="${colors[s.id]||'#fff'}"/>`}
+   }
+   svg().innerHTML=out;
+   status().textContent=series.map(s=>(s.id==='pEn9DmzsQJw'?'Aurora':'Slam Dunk')+'：'+s.pts.length+'件').join(' ／ ')+'。公開時刻は両MVとも21:00（日本時間）を基準に表示。';
+  }catch(e){status().textContent='グラフの取得に失敗しました：'+e.message}
+ }
+ window.openMvCompare=function(){document.getElementById('mvcompareOverlay').hidden=false;load();clearInterval(refresh);refresh=setInterval(load,600000)};
+ window.closeMvCompare=function(){document.getElementById('mvcompareOverlay').hidden=true;clearInterval(refresh);refresh=null};
+ document.getElementById('mvcompareOverlay').addEventListener('click',e=>{if(e.target.id==='mvcompareOverlay')closeMvCompare()});
+ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!document.getElementById('mvcompareOverlay').hidden)closeMvCompare()});
+})();
+</script>
 </body>
 </html>
+21h
