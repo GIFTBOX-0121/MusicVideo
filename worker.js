@@ -1468,6 +1468,45 @@ async function getStarsGoalTrackerData(env) {
   };
 }
 
+// ========================================
+// Aurora / Slam Dunk MV比較グラフ用
+// D1の記録を読み取るだけ（既存処理は変更しない）
+// ========================================
+async function getMvCompareHistory(env) {
+  const ids = ["pEn9DmzsQJw", "tFTeMdvyfBs"];
+  const series = await Promise.all(ids.map(async (id) => {
+    const first = await env.DB.prepare(`
+      SELECT recorded_at FROM video_stats
+      WHERE video_id = ?
+      ORDER BY recorded_at ASC LIMIT 1
+    `).bind(id).first();
+
+    if (!first) {
+      return { video_id: id, first_recorded_at: null, records: [] };
+    }
+
+    // 最初の保存記録から48時間。公開時刻とは限らない。
+    const endIso = new Date(
+      new Date(first.recorded_at).getTime() + 48 * 60 * 60 * 1000
+    ).toISOString();
+    const result = await env.DB.prepare(`
+      SELECT views, recorded_at FROM video_stats
+      WHERE video_id = ? AND recorded_at >= ? AND recorded_at <= ?
+      ORDER BY recorded_at ASC LIMIT 600
+    `).bind(id, first.recorded_at, endIso).all();
+
+    return {
+      video_id: id,
+      first_recorded_at: first.recorded_at,
+      records: (result.results || []).map(row => ({
+        recorded_at: row.recorded_at,
+        views: Number(row.views)
+      }))
+    };
+  }));
+  return { updated_at: new Date().toISOString(), series };
+}
+
 export default {
 
   // ======================================
@@ -1732,6 +1771,20 @@ export default {
       } catch (error) {
         console.error("Goal tracker read error:", error);
         return new Response(JSON.stringify({ error: "Goal tracker unavailable" }), {
+          status: 500,
+          headers: getCorsHeaders()
+        });
+      }
+    }
+
+    // MV比較グラフ用: 読み取り専用API
+    if (url.pathname === "/mv-compare-history" && request.method === "GET") {
+      try {
+        const data = await getMvCompareHistory(env);
+        return new Response(JSON.stringify(data), { headers: getCorsHeaders() });
+      } catch (error) {
+        console.error("MV compare history error:", error);
+        return new Response(JSON.stringify({ error: "MV compare history unavailable" }), {
           status: 500,
           headers: getCorsHeaders()
         });
