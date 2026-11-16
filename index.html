@@ -3749,7 +3749,7 @@ async function loadData() {
     cards.innerHTML =
       sortedVideos
         .map(video => video.pending_aurora
-          ? `<article class="card"><h2 class="title">Aurora</h2><p style="text-align:center;padding:26px 12px;color:#c9c8de;letter-spacing:.08em">カウンター準備中</p></article>`
+          ? `<article class="card counter-card"><div class="video-header"><img class="thumbnail" src="${getThumbnail('pEn9DmzsQJw')}" alt="Aurora" loading="lazy"><div class="video-info"><h2 class="title">Aurora</h2><div><a class="youtube-button" href="${getYouTubeUrl('pEn9DmzsQJw')}" target="_blank" rel="noopener noreferrer" onclick="handlePlayClick(event, 'pEn9DmzsQJw')">▶ YouTubeでMVを見る</a></div></div></div><div class="stats"><div class="stat"><div class="stat-label">▶ 再生回数</div><div class="stat-number">―</div></div><div class="stat"><div class="stat-label">👍 高評価</div><div class="stat-number">―</div></div></div><p style="text-align:center;color:#c9c8de;font-size:12px">データ取得待ち・取得後は自動で数字を表示</p></article>`
           : video.pending_mv
           ? `<article class="card"><h2 class="title">Slam Dunk</h2><p style="text-align:center;padding:26px 12px;color:#c9c8de;letter-spacing:.08em">2026.10.26 21:00 公開予定</p><p style="text-align:center;color:#aeb3c9;font-size:12px">カウンター準備中</p></article>`
           : video.pending_pieces
