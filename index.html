@@ -1847,7 +1847,13 @@
      window.removeEventListener('focus',onFocus);
      document.removeEventListener('visibilitychange',onVisibility);
      reveal(tile,entry);
-     if(state.tiles.every(t=>t.opened))nextButton.hidden=false;
+     if(state.tiles.every(t=>t.opened)){
+      nextButton.hidden=false;
+      // All ten squares are complete: advance automatically after showing the final reveal.
+      window.setTimeout(()=>{
+       if(currentSheet===sheetId&&state&&state.tiles.every(t=>t.opened))newSheet();
+      },1200);
+     }
     };
     const onVisibility=()=>{if(!document.hidden)onFocus();};
     window.addEventListener('focus',onFocus);
