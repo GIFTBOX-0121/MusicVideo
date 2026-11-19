@@ -1458,6 +1458,7 @@
 .mvcompare-legend span:before{content:'';display:inline-block;width:17px;height:3px;vertical-align:middle;margin-right:7px;background:var(--line)}
 .mvcompare-scroll{overflow-x:auto;overflow-y:hidden;border:1px solid #d7d7d7;border-radius:9px;background:#fff}
 .mvcompare-scroll svg{display:block;width:2200px;max-width:none;height:auto;background:#fff}
+.mvcompare-scroll #mvcompareAxis{position:sticky;left:0;z-index:2;width:78px;min-width:78px;height:380px;margin-bottom:-380px;background:#fff;pointer-events:none}
 .mvcompare-note{font-size:12px;line-height:1.7;color:#c5c3d4;margin:10px 0 0}
 </style>
 </head>
@@ -3827,7 +3828,7 @@ setInterval(
  <section class="mvcompare-panel">
   <div class="mvcompare-head"><h2 id="mvcompareTitle">MV公開からの再生数比較</h2><button type="button" class="mvcompare-close" onclick="closeMvCompare()" aria-label="閉じる">×</button></div>
   <div class="mvcompare-legend"><span style="--line:#bb8bff">Aurora</span><span style="--line:#ffa44e">Slam Dunk</span></div>
-  <div class="mvcompare-scroll" id="mvcompareScroll"><svg id="mvcompareSvg" viewBox="0 0 2200 380" aria-label="再生回数比較折れ線グラフ"></svg></div>
+  <div class="mvcompare-scroll" id="mvcompareScroll"><svg id="mvcompareAxis" viewBox="0 0 78 380" aria-label="再生回数の縦軸"></svg><svg id="mvcompareSvg" viewBox="0 0 2200 380" aria-label="再生回数比較折れ線グラフ"></svg></div>
   <p id="mvcompareStatus" class="mvcompare-note" aria-live="polite" hidden></p>
  </section>
 </div>
@@ -3854,11 +3855,12 @@ setInterval(
    svg().setAttribute("viewBox",`0 0 ${W} ${H}`);
    svg().style.width=W+"px";
    let out='';
+   let axisOut='';
    // 1万回ごとに補助線、10万回ごとに主目盛りと数値を表示。
    for(let v=0;v<=topY;v+=10000){
     const y=yp(v),major=v%100000===0;
     out+=`<line x1="${left}" y1="${y}" x2="${W-right}" y2="${y}" stroke="${major?'#c4c4c4':'#ededed'}" stroke-width="${major?1.3:0.7}"/>`;
-    if(major)out+=`<text x="${left-9}" y="${y+4}" text-anchor="end" font-size="12" fill="#333">${esc(v.toLocaleString('ja-JP'))}</text>`;
+    if(major)axisOut+=`<text x="${left-9}" y="${y+4}" text-anchor="end" font-size="12" fill="#333">${esc(v.toLocaleString('ja-JP'))}</text>`;
    }
    for(let h=0;h<=maxHour;h+=1){let x=xp(h);out+=`<line x1="${x}" y1="${top}" x2="${x}" y2="${H-bottom}" stroke="#f0f0f0"/><text x="${x}" y="${H-bottom+22}" text-anchor="middle" font-size="12" fill="#333">${h}h</text>`}
    for(const s of series){if(!s.pts.length)continue;
@@ -3869,6 +3871,7 @@ setInterval(
     if(s.pts.length===1)out+=`<circle cx="${xp(s.pts[0].x)}" cy="${yp(s.pts[0].y)}" r="3" fill="${colors[s.id]||'#777'}"/>`;
    }
    svg().innerHTML=out;
+   document.getElementById('mvcompareAxis').innerHTML=axisOut;
    if(centerOnAuroraAfterLoad){
     const aurora=series.find(s=>s.id==='pEn9DmzsQJw');
     const latestHour=aurora&&aurora.pts.length?aurora.pts[aurora.pts.length-1].x:Math.max(0,(Date.now()-starts['pEn9DmzsQJw'])/3600000);
