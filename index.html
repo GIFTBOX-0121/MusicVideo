@@ -3837,6 +3837,7 @@ setInterval(
  const starts={'pEn9DmzsQJw':Date.parse('2026-11-16T12:00:00Z'),'tFTeMdvyfBs':Date.parse('2026-10-26T12:00:00Z')};
  const colors={'pEn9DmzsQJw':'#bb8bff','tFTeMdvyfBs':'#ffa44e'};
  let refresh=null;
+ let centerOnAuroraAfterLoad=false;
  const svg=()=>document.getElementById('mvcompareSvg');
  const status=()=>document.getElementById('mvcompareStatus');
  const esc=x=>String(x).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -3868,10 +3869,17 @@ setInterval(
     if(s.pts.length===1)out+=`<circle cx="${xp(s.pts[0].x)}" cy="${yp(s.pts[0].y)}" r="3" fill="${colors[s.id]||'#777'}"/>`;
    }
    svg().innerHTML=out;
+   if(centerOnAuroraAfterLoad){
+    const aurora=series.find(s=>s.id==='pEn9DmzsQJw');
+    const latestHour=aurora&&aurora.pts.length?aurora.pts[aurora.pts.length-1].x:Math.max(0,(Date.now()-starts['pEn9DmzsQJw'])/3600000);
+    const scroll=document.getElementById('mvcompareScroll');
+    scroll.scrollLeft=Math.max(0,xp(latestHour)-scroll.clientWidth/2);
+    centerOnAuroraAfterLoad=false;
+   }
    status().textContent=series.map(s=>(s.id==='pEn9DmzsQJw'?'Aurora':'Slam Dunk')+'：'+s.pts.length+'件').join(' ／ ')+'。公開時刻は両MVとも21:00（日本時間）を基準に表示。';
   }catch(e){svg().innerHTML='<text x="85" y="80" font-size="18" fill="#a33">グラフの取得に失敗しました</text>';console.error(e)}
  }
- window.openMvCompare=function(){document.getElementById('mvcompareOverlay').hidden=false;load();clearInterval(refresh);refresh=setInterval(load,600000)};
+ window.openMvCompare=function(){document.getElementById('mvcompareOverlay').hidden=false;centerOnAuroraAfterLoad=true;load();clearInterval(refresh);refresh=setInterval(load,600000)};
  window.closeMvCompare=function(){document.getElementById('mvcompareOverlay').hidden=true;clearInterval(refresh);refresh=null};
  document.getElementById('mvcompareOverlay').addEventListener('click',e=>{if(e.target.id==='mvcompareOverlay')closeMvCompare()});
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!document.getElementById('mvcompareOverlay').hidden)closeMvCompare()});
