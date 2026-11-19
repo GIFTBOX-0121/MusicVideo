@@ -1475,33 +1475,29 @@ async function getStarsGoalTrackerData(env) {
 async function getMvCompareHistory(env) {
   const ids = ["pEn9DmzsQJw", "tFTeMdvyfBs"];
   const series = await Promise.all(ids.map(async (id) => {
-    const first = await env.DB.prepare(`
-      SELECT recorded_at FROM video_stats
-      WHERE video_id = ?
-      ORDER BY recorded_at ASC LIMIT 1
-    `).bind(id).first();
-
-    if (!first) {
-      return { video_id: id, first_recorded_at: null, records: [] };
-    }
-
-    // 最初の保存記録から48時間。公開時刻とは限らない。
-    const endIso = new Date(
-      new Date(first.recorded_at).getTime() + 48 * 60 * 60 * 1000
-    ).toISOString();
-    const result = await env.DB.prepare(`
-      SELECT views, recorded_at FROM video_stats
-      WHERE video_id = ? AND recorded_at >= ? AND recorded_at <= ?
-      ORDER BY recorded_at ASC LIMIT 600
-    `).bind(id, first.recorded_at, endIso).all();
-
-    return {
-      video_id: id,
-      first_recorded_at: first.recorded_at,
-      records: (result.results || []).map(row => ({
+    // D1の1回あたりの取得件数制限を避け、全保存履歴を順次取得する。
+    const records = [];
+    const pageSize = 500;
+    let offset = 0;
+    while (true) {
+      const result = await env.DB.prepare(`
+        SELECT views, recorded_at FROM video_stats
+        WHERE video_id = ?
+        ORDER BY recorded_at ASC
+        LIMIT ? OFFSET ?
+      `).bind(id, pageSize, offset).all();
+      const rows = result.results || [];
+      records.push(...rows.map(row => ({
         recorded_at: row.recorded_at,
         views: Number(row.views)
-      }))
+      })));
+      if (rows.length < pageSize) break;
+      offset += rows.length;
+    }
+    return {
+      video_id: id,
+      first_recorded_at: records[0]?.recorded_at || null,
+      records
     };
   }));
   return { updated_at: new Date().toISOString(), series };
