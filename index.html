@@ -1479,6 +1479,11 @@
 #stpCards .stp-info{display:flex;justify-content:space-between;align-items:center;gap:3px;color:#577e99;font-size:9px;font-weight:800;margin-top:6px}
 #stpCards .stp-rail{position:relative;width:100%;height:12px;background:#bcdbe9;border:1px solid #fff9;border-radius:99px;overflow:hidden}
 #stpCards .stp-fill{position:absolute;inset:0 auto 0 0;background:linear-gradient(90deg,#79cce7,#49a7d2);width:0;border-radius:inherit;transition:width .5s ease}
+
+/* Aurora cumulative target rail: the same styling as milestone rows. */
+#stpCards .stp-card-aurora .stp-rail{overflow:visible}
+#stpCards .stp-card-aurora .stp-today{background:linear-gradient(90deg,#d6f4ff,#fff);box-shadow:0 0 6px #90cee8,0 0 10px #e5fbff}
+#stpCards .stp-card-aurora .stp-spark{box-shadow:0 0 5px 2px #8bcce8,0 0 9px 3px #d8f8ff}
 #stpCards .stp-emoji-list{display:flex;flex-direction:column;justify-content:center;gap:5px;flex:1;min-height:0;padding-top:5px}
 #stpCards .stp-emoji-row{display:flex;align-items:center;gap:7px;min-height:9px}
 #stpCards .stp-emoji{font-size:11px;line-height:1;flex:none;width:20px;text-align:center}
@@ -1651,7 +1656,7 @@
         <span id="stpPhaseLabel" class="stp-sub">11/22までに200万回</span>
         <span class="stp-aurora-bottom">
           <span id="stpDayNumbers" class="stp-daily" style="display:block">取得中…</span>
-          <span class="stp-rail" style="display:block"><span id="stpDayFill" class="stp-fill"></span></span>
+          <span class="stp-rail" style="display:block"><span id="stpDayFill" class="stp-fill"></span><span id="stpDayToday" class="stp-today"></span><span id="stpDaySpark" class="stp-spark"></span></span>
           <span class="stp-info"><span id="stpDayCaption">今日の目標進捗</span><span id="stpDayPercent">—</span></span>
         </span>
       </button>
@@ -3992,11 +3997,10 @@ setInterval(
   <div id="stpAuroraDetail" hidden>
    <div class="stp-box"><div class="stp-summary"><div><div id="stpDeadline" class="stp-summary-label"></div><div class="stp-summary-label">目標までの残り</div></div><div id="stpRemaining" class="stp-summary-big">—</div></div></div>
    <div class="stp-box"><div class="stp-title-row"><span>時間帯別グラフ</span><select id="stpDate" class="stp-select" aria-label="グラフの日付を選択"></select></div>
-    <div class="stp-legend"><span class="stp-legend-item"><i class="stp-legend-key"></i>過去平均</span><span class="stp-legend-item"><i class="stp-legend-key actual"></i>実績</span><span class="stp-legend-item"><i class="stp-legend-key goal"></i>目標</span></div>
-    <div class="stp-chart-scroller"><svg id="stpGraph" class="stp-chart-svg" role="img" aria-label="1時間ごとの過去平均、目標、実績"></svg></div>
+    <div class="stp-legend"><span class="stp-legend-item"><i class="stp-legend-key"></i>前日</span><span class="stp-legend-item"><i class="stp-legend-key actual"></i>実績</span><span class="stp-legend-item"><i class="stp-legend-key goal"></i>目標</span></div>
+    <div class="stp-chart-scroller"><svg id="stpGraph" class="stp-chart-svg" role="img" aria-label="1時間ごとの前日実績、目標、当日実績"></svg></div>
    </div>
    <div class="stp-box"><div class="stp-title-row">時間別データ</div><div id="stpHourGroups"></div></div>
-   <p class="stp-note">※時間帯別の目標は、残り再生数と直近4日間の時間帯別平均値をもとに算出中<br>※調整や反映の遅れにより増減している場合もあります</p>
   </div>
   <div id="stpKiribanDetail" class="stp-box" hidden><div id="stpLargeRows"></div><div class="stp-legend-kiriban">✦ 明るい部分は今日0:00以降に伸びた再生数</div></div>
  </div>
@@ -4051,22 +4055,61 @@ setInterval(
     const rail=makeRail();row.append(icon,rail);$('stpMiniRows').append(row);
     miniById.set(id,rail);
   }
+  function finiteViews(value){
+    return value!==null&&value!==undefined&&value!==''&&Number.isFinite(Number(value))?Number(value):null;
+  }
+  function phaseGoal(){
+    // JST 11/23 switches from the 2-million target to the 10-million target.
+    const day=new Date(Date.now()+9*3600000).toISOString().slice(0,10);
+    return day<'2026-11-23'?{phase:'first',goal:2000000}:{phase:'tenmillion',goal:10000000};
+  }
   function renderTop(){
     if(!topPayload)return;
     const aurora=topPayload.summary||{};
-    const phase=aurora.phase==='first';
-    $('stpPhaseLabel').textContent=phase?'11/22までに200万回':'12/30 17時までに1,000万回';
-    const actual=aurora.daily_actual,target=aurora.daily_target;
-    const valid=Number.isFinite(actual)&&Number.isFinite(target);
-    $('stpDayNumbers').textContent=valid?N(actual)+' / '+N(target):'集計中…';
-    $('stpDayCaption').textContent=aurora.daily_partial?'設定後の目標進捗':'今日の目標進捗';
-    const percent=valid?(target===0?(actual>0?100:0):actual/target*100):null;
-    $('stpDayFill').style.width=percent===null?'0%':clamp(percent,0,100)+'%';
-    $('stpDayPercent').textContent=percent===null?'—':Math.round(percent)+'%';
     const mapped=new Map((topPayload.milestones||[]).map(m=>[m.id,m]));
+    const selected=phaseGoal();
+    const phase=selected.phase==='first';
+    $('stpPhaseLabel').textContent=phase?'11/22までに200万回':'12/30 17時までに1,000万回';
+    $('stpDayCaption').textContent='今日 0:00 起点';
+    const actual=finiteViews(aurora.daily_actual);
+    const goal=finiteViews(aurora.daily_target);
+    const fill=$('stpDayFill'),today=$('stpDayToday'),spark=$('stpDaySpark');
+    // Do not turn a missing daily goal into 0% or display cumulative lifetime views.
+    if(actual===null||goal===null){
+      $('stpDayNumbers').textContent=actual===null?'今日の実績を取得中…':N(actual)+' / 目標計算中';
+      fill.style.width='0%';today.style.left='0%';today.style.width='0%';spark.style.display='none';
+      $('stpDayPercent').textContent='—';
+    }else{
+      $('stpDayNumbers').textContent=N(actual)+' / '+N(goal);
+      const percent=goal>0?clamp(actual/goal*100,0,100):100;
+      fill.style.width='0%';
+      today.style.left='0%';today.style.width=percent+'%';
+      spark.style.display=actual>0?'block':'none';
+      spark.style.left=clamp(percent,1,99)+'%';
+      $('stpDayPercent').textContent=percent.toFixed(1)+'%';
+    }
     for(const [id] of SONGS)paintRail(miniById.get(id),mapped.get(id));
     if(mode==='kiriban')renderKiriban();
     if(mode==='aurora'&&detailPayload)renderAurora();
+  }
+  function makeFallbackFromExistingStats(data){
+    const videos=Array.isArray(data?.videos)?data.videos:[];
+    const byId=new Map(videos.map(v=>[v.id,v]));
+    const milestones=SONGS.map(([id,name,emoji])=>{
+      const video=byId.get(id);
+      const views=finiteViews(video?.views);
+      const minimum=id==='FKtMzDOV08M'?3000000:id==='Nk3b5KnL4hg'?6000000:1000000;
+      const goal=views===null?null:Math.max(minimum,(Math.floor(views/1000000)+1)*1000000);
+      const base=goal===null?null:Math.max(0,goal-1000000);
+      // This API starts the daily total at the first saved record after midnight,
+      // which may be slightly later than 00:00 JST. Never invent a midnight value.
+      const change=finiteViews(video?.today_change?.views);
+      const todayStart=views!==null&&change!==null?Math.min(views,Math.max(0,views-change)):null;
+      return {id,name,emoji,views,goal,base,day_start_views:todayStart,today_delta:change};
+    });
+    const state=phaseGoal();
+    return {summary:{phase:state.phase,goal:state.goal,views:byId.get('pEn9DmzsQJw')?.views??null,remaining:null,
+      daily_actual:finiteViews(byId.get('pEn9DmzsQJw')?.today_change?.views),daily_target:null},milestones};
   }
   function renderKiriban(){
     const wrap=$('stpLargeRows');wrap.replaceChildren();
@@ -4086,7 +4129,7 @@ setInterval(
   function renderChart(rows){
     const graph=$('stpGraph');graph.replaceChildren();
     const W=960,L=63,R=18,T=25,B=40,PH=330,H=T+PH+B;
-    const high=Math.max(1,...rows.flatMap(r=>[r.average||0,r.goal||0,r.actual||0]));
+    const high=Math.max(1,...rows.flatMap(r=>[r.previous_day_actual||0,r.goal||0,r.actual||0]));
     const candidate=[100,200,500,1000,2000,5000,10000,20000,50000,100000,200000,500000];
     const tick=candidate.find(v=>v>=high/5)||Math.ceil(high/500000/5)*500000;
     const ymax=Math.max(tick*5,1);
@@ -4102,10 +4145,11 @@ setInterval(
       const row=rows.find(r=>r.hour===hour),cx=L+(hour+.5)*xw;
       graph.append(svgEl('text',{x:cx,y:H-16,'text-anchor':'middle','font-size':10,fill:'#657c92'},String(hour).padStart(2,'0')));
       if(!row)continue;
-      if(Number.isFinite(row.average)){
-        const height=Math.max(0,T+PH-y(row.average));
-        const rect=svgEl('rect',{x:cx-14,y:y(row.average),width:12,height,rx:1.3,fill:'#a5b2c3'});
-        rect.append(svgEl('title',{},`${hour}時 過去平均 ${N(Math.round(row.average))}回`));graph.append(rect);
+      // The previous day's saved view growth in the matching 1-hour window.
+      if(Number.isFinite(row.previous_day_actual)){
+        const height=Math.max(0,T+PH-y(row.previous_day_actual));
+        const rect=svgEl('rect',{x:cx-14,y:y(row.previous_day_actual),width:12,height,rx:1.3,fill:'#a5b2c3'});
+        rect.append(svgEl('title',{},`${hour}時 前日実績 ${N(row.previous_day_actual)}回`));graph.append(rect);
       }
       if(Number.isFinite(row.actual)){
         const height=Math.max(0,T+PH-y(row.actual));
@@ -4114,7 +4158,7 @@ setInterval(
       }
       if(Number.isFinite(row.goal)){
         const yy=y(row.goal);
-        const line=svgEl('line',{x1:cx-4,y1:yy,x2:cx+19,y2:yy,stroke:'#42bade','stroke-width':3.5,'stroke-linecap':'round'});
+        const line=svgEl('line',{x1:cx-12,y1:yy,x2:cx+14,y2:yy,stroke:'#42bade','stroke-width':3.5,'stroke-linecap':'round'});
         line.append(svgEl('title',{},`${hour}時 目標 ${N(row.goal)}回`));graph.append(line);
       }
     }
@@ -4131,16 +4175,16 @@ setInterval(
       const scroll=document.createElement('div');scroll.className='stp-hour-scroll';
       const table=document.createElement('table');table.className='stp-hour-table';
       const thead=document.createElement('thead'),heading=document.createElement('tr');
-      for(const title of ['時間','過去平均','目標','実績','±差分']){const cell=document.createElement('th');cell.textContent=title;heading.append(cell);}
+      for(const title of ['時間','前日','目標','実績','±差分']){const cell=document.createElement('th');cell.textContent=title;if(title==='前日')cell.title='選択した日の前日・同じ時間帯の再生増加数';heading.append(cell);}
       thead.append(heading);table.append(thead);
       const tbody=document.createElement('tbody');
       for(const r of group){
         const tr=document.createElement('tr');
         const diff=r.state==='complete'&&Number.isFinite(r.goal)&&Number.isFinite(r.actual)?r.actual-r.goal:null;
         const values=[String(r.hour).padStart(2,'0')+':00',
-          r.average==null?'—':N(Math.round(r.average)),
+          r.previous_day_actual==null?'—':N(r.previous_day_actual),
           r.goal==null?'—':N(r.goal),
-          r.actual==null?'—':N(r.actual)+(r.state==='active'?'※':''),
+          r.actual==null?'—':N(r.actual),
           diff===null?'—':(diff>0?'+':'')+N(diff)];
         values.forEach((v,i)=>{const cell=document.createElement('td');cell.textContent=v;
           if(i===4&&diff!==null)cell.className=diff>=0?'stp-plus':'stp-minus';tr.append(cell);});
@@ -4175,8 +4219,18 @@ setInterval(
         const response=await fetch(ROOT+'/stars-progress?t='+Date.now(),{cache:'no-store'});
         if(!response.ok)throw new Error('HTTP '+response.status);
         const data=await response.json();topPayload=data;renderTop();
-      }catch(error){console.warn('STARS progress:',error);
-        if(!topPayload)$('stpDayNumbers').textContent='取得できませんでした';
+      }catch(error){
+        console.warn('STARS progress: using existing statistics endpoint as fallback:',error);
+        // The original stats API already supplies the current Aurora views.
+        // Keep the cumulative bar functional if the new route isn't available yet.
+        try{
+          const fallback=await fetch(ROOT+'/?t='+Date.now(),{cache:'no-store'});
+          if(!fallback.ok)throw new Error('HTTP '+fallback.status);
+          topPayload=makeFallbackFromExistingStats(await fallback.json());renderTop();
+        }catch(fallbackError){
+          console.warn('STARS stats fallback:',fallbackError);
+          if(!topPayload)$('stpDayNumbers').textContent='取得できませんでした';
+        }
       }
     })().finally(()=>{pendingTop=null});return pendingTop;
   }
