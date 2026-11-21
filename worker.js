@@ -1503,6 +1503,240 @@ async function getMvCompareHistory(env) {
   return { updated_at: new Date().toISOString(), series };
 }
 
+/* ================================================================
+   STARS BASE / Aurora 2026 milestone goals (isolated addition)
+   Existing routes, daily statistics, and /goal-tracker remain intact.
+   Only the new starsbase_aurora_goal_hours table is written.
+   ================================================================ */
+const STP_HOUR = 3600000;
+const STP_JST = 9 * STP_HOUR;
+const STP_AURORA = 'pEn9DmzsQJw';
+const STP_PHASES = [
+  {key: 'first', start: Date.parse('2026-11-21T00:00:00+09:00'), end: Date.parse('2026-11-23T00:00:00+09:00'), goal: 2000000, basis: null, deadline: '2026-11-22T23:59:59+09:00'},
+  {key: 'tenmillion', start: Date.parse('2026-11-23T00:00:00+09:00'), end: Date.parse('2026-12-30T17:00:00+09:00'), goal: 10000000, basis: 2000000, deadline: '2026-12-30T17:00:00+09:00'}
+];
+const STP_MILESTONES = [
+  {id:'pEn9DmzsQJw', name:'Aurora', emoji:'🌌', minimum:1000000},
+  {id:'tFTeMdvyfBs', name:'SlamDunk', emoji:'🏀', minimum:1000000},
+  {id:'zbSQaKFjyXI', name:"Drivin' My Life", emoji:'🚗', minimum:1000000},
+  {id:'FTXk6epFQdM', name:'Moonchaser', emoji:'🌕', minimum:1000000},
+  {id:'-Fhuw0VzelM', name:'StarWish', emoji:'💫', minimum:1000000},
+  {id:'FKtMzDOV08M', name:'Green Light', emoji:'🚥', minimum:3000000},
+  {id:'Nk3b5KnL4hg', name:'USOTSUKI', emoji:'🦋', minimum:6000000}
+];
+let stpSchemaPromise = null;
+async function stpSchema(env) {
+  if (!stpSchemaPromise) {
+    stpSchemaPromise = env.DB.prepare(`
+      CREATE TABLE IF NOT EXISTS starsbase_aurora_goal_hours (
+        hour_start INTEGER PRIMARY KEY,
+        phase TEXT NOT NULL,
+        target_delta INTEGER NOT NULL,
+        average_at_freeze REAL,
+        baseline_views INTEGER NOT NULL,
+        baseline_at TEXT NOT NULL,
+        created_at TEXT NOT NULL
+      )
+    `).run().catch(error => { stpSchemaPromise = null; throw error; });
+  }
+  await stpSchemaPromise;
+}
+function stpJstDate(ms) { return new Date(ms + STP_JST).toISOString().slice(0,10); }
+function stpJstDay(ms) { return Date.parse(stpJstDate(ms)+'T00:00:00+09:00'); }
+function stpJstHour(ms) { return Math.floor((ms + STP_JST)/STP_HOUR)%24; }
+function stpHourFloor(ms) { return Math.floor(ms/STP_HOUR)*STP_HOUR; }
+function stpPhaseAt(ms) { return STP_PHASES.find(p=>ms>=p.start&&ms<p.end)||null; }
+function stpHourlyKey(ms) {
+  const d = new Date(ms + STP_JST).toISOString();
+  return d.slice(0,10)+' '+d.slice(11,13);
+}
+async function stpLatest(env,id) {
+  const row=await env.DB.prepare('SELECT views,recorded_at FROM video_stats WHERE video_id=? ORDER BY recorded_at DESC LIMIT 1').bind(id).first();
+  return row?{views:Number(row.views),recorded_at:row.recorded_at}:null;
+}
+async function stpHourFirst(env,start) {
+  const result=await env.DB.prepare(`
+    WITH ranked AS (
+      SELECT views,recorded_at, strftime('%Y-%m-%d %H',recorded_at,'+9 hours') AS hour_jst,
+      ROW_NUMBER() OVER(PARTITION BY strftime('%Y-%m-%d %H',recorded_at,'+9 hours') ORDER BY recorded_at ASC) AS rn
+      FROM video_stats WHERE video_id=? AND recorded_at>=?
+    )
+    SELECT hour_jst,views,recorded_at FROM ranked WHERE rn=1 ORDER BY hour_jst
+  `).bind(STP_AURORA,new Date(start).toISOString()).all();
+  const map=new Map();
+  for(const r of result.results||[]) {
+    const ms=Date.parse(r.hour_jst.replace(' ','T')+':00:00+09:00');
+    if(Number.isFinite(ms))map.set(ms,{views:Number(r.views),recorded_at:r.recorded_at});
+  }
+  return map;
+}
+function stpHourAverage(hourMap,referenceDay) {
+  const out=[];
+  // Four most recent complete JST dates, not the date currently in progress.
+  for(let h=0;h<24;h++) {
+    const samples=[];
+    for(let daysBack=1;daysBack<=9&&samples.length<4;daysBack++) {
+      const start=referenceDay-daysBack*24*STP_HOUR+h*STP_HOUR;
+      const a=hourMap.get(start),b=hourMap.get(start+STP_HOUR);
+      if(a&&b&&b.views>=a.views)samples.push(b.views-a.views);
+    }
+    out.push(samples.length?samples.reduce((a,b)=>a+b,0)/samples.length:null);
+  }
+  return out;
+}
+function stpWeight(avg,h) {
+  // No sample: share weight equally rather than invent an observed average.
+  const known=avg.filter(x=>Number.isFinite(x)&&x>0);
+  const fallback=known.length?known.reduce((a,b)=>a+b,0)/known.length:1;
+  return Math.max(1,Number.isFinite(avg[h])&&avg[h]>0?avg[h]:fallback);
+}
+function stpAllocate(need,slots,avg,fractions=null) {
+  if(!slots.length)return new Map();
+  need=Math.max(0,Math.round(need));
+  const weighted=slots.map((slot,i)=>stpWeight(avg,stpJstHour(slot))*(fractions?fractions[i]:1));
+  const sum=weighted.reduce((a,b)=>a+b,0);
+  const raw=weighted.map(w=>sum>0?need*w/sum:need/slots.length);
+  const values=raw.map(Math.floor);
+  let extra=need-values.reduce((a,b)=>a+b,0);
+  const remainders=raw.map((v,i)=>({i,r:v-values[i]})).sort((a,b)=>b.r-a.r||a.i-b.i);
+  for(let k=0;k<extra;k++)values[remainders[k].i]++;
+  return new Map(slots.map((s,i)=>[s,values[i]]));
+}
+async function stpFrozen(env) {
+  const result=await env.DB.prepare('SELECT hour_start,phase,target_delta,average_at_freeze,baseline_views,baseline_at FROM starsbase_aurora_goal_hours WHERE hour_start>=? AND hour_start<? ORDER BY hour_start').bind(STP_PHASES[0].start,STP_PHASES[1].end).all();
+  return new Map((result.results||[]).map(r=>[Number(r.hour_start),{
+    phase:r.phase,target:Number(r.target_delta),average:r.average_at_freeze==null?null:Number(r.average_at_freeze),
+    baseline:Number(r.baseline_views),baseline_at:r.baseline_at
+  }]));
+}
+async function stpFreezeCurrent(env,latest,hourMap) {
+  if(!latest)return;
+  const now=Date.now(),hour=stpHourFloor(now),phase=stpPhaseAt(hour);
+  if(!phase)return;
+  // Never freeze a goal from an old snapshot; it must belong to the active hour.
+  const measured=Date.parse(latest.recorded_at);
+  if(!(measured>=hour&&measured<=now+60000))return;
+  const found=await env.DB.prepare('SELECT hour_start FROM starsbase_aurora_goal_hours WHERE hour_start=?').bind(hour).first();
+  if(found)return;
+  const avg=stpHourAverage(hourMap,stpJstDay(now));
+  const remaining=[];
+  for(let slot=hour;slot<phase.end;slot+=STP_HOUR)remaining.push(slot);
+  const fractions=remaining.map((slot,i)=>i===0?Math.max(.00001,(slot+STP_HOUR-now)/STP_HOUR):1);
+  const allocation=stpAllocate(phase.goal-latest.views,remaining,avg,fractions);
+  await env.DB.prepare(`
+    INSERT OR IGNORE INTO starsbase_aurora_goal_hours
+      (hour_start,phase,target_delta,average_at_freeze,baseline_views,baseline_at,created_at)
+    VALUES (?,?,?,?,?,?,?)
+  `).bind(hour,phase.key,allocation.get(hour)||0,avg[stpJstHour(hour)],latest.views,latest.recorded_at,new Date().toISOString()).run();
+}
+function stpProjection(now,latest,hourMap,frozen) {
+  const result=new Map();
+  for(const [hour,record] of frozen)result.set(hour,record.target);
+  const averageToday=stpHourAverage(hourMap,stpJstDay(now));
+  const currentHour=stpHourFloor(now);
+  for(const phase of STP_PHASES) {
+    if(now>=phase.end)continue;
+    const slots=[];
+    for(let slot=phase.start;slot<phase.end;slot+=STP_HOUR) {
+      if(slot>currentHour&&!frozen.has(slot))slots.push(slot);
+    }
+    let need=0;
+    if(now<phase.start)need=phase.goal-phase.basis;
+    else if(latest) {
+      const current=frozen.get(currentHour);
+      const actualThisHour=current?Math.max(0,latest.views-current.baseline):0;
+      const pending=current?Math.max(0,current.target-actualThisHour):0;
+      need=Math.max(0,phase.goal-latest.views-pending);
+    }
+    const allocations=stpAllocate(need,slots,averageToday);
+    for(const [hour,delta] of allocations)result.set(hour,delta);
+  }
+  return result;
+}
+async function stpCore(env,detailed) {
+  await stpSchema(env);
+  const now=Date.now();
+  const latest=await stpLatest(env,STP_AURORA);
+  const hourly=await stpHourFirst(env,detailed?Date.parse('2026-11-16T00:00:00+09:00'):stpJstDay(now)-10*24*STP_HOUR);
+  await stpFreezeCurrent(env,latest,hourly);
+  const frozen=await stpFrozen(env);
+  const projected=stpProjection(now,latest,hourly,frozen);
+  const phase=stpPhaseAt(now)|| (now>=STP_PHASES[1].end?STP_PHASES[1]:STP_PHASES[0]);
+  const day=stpJstDay(now),hour=stpHourFloor(now);
+  let dailyTarget=0,complete=true;
+  for(let t=day;t<Math.min(day+24*STP_HOUR,phase.end);t+=STP_HOUR) {
+    if(!projected.has(t)){complete=false;continue;}
+    dailyTarget+=projected.get(t);
+  }
+  // A mid-day initial deployment cannot invent earlier unrecorded targets.
+  const frozenToday=[...frozen].filter(([t])=>t>=day&&t<=hour).sort((a,b)=>a[0]-b[0]);
+  const first=hourly.get(day);
+  const midnight=first?first.views:null;
+  let dailyActual=latest&&midnight!==null?Math.max(0,latest.views-midnight):null;
+  if(!complete&&latest&&frozenToday.length)dailyActual=Math.max(0,latest.views-frozenToday[0][1].baseline);
+  const summary={
+    now:new Date(now).toISOString(),video_id:STP_AURORA,views:latest?.views??null,recorded_at:latest?.recorded_at??null,
+    phase:phase.key,goal:phase.goal,deadline_jst:phase.deadline,
+    daily_target:dailyTarget,daily_actual:dailyActual,daily_partial:!complete,
+    remaining:latest?Math.max(0,phase.goal-latest.views):null
+  };
+  if(!detailed)return {summary};
+  const rows=[];
+  for(let t=STP_PHASES[0].start;t<STP_PHASES[1].end;t+=STP_HOUR){
+    const dayStart=stpJstDay(t);
+    const avg=stpHourAverage(hourly,Math.min(dayStart,stpJstDay(now)))[stpJstHour(t)];
+    const fixed=frozen.get(t);
+    const beginning=hourly.get(t),ending=hourly.get(t+STP_HOUR);
+    let actual=null,state='future';
+    if(t+STP_HOUR<=now) {
+      if(fixed&&ending)actual=Math.max(0,ending.views-fixed.baseline);
+      else if(beginning&&ending)actual=Math.max(0,ending.views-beginning.views);
+      state='complete';
+    } else if(t<=now&&latest) {
+      if(fixed)actual=Math.max(0,latest.views-fixed.baseline);
+      else if(beginning)actual=Math.max(0,latest.views-beginning.views);
+      state='active';
+    }
+    rows.push({date:stpJstDate(t),hour:stpJstHour(t),phase:stpPhaseAt(t)?.key||'',
+      average:fixed?.average??avg,goal:projected.has(t)?projected.get(t):null,
+      actual,state,locked:!!fixed});
+  }
+  return {summary,rows};
+}
+async function stpProgress(env) {
+  const [tracker,latestItems]=await Promise.all([
+    stpCore(env,false),Promise.all(STP_MILESTONES.map(x=>stpLatest(env,x.id)))
+  ]);
+  const midnight=stpJstDay(Date.now());
+  const around=await env.DB.prepare(`
+    SELECT video_id,views,recorded_at FROM video_stats
+    WHERE recorded_at>=? AND recorded_at<=? ORDER BY recorded_at ASC
+  `).bind(new Date(midnight-20*60000).toISOString(),new Date(midnight+20*60000).toISOString()).all();
+  const candidates=new Map();
+  for(const r of around.results||[]) {
+    if(!STP_MILESTONES.some(s=>s.id===r.video_id))continue;
+    if(!candidates.has(r.video_id))candidates.set(r.video_id,[]);
+    candidates.get(r.video_id).push(r);
+  }
+  const milestones=STP_MILESTONES.map((song,i)=>{
+    const latest=latestItems[i],views=latest?.views??null;
+    const goal=views===null?null:Math.max(song.minimum,(Math.floor(views/1000000)+1)*1000000);
+    const base=goal===null?null:Math.max(0,goal-1000000);
+    const samples=candidates.get(song.id)||[];
+    let before=null,after=null;
+    for(const s of samples){if(Date.parse(s.recorded_at)<=midnight)before=s;else if(!after)after=s;}
+    let dayStart=null;
+    if(before&&after){const t1=Date.parse(before.recorded_at),t2=Date.parse(after.recorded_at);
+      dayStart=Math.round(Number(before.views)+(Number(after.views)-Number(before.views))*(midnight-t1)/(t2-t1));
+    } else if(after)dayStart=Number(after.views);
+    else if(before)dayStart=Number(before.views);
+    if(dayStart!==null&&views!==null)dayStart=Math.min(dayStart,views);
+    return {id:song.id,name:song.name,emoji:song.emoji,views,goal,base,
+      day_start_views:dayStart,today_delta:dayStart!==null&&views!==null?Math.max(0,views-dayStart):null};
+  });
+  return {...tracker,milestones};
+}
+
 export default {
 
   // ======================================
@@ -1755,6 +1989,26 @@ export default {
     }
 
 
+    // Aurora専用目標と7曲キリ番: isolated GET APIs.
+    if (url.pathname === '/stars-progress' && request.method === 'GET') {
+      try {
+        const result = await stpProgress(env);
+        return new Response(JSON.stringify(result), {headers:getCorsHeaders()});
+      } catch (error) {
+        console.error('STARS progress:',error);
+        return new Response(JSON.stringify({error:'Progress unavailable'}), {status:500,headers:getCorsHeaders()});
+      }
+    }
+    if (url.pathname === '/aurora-target-tracker' && request.method === 'GET') {
+      try {
+        const result = await stpCore(env,true);
+        return new Response(JSON.stringify(result), {headers:getCorsHeaders()});
+      } catch (error) {
+        console.error('Aurora goals:',error);
+        return new Response(JSON.stringify({error:'Aurora tracker unavailable'}), {status:500,headers:getCorsHeaders()});
+      }
+    }
+
     // ========================================================
     // 300万回チャレンジ専用: 既存APIとは独立した GET ルート
     // ========================================================
@@ -1809,6 +2063,13 @@ export default {
 
         ]);
 
+
+      // Cloudflareエディターが非配列と誤認する場合も、
+      // 実データを配列と検証してからループする。
+      // 既存の成功時の処理は変更しない。
+      if (!Array.isArray(currentVideos)) {
+        throw new Error("YouTube statistics must be an array");
+      }
 
       const videos = [];
 
@@ -2177,6 +2438,10 @@ export default {
           env
         );
 
+        // Freeze only Aurora's current hourly goal. Keep existing Cron safe.
+        try { await stpCore(env,false); }
+        catch (error) { console.error('Aurora goal freeze:',error); }
+
       })()
 
     );
@@ -2184,3 +2449,4 @@ export default {
   }
 
 };
+0
