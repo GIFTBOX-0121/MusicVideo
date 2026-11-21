@@ -1462,6 +1462,77 @@
 .mvcompare-chart-area .mvcompare-scroll{border:0;border-radius:0}
 .mvcompare-chart-area #mvcompareAxis{position:absolute;left:0;top:0;z-index:3;width:78px;height:460px;background:#fff;pointer-events:none}
 .mvcompare-note{font-size:12px;line-height:1.7;color:#c5c3d4;margin:10px 0 0}
+/* Aurora / Kiriban: strictly scoped addition; original selectors unchanged. */
+#stpCards,#stpOverlay{font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif}
+#stpCards *,#stpOverlay *{box-sizing:border-box}
+#stpCards{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:9px;margin:0 0 17px}
+#stpCards .stp-card{display:flex;flex-direction:column;position:relative;min-width:0;width:100%;height:140px;padding:11px 10px 10px;border:1px solid #fff8;border-radius:12px;text-align:left;font:inherit;cursor:pointer;box-shadow:0 4px 15px #0002;overflow:hidden}
+#stpCards .stp-card-aurora{background:linear-gradient(145deg,#effcff,#d0edf8 65%,#c3e3f3);color:#244c6b}
+#stpCards .stp-card-kiriban{background:linear-gradient(145deg,#f8faff,#e9eef9 65%,#dfe8f6);color:#344669}
+#stpCards .stp-head{display:flex;justify-content:space-between;align-items:center;gap:5px;min-width:0;font-size:13px;font-weight:900;line-height:1.25}
+#stpCards .stp-head-name{min-width:0;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+#stpCards .stp-arrow{font-size:13px;flex:none;color:#8194b9}
+#stpCards .stp-card-aurora .stp-arrow{color:#65a3c4}
+#stpCards .stp-sub{font-size:9px;color:#5689a4;font-weight:750;margin-top:6px;line-height:1.4}
+#stpCards .stp-aurora-bottom{margin-top:auto}
+#stpCards .stp-daily{font-size:clamp(12px,3.3vw,17px);font-weight:900;color:#2d86ad;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;letter-spacing:-.04em}
+#stpCards .stp-info{display:flex;justify-content:space-between;align-items:center;gap:3px;color:#577e99;font-size:9px;font-weight:800;margin-top:6px}
+#stpCards .stp-rail{position:relative;width:100%;height:12px;background:#bcdbe9;border:1px solid #fff9;border-radius:99px;overflow:hidden}
+#stpCards .stp-fill{position:absolute;inset:0 auto 0 0;background:linear-gradient(90deg,#79cce7,#49a7d2);width:0;border-radius:inherit;transition:width .5s ease}
+#stpCards .stp-emoji-list{display:flex;flex-direction:column;justify-content:center;gap:5px;flex:1;min-height:0;padding-top:5px}
+#stpCards .stp-emoji-row{display:flex;align-items:center;gap:7px;min-height:9px}
+#stpCards .stp-emoji{font-size:11px;line-height:1;flex:none;width:20px;text-align:center}
+#stpCards .stp-emoji-row .stp-rail{height:6px;background:#ced8ea;border:0;overflow:visible}
+#stpCards .stp-emoji-row .stp-fill{background:#829bc7}
+#stpCards .stp-today{position:absolute;top:0;bottom:0;left:0;width:0;border-radius:99px;background:linear-gradient(90deg,#d5ecff,#fff);box-shadow:0 0 6px #98bbef,0 0 10px #fff;z-index:1}
+#stpCards .stp-spark{position:absolute;display:none;top:50%;transform:translate(-50%,-50%);width:7px;height:7px;background:#fff;border-radius:50%;box-shadow:0 0 5px 2px #a4c3f4,0 0 9px 3px #c2d6fc;z-index:2;pointer-events:none}
+#stpOverlay[hidden]{display:none!important}
+#stpOverlay{position:fixed;inset:0;z-index:1600;overflow:auto;overscroll-behavior:contain;padding:15px 10px 40px;background:radial-gradient(ellipse at 20% 0%,#345474,#192e55 55%,#101b39);color:#fff}
+#stpOverlay .stp-page{max-width:700px;margin:auto}
+#stpOverlay .stp-nav{position:sticky;top:0;z-index:5;display:flex;align-items:center;justify-content:space-between;min-height:48px;gap:12px;padding:6px 4px 12px;background:#213a5b;border-radius:10px;margin-bottom:10px}
+#stpOverlay .stp-nav-title{font-size:17px;font-weight:900;line-height:1.25}
+#stpOverlay .stp-close{display:grid;place-items:center;flex:none;width:39px;height:39px;padding:0;border:2px solid #dceaff;border-radius:50%;background:#fff;color:#2a4968;cursor:pointer;font-size:22px;font-weight:900}
+#stpOverlay .stp-box{background:#fff;color:#293e58;border-radius:13px;padding:13px 12px;margin-bottom:11px}
+#stpOverlay .stp-summary{display:flex;align-items:center;justify-content:space-between;gap:12px}
+#stpOverlay .stp-summary-label{font-size:11px;color:#71829a;font-weight:700}
+#stpOverlay .stp-summary-big{font-weight:900;font-size:clamp(19px,5vw,25px);white-space:nowrap;color:#3d91b6}
+#stpOverlay .stp-title-row{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-bottom:10px;font-size:13px;font-weight:900}
+#stpOverlay .stp-select{min-width:90px;max-width:55%;font-size:12px;border:1px solid #c9d8e9;background:#f5faff;color:#2b405d;border-radius:8px;padding:7px 9px;font-weight:800}
+#stpOverlay .stp-legend{display:flex;flex-wrap:wrap;gap:12px;margin:8px 0 10px;font-size:10px;color:#65758d}
+#stpOverlay .stp-legend-item{display:flex;align-items:center;gap:5px}
+#stpOverlay .stp-legend-key{width:13px;height:8px;border-radius:2px;background:#a4b2c3}
+#stpOverlay .stp-legend-key.actual{background:#60a0d1}
+#stpOverlay .stp-legend-key.goal{width:13px;height:0;border-top:3px solid #43b9df;background:none}
+#stpOverlay .stp-chart-scroller{overflow-x:auto;border:1px solid #e0e8ef;border-radius:8px;background:#fff;scrollbar-width:thin}
+#stpOverlay .stp-chart-svg{display:block;max-width:none;background:#fff}
+#stpOverlay .stp-hourgroup{margin:7px 0;border:1px solid #e3ebf3;background:#f8faff;border-radius:9px;overflow:hidden}
+#stpOverlay .stp-hourgroup summary{list-style:none;padding:11px 13px;cursor:pointer;color:#344c69;font-weight:800;font-size:12px;display:flex;justify-content:space-between}
+#stpOverlay .stp-hourgroup summary::-webkit-details-marker{display:none}
+#stpOverlay .stp-hourgroup summary:after{content:'＋';color:#8b9bb3}
+#stpOverlay .stp-hourgroup[open] summary:after{content:'－'}
+#stpOverlay .stp-hour-scroll{overflow-x:auto}
+#stpOverlay .stp-hour-table{width:100%;min-width:390px;border-collapse:collapse;font-size:10px;font-variant-numeric:tabular-nums}
+#stpOverlay .stp-hour-table th{color:#8392a6;background:#ecf2fa;font-size:9px}
+#stpOverlay .stp-hour-table td,#stpOverlay .stp-hour-table th{border-top:1px solid #e6ecf5;text-align:right;padding:10px 5px;white-space:nowrap}
+#stpOverlay .stp-hour-table td:first-child,#stpOverlay .stp-hour-table th:first-child{text-align:left;padding-left:8px;font-weight:850}
+#stpOverlay .stp-hour-table td:nth-child(3){font-weight:850;color:#3c96c1}
+#stpOverlay .stp-plus{font-weight:900;color:#258067}
+#stpOverlay .stp-minus{font-weight:900;color:#bc596a}
+#stpOverlay .stp-note{text-align:center;font-size:10px;line-height:1.75;color:#c1d0e6;margin:15px 3px}
+#stpOverlay .stp-large-song{margin:0 0 18px}
+#stpOverlay .stp-large-meta{display:flex;align-items:baseline;justify-content:space-between;gap:7px;margin-bottom:8px;color:#394e69;font-weight:800;font-size:13px}
+#stpOverlay .stp-large-next{font-size:11px;color:#7689a4;white-space:nowrap}
+#stpOverlay .stp-large-rail{display:block;width:100%;height:17px;background:#e0e8f3;border-radius:99px;position:relative;overflow:visible}
+#stpOverlay .stp-large-rail .stp-fill{position:absolute;inset:0 auto 0 0;width:0;background:#839fc9;border-radius:99px}
+#stpOverlay .stp-large-rail .stp-today{position:absolute;top:0;bottom:0;left:0;width:0;background:linear-gradient(90deg,#e3f3ff,#fff);box-shadow:0 0 8px #a8c9ed;border-radius:99px}
+#stpOverlay .stp-large-rail .stp-spark{position:absolute;display:none;top:50%;transform:translate(-50%,-50%);width:11px;height:11px;background:#fff;border-radius:50%;box-shadow:0 0 7px 3px #9fc9ff,0 0 14px 4px #d6e6ff}
+#stpOverlay .stp-legend-kiriban{font-size:10px;color:#7d91ab;margin-top:12px}
+#stpOverlay #stpAuroraDetail[hidden],#stpOverlay #stpKiribanDetail[hidden]{display:none!important}
+@media(max-width:380px){#stpCards{gap:7px}#stpCards .stp-card{padding:10px 7px;height:138px}#stpCards .stp-head{font-size:12px}#stpCards .stp-emoji-list{gap:4px}#stpCards .stp-emoji{width:18px;font-size:10px}}
+@keyframes stpTipGlow{from{opacity:.7}to{opacity:1}}
+#stpCards .stp-spark,#stpOverlay .stp-spark{animation:stpTipGlow 1.5s ease-in-out infinite alternate}
+@media(prefers-reduced-motion:reduce){#stpCards .stp-fill{transition:none}#stpCards .stp-spark,#stpOverlay .stp-spark{animation:none}}
+
 </style>
 </head>
 
@@ -1572,6 +1643,23 @@
         <span class="random-compact-star" aria-hidden="true">★</span>
       </button>
     </div>
+
+    <!-- STARS BASE: Aurora + 7 milestones, compact isolated pair -->
+    <section id="stpCards" aria-label="Auroraとキリ番が近い楽曲の進捗">
+      <button class="stp-card stp-card-aurora" id="stpOpenAurora" type="button" aria-label="Auroraの目標詳細を開く">
+        <span class="stp-head"><span class="stp-head-name">✦ Aurora</span><span class="stp-arrow">›</span></span>
+        <span id="stpPhaseLabel" class="stp-sub">11/22までに200万回</span>
+        <span class="stp-aurora-bottom">
+          <span id="stpDayNumbers" class="stp-daily" style="display:block">取得中…</span>
+          <span class="stp-rail" style="display:block"><span id="stpDayFill" class="stp-fill"></span></span>
+          <span class="stp-info"><span id="stpDayCaption">今日の目標進捗</span><span id="stpDayPercent">—</span></span>
+        </span>
+      </button>
+      <button class="stp-card stp-card-kiriban" id="stpOpenKiriban" type="button" aria-label="7曲のキリ番進捗を拡大する">
+        <span class="stp-head"><span class="stp-head-name">✧ キリ番が近い楽曲</span><span class="stp-arrow">›</span></span>
+        <span id="stpMiniRows" class="stp-emoji-list"></span>
+      </button>
+    </section>
 
   <!-- FIRST WEEK: existing homepage, isolated from existing sections -->
   <section id="firstWeekArea" class="fw-area" hidden aria-label="FIRST WEEK">
@@ -3897,5 +3985,237 @@ setInterval(
  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!document.getElementById('mvcompareOverlay').hidden)closeMvCompare()});
 })();
 </script>
+<!-- Independent Aurora / seven-milestone detail overlay; existing dialogs untouched. -->
+<section id="stpOverlay" hidden role="dialog" aria-modal="true" aria-labelledby="stpModalTitle">
+ <div class="stp-page">
+  <div class="stp-nav"><div id="stpModalTitle" class="stp-nav-title">Aurora</div><button id="stpClose" class="stp-close" type="button" aria-label="閉じる">✕</button></div>
+  <div id="stpAuroraDetail" hidden>
+   <div class="stp-box"><div class="stp-summary"><div><div id="stpDeadline" class="stp-summary-label"></div><div class="stp-summary-label">目標までの残り</div></div><div id="stpRemaining" class="stp-summary-big">—</div></div></div>
+   <div class="stp-box"><div class="stp-title-row"><span>時間帯別グラフ</span><select id="stpDate" class="stp-select" aria-label="グラフの日付を選択"></select></div>
+    <div class="stp-legend"><span class="stp-legend-item"><i class="stp-legend-key"></i>過去平均</span><span class="stp-legend-item"><i class="stp-legend-key actual"></i>実績</span><span class="stp-legend-item"><i class="stp-legend-key goal"></i>目標</span></div>
+    <div class="stp-chart-scroller"><svg id="stpGraph" class="stp-chart-svg" role="img" aria-label="1時間ごとの過去平均、目標、実績"></svg></div>
+   </div>
+   <div class="stp-box"><div class="stp-title-row">時間別データ</div><div id="stpHourGroups"></div></div>
+   <p class="stp-note">※時間帯別の目標は、残り再生数と直近4日間の時間帯別平均値をもとに算出中<br>※調整や反映の遅れにより増減している場合もあります</p>
+  </div>
+  <div id="stpKiribanDetail" class="stp-box" hidden><div id="stpLargeRows"></div><div class="stp-legend-kiriban">✦ 明るい部分は今日0:00以降に伸びた再生数</div></div>
+ </div>
+</section>
+
+<script>
+/* STARS BASE 2026 Aurora / milestones. Entirely independent of loadData(). */
+(function initStarsNewProgress(){
+  'use strict';
+  const ROOT='https://musicvideo-views.starsx0601.workers.dev';
+  const $=id=>document.getElementById(id);
+  const N=n=>Number(n).toLocaleString('ja-JP');
+  const clamp=(v,a,b)=>Math.min(b,Math.max(a,v));
+  const SVG='http://www.w3.org/2000/svg';
+  const SONGS=[
+    ['pEn9DmzsQJw','Aurora','🌌'],['tFTeMdvyfBs','SlamDunk','🏀'],
+    ['zbSQaKFjyXI',"Drivin' My Life",'🚗'],['FTXk6epFQdM','Moonchaser','🌕'],
+    ['-Fhuw0VzelM','StarWish','💫'],['FKtMzDOV08M','Green Light','🚥'],
+    ['Nk3b5KnL4hg','USOTSUKI','🦋']
+  ];
+  const overlay=$('stpOverlay');
+  let topPayload=null,detailPayload=null,selectedDay=null,mode=null,pendingTop=null,pendingDetail=null,previousOverflow='';
+  let lastDate=new Date(Date.now()+9*3600000).toISOString().slice(0,10);
+  function svgEl(tag,attributes={},content=null){
+    const node=document.createElementNS(SVG,tag);
+    for(const [key,value] of Object.entries(attributes))node.setAttribute(key,String(value));
+    if(content!==null)node.textContent=String(content);
+    return node;
+  }
+  function makeRail(large=false){
+    const rail=document.createElement('span');rail.className=large?'stp-large-rail':'stp-rail';
+    const base=document.createElement('span');base.className='stp-fill';
+    const today=document.createElement('span');today.className='stp-today';
+    const spark=document.createElement('span');spark.className='stp-spark';
+    rail.append(base,today,spark);
+    return rail;
+  }
+  function paintRail(rail,entry){
+    if(!rail||entry?.views===null||entry?.views===undefined||entry.goal===null)return;
+    const span=Math.max(1,entry.goal-entry.base);
+    const end=clamp((entry.views-entry.base)/span*100,0,100);
+    const start=entry.day_start_views===null||entry.day_start_views===undefined?end:clamp((entry.day_start_views-entry.base)/span*100,0,end);
+    const base=rail.querySelector('.stp-fill'),today=rail.querySelector('.stp-today'),spark=rail.querySelector('.stp-spark');
+    base.style.width=start+'%';today.style.left=start+'%';today.style.width=Math.max(0,end-start)+'%';
+    const isToday=entry.today_delta!==null&&entry.today_delta>0&&entry.views>entry.base;
+    spark.style.display=isToday?'block':'none';spark.style.left=clamp(end,1,99)+'%';
+  }
+  const miniById=new Map();
+  for(const [id,name,emoji] of SONGS){
+    const row=document.createElement('span');row.className='stp-emoji-row';
+    const icon=document.createElement('span');icon.className='stp-emoji';icon.textContent=emoji;icon.title=name;
+    const rail=makeRail();row.append(icon,rail);$('stpMiniRows').append(row);
+    miniById.set(id,rail);
+  }
+  function renderTop(){
+    if(!topPayload)return;
+    const aurora=topPayload.summary||{};
+    const phase=aurora.phase==='first';
+    $('stpPhaseLabel').textContent=phase?'11/22までに200万回':'12/30 17時までに1,000万回';
+    const actual=aurora.daily_actual,target=aurora.daily_target;
+    const valid=Number.isFinite(actual)&&Number.isFinite(target);
+    $('stpDayNumbers').textContent=valid?N(actual)+' / '+N(target):'集計中…';
+    $('stpDayCaption').textContent=aurora.daily_partial?'設定後の目標進捗':'今日の目標進捗';
+    const percent=valid?(target===0?(actual>0?100:0):actual/target*100):null;
+    $('stpDayFill').style.width=percent===null?'0%':clamp(percent,0,100)+'%';
+    $('stpDayPercent').textContent=percent===null?'—':Math.round(percent)+'%';
+    const mapped=new Map((topPayload.milestones||[]).map(m=>[m.id,m]));
+    for(const [id] of SONGS)paintRail(miniById.get(id),mapped.get(id));
+    if(mode==='kiriban')renderKiriban();
+    if(mode==='aurora'&&detailPayload)renderAurora();
+  }
+  function renderKiriban(){
+    const wrap=$('stpLargeRows');wrap.replaceChildren();
+    const records=new Map((topPayload?.milestones||[]).map(v=>[v.id,v]));
+    for(const [id,name,emoji] of SONGS){
+      const entry=records.get(id);
+      const container=document.createElement('div');container.className='stp-large-song';
+      const info=document.createElement('div');info.className='stp-large-meta';
+      const title=document.createElement('span');title.textContent=emoji+' '+name;
+      const next=document.createElement('span');next.className='stp-large-next';
+      next.textContent=entry?.goal?'NEXT '+N(entry.goal/10000)+'万回':'取得中';
+      info.append(title,next);
+      const rail=makeRail(true);paintRail(rail,entry);
+      container.append(info,rail);wrap.append(container);
+    }
+  }
+  function renderChart(rows){
+    const graph=$('stpGraph');graph.replaceChildren();
+    const W=960,L=63,R=18,T=25,B=40,PH=330,H=T+PH+B;
+    const high=Math.max(1,...rows.flatMap(r=>[r.average||0,r.goal||0,r.actual||0]));
+    const candidate=[100,200,500,1000,2000,5000,10000,20000,50000,100000,200000,500000];
+    const tick=candidate.find(v=>v>=high/5)||Math.ceil(high/500000/5)*500000;
+    const ymax=Math.max(tick*5,1);
+    const xw=(W-L-R)/24,y=v=>T+PH*(1-clamp(v/ymax,0,1));
+    graph.setAttribute('viewBox',`0 0 ${W} ${H}`);graph.setAttribute('width',W);graph.setAttribute('height',H);
+    for(let i=0;i<=5;i++){
+      const value=i*tick,yy=y(value);
+      graph.append(svgEl('line',{x1:L,y1:yy,x2:W-R,y2:yy,stroke:'#e5ebf4','stroke-width':1}));
+      graph.append(svgEl('text',{x:L-8,y:yy+4,'text-anchor':'end','font-size':10,fill:'#657c92'},N(value)));
+    }
+    graph.append(svgEl('text',{x:8,y:14,'font-size':11,fill:'#657c92'},'回'));
+    for(let hour=0;hour<24;hour++){
+      const row=rows.find(r=>r.hour===hour),cx=L+(hour+.5)*xw;
+      graph.append(svgEl('text',{x:cx,y:H-16,'text-anchor':'middle','font-size':10,fill:'#657c92'},String(hour).padStart(2,'0')));
+      if(!row)continue;
+      if(Number.isFinite(row.average)){
+        const height=Math.max(0,T+PH-y(row.average));
+        const rect=svgEl('rect',{x:cx-14,y:y(row.average),width:12,height,rx:1.3,fill:'#a5b2c3'});
+        rect.append(svgEl('title',{},`${hour}時 過去平均 ${N(Math.round(row.average))}回`));graph.append(rect);
+      }
+      if(Number.isFinite(row.actual)){
+        const height=Math.max(0,T+PH-y(row.actual));
+        const rect=svgEl('rect',{x:cx+3,y:y(row.actual),width:13,height,rx:1.3,fill:'#61a2ce',opacity:row.state==='active'?.72:1});
+        rect.append(svgEl('title',{},`${hour}時 実績 ${N(row.actual)}回`));graph.append(rect);
+      }
+      if(Number.isFinite(row.goal)){
+        const yy=y(row.goal);
+        const line=svgEl('line',{x1:cx-4,y1:yy,x2:cx+19,y2:yy,stroke:'#42bade','stroke-width':3.5,'stroke-linecap':'round'});
+        line.append(svgEl('title',{},`${hour}時 目標 ${N(row.goal)}回`));graph.append(line);
+      }
+    }
+  }
+  function renderHourTable(rows){
+    const parent=$('stpHourGroups');
+    const opened=parent.dataset.day===selectedDay?new Set([...parent.querySelectorAll('details[open]')].map(d=>d.dataset.block)):new Set();
+    parent.replaceChildren();parent.dataset.day=selectedDay||'';
+    for(let h=0;h<24;h+=6){
+      const group=rows.filter(row=>row.hour>=h&&row.hour<h+6);
+      if(!group.length)continue;
+      const details=document.createElement('details');details.className='stp-hourgroup';details.dataset.block=String(h);details.open=opened.has(String(h));
+      const summary=document.createElement('summary');summary.textContent=String(h).padStart(2,'0')+':00 ～ '+String(h+6).padStart(2,'0')+':00';details.append(summary);
+      const scroll=document.createElement('div');scroll.className='stp-hour-scroll';
+      const table=document.createElement('table');table.className='stp-hour-table';
+      const thead=document.createElement('thead'),heading=document.createElement('tr');
+      for(const title of ['時間','過去平均','目標','実績','±差分']){const cell=document.createElement('th');cell.textContent=title;heading.append(cell);}
+      thead.append(heading);table.append(thead);
+      const tbody=document.createElement('tbody');
+      for(const r of group){
+        const tr=document.createElement('tr');
+        const diff=r.state==='complete'&&Number.isFinite(r.goal)&&Number.isFinite(r.actual)?r.actual-r.goal:null;
+        const values=[String(r.hour).padStart(2,'0')+':00',
+          r.average==null?'—':N(Math.round(r.average)),
+          r.goal==null?'—':N(r.goal),
+          r.actual==null?'—':N(r.actual)+(r.state==='active'?'※':''),
+          diff===null?'—':(diff>0?'+':'')+N(diff)];
+        values.forEach((v,i)=>{const cell=document.createElement('td');cell.textContent=v;
+          if(i===4&&diff!==null)cell.className=diff>=0?'stp-plus':'stp-minus';tr.append(cell);});
+        tbody.append(tr);
+      }
+      table.append(tbody);scroll.append(table);details.append(scroll);parent.append(details);
+    }
+  }
+  function renderAurora(){
+    const summary=detailPayload?.summary||topPayload?.summary;
+    if(!summary)return;
+    const phase1=summary.phase==='first';
+    $('stpDeadline').textContent=phase1?'11/22 23:59｜200万回目標':'12/30 17:00｜1,000万回目標';
+    $('stpRemaining').textContent=summary.remaining==null?'—':N(summary.remaining)+'回';
+    if(!detailPayload?.rows)return;
+    const dates=[...new Set(detailPayload.rows.map(r=>r.date))];
+    const select=$('stpDate');
+    const currentDate=new Date(Date.now()+9*3600000).toISOString().slice(0,10);
+    if(!selectedDay||!dates.includes(selectedDay))selectedDay=dates.includes(currentDate)?currentDate:dates[dates.length-1];
+    if(select.options.length!==dates.length){
+      select.replaceChildren();
+      for(const date of dates){const opt=document.createElement('option');opt.value=date;opt.textContent=date.slice(5).replace('-','/');select.append(opt);}
+    }
+    select.value=selectedDay;
+    const rows=detailPayload.rows.filter(r=>r.date===selectedDay);
+    renderChart(rows);renderHourTable(rows);
+  }
+  async function loadTop(){
+    if(pendingTop)return pendingTop;
+    pendingTop=(async()=>{
+      try{
+        const response=await fetch(ROOT+'/stars-progress?t='+Date.now(),{cache:'no-store'});
+        if(!response.ok)throw new Error('HTTP '+response.status);
+        const data=await response.json();topPayload=data;renderTop();
+      }catch(error){console.warn('STARS progress:',error);
+        if(!topPayload)$('stpDayNumbers').textContent='取得できませんでした';
+      }
+    })().finally(()=>{pendingTop=null});return pendingTop;
+  }
+  async function loadDetail(){
+    if(pendingDetail)return pendingDetail;
+    pendingDetail=(async()=>{
+      try{
+        const response=await fetch(ROOT+'/aurora-target-tracker?t='+Date.now(),{cache:'no-store'});
+        if(!response.ok)throw new Error('HTTP '+response.status);
+        detailPayload=await response.json();if(mode==='aurora')renderAurora();
+      }catch(error){console.warn('Aurora tracker:',error);
+        if(mode==='aurora'&&!detailPayload){$('stpDeadline').textContent='詳細データを取得できませんでした';$('stpGraph').replaceChildren();}
+      }
+    })().finally(()=>{pendingDetail=null});return pendingDetail;
+  }
+  function open(which){
+    mode=which;selectedDay=null;previousOverflow=document.body.style.overflow;
+    overlay.hidden=false;document.body.style.overflow='hidden';overlay.scrollTop=0;
+    $('stpModalTitle').textContent=which==='aurora'?'Aurora':'キリ番が近い楽曲';
+    $('stpAuroraDetail').hidden=which!=='aurora';$('stpKiribanDetail').hidden=which!=='kiriban';
+    if(which==='kiriban')renderKiriban();
+    else {detailPayload=null;$('stpGraph').replaceChildren();$('stpHourGroups').replaceChildren();$('stpHourGroups').dataset.day='';renderAurora();loadDetail();}
+    $('stpClose').focus();
+  }
+  function close(){overlay.hidden=true;document.body.style.overflow=previousOverflow;mode=null;}
+  $('stpOpenAurora').addEventListener('click',()=>open('aurora'));
+  $('stpOpenKiriban').addEventListener('click',()=>open('kiriban'));
+  $('stpClose').addEventListener('click',close);
+  $('stpDate').addEventListener('change',e=>{selectedDay=e.target.value;renderAurora();});
+  document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!overlay.hidden)close();});
+  loadTop();
+  setInterval(()=>{loadTop();if(mode==='aurora')loadDetail();},600000);
+  setInterval(()=>{
+    const today=new Date(Date.now()+9*3600000).toISOString().slice(0,10);
+    if(today!==lastDate){lastDate=today;loadTop();if(mode==='aurora')loadDetail();}
+  },60000);
+})();
+</script>
+
 </body>
 </html>
+0
