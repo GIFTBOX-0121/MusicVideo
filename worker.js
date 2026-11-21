@@ -1653,6 +1653,72 @@ function stpProjection(now,latest,hourMap,frozen) {
   }
   return result;
 }
+// Goal for each JST day: reconstruct the 00:00 snapshot from real D1 records,
+// then allocate the outstanding phase target across all subsequent hours.
+// The plan depends only on records before the day; it will not change as today advances.
+async function stpMidnightSnapshots(env,now) {
+  const lower=new Date(STP_PHASES[0].start-20*60000).toISOString();
+  const upper=new Date(now+20*60000).toISOString();
+  const result=await env.DB.prepare(`
+    SELECT views,recorded_at FROM video_stats
+    WHERE video_id=? AND recorded_at>=? AND recorded_at<=?
+      AND (strftime('%H:%M',recorded_at,'+9 hours')>='23:40'
+        OR strftime('%H:%M',recorded_at,'+9 hours')<='00:20')
+    ORDER BY recorded_at ASC
+  `).bind(STP_AURORA,lower,upper).all();
+  const near=new Map();
+  for(const row of result.results||[]) {
+    const ms=Date.parse(row.recorded_at);
+    if(!Number.isFinite(ms))continue;
+    const date=stpJstDay(ms);
+    const midnight=stpJstHour(ms)===23?date+24*STP_HOUR:date;
+    if(midnight<STP_PHASES[0].start||midnight>now)continue;
+    const gap=ms-midnight;
+    if(Math.abs(gap)>20*60000)continue;
+    if(!near.has(midnight))near.set(midnight,{before:null,after:null});
+    const pair=near.get(midnight);
+    const entry={views:Number(row.views),ms};
+    if(gap<=0&&(!pair.before||pair.before.ms<ms))pair.before=entry;
+    if(gap>=0&&(!pair.after||pair.after.ms>ms))pair.after=entry;
+  }
+  const resultMap=new Map();
+  for(const [midnight,{before,after}] of near){
+    let views=null;
+    if(before&&after){
+      const span=after.ms-before.ms;
+      if(span===0)views=after.views;
+      else if(span<=30*60000)views=Math.round(before.views+(after.views-before.views)*(midnight-before.ms)/span);
+    }
+    // Missing one side: use the nearest saved reading, never default to zero.
+    if(views===null&&after)views=after.views;
+    if(views===null&&before)views=before.views;
+    if(views!==null&&Number.isFinite(views))resultMap.set(midnight,Math.max(0,views));
+  }
+  return resultMap;
+}
+function stpDailyPlans(hourly,midnights,now,detailed) {
+  const result=new Map();
+  const currentDay=stpJstDay(now);
+  const startingDay=detailed?STP_PHASES[0].start:currentDay;
+  for(let day=startingDay;day<=currentDay;day+=24*STP_HOUR){
+    const phase=stpPhaseAt(day);
+    if(!phase)continue;
+    const midnight=midnights.get(day)??hourly.get(day)?.views??null;
+    if(midnight===null)continue;
+    const averages=stpHourAverage(hourly,day);
+    const future=[];
+    for(let slot=day;slot<phase.end;slot+=STP_HOUR)future.push(slot);
+    const all=stpAllocate(phase.goal-midnight,future,averages);
+    const today=new Map();
+    let dailyTarget=0;
+    for(let t=day;t<Math.min(day+24*STP_HOUR,phase.end);t+=STP_HOUR){
+      const goal=all.get(t)||0;
+      today.set(t,goal);dailyTarget+=goal;
+    }
+    result.set(day,{baseline:midnight,dailyTarget,hours:today});
+  }
+  return result;
+}
 async function stpCore(env,detailed) {
   await stpSchema(env);
   const now=Date.now();
@@ -1662,22 +1728,20 @@ async function stpCore(env,detailed) {
   const frozen=await stpFrozen(env);
   const projected=stpProjection(now,latest,hourly,frozen);
   const phase=stpPhaseAt(now)|| (now>=STP_PHASES[1].end?STP_PHASES[1]:STP_PHASES[0]);
-  const day=stpJstDay(now),hour=stpHourFloor(now);
-  let dailyTarget=0,complete=true;
-  for(let t=day;t<Math.min(day+24*STP_HOUR,phase.end);t+=STP_HOUR) {
-    if(!projected.has(t)){complete=false;continue;}
-    dailyTarget+=projected.get(t);
-  }
-  // A mid-day initial deployment cannot invent earlier unrecorded targets.
-  const frozenToday=[...frozen].filter(([t])=>t>=day&&t<=hour).sort((a,b)=>a[0]-b[0]);
-  const first=hourly.get(day);
-  const midnight=first?first.views:null;
-  let dailyActual=latest&&midnight!==null?Math.max(0,latest.views-midnight):null;
-  if(!complete&&latest&&frozenToday.length)dailyActual=Math.max(0,latest.views-frozenToday[0][1].baseline);
+  const day=stpJstDay(now);
+  // Reconstruct 00:00 from adjacent 10-minute measurements where available.
+  const snapshots=await stpMidnightSnapshots(env,now);
+  const dayPlans=stpDailyPlans(hourly,snapshots,now,detailed);
+  const plan=dayPlans.get(day);
+  const midnight=plan?.baseline??null;
+  const dailyTarget=plan?.dailyTarget??null;
+  const complete=!!plan;
+  const dailyActual=latest&&midnight!==null?Math.max(0,latest.views-midnight):null;
   const summary={
     now:new Date(now).toISOString(),video_id:STP_AURORA,views:latest?.views??null,recorded_at:latest?.recorded_at??null,
     phase:phase.key,goal:phase.goal,deadline_jst:phase.deadline,
     daily_target:dailyTarget,daily_actual:dailyActual,daily_partial:!complete,
+    day_start_views:midnight,
     remaining:latest?Math.max(0,phase.goal-latest.views):null
   };
   if(!detailed)return {summary};
@@ -1687,6 +1751,10 @@ async function stpCore(env,detailed) {
     const avg=stpHourAverage(hourly,Math.min(dayStart,stpJstDay(now)))[stpJstHour(t)];
     const fixed=frozen.get(t);
     const beginning=hourly.get(t),ending=hourly.get(t+STP_HOUR);
+    const previousStart=hourly.get(t-24*STP_HOUR);
+    const previousEnd=hourly.get(t-23*STP_HOUR);
+    const previousDayActual=previousStart&&previousEnd&&previousEnd.views>=previousStart.views
+      ?previousEnd.views-previousStart.views:null;
     let actual=null,state='future';
     if(t+STP_HOUR<=now) {
       if(fixed&&ending)actual=Math.max(0,ending.views-fixed.baseline);
@@ -1698,7 +1766,9 @@ async function stpCore(env,detailed) {
       state='active';
     }
     rows.push({date:stpJstDate(t),hour:stpJstHour(t),phase:stpPhaseAt(t)?.key||'',
-      average:fixed?.average??avg,goal:projected.has(t)?projected.get(t):null,
+      average:fixed?.average??avg,
+      previous_day_actual:previousDayActual,
+      goal:dayPlans.get(dayStart)?.hours.get(t)??(projected.has(t)?projected.get(t):null),
       actual,state,locked:!!fixed});
   }
   return {summary,rows};
