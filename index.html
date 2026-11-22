@@ -1484,6 +1484,7 @@
 #stpCards .stp-card-aurora .stp-rail{overflow:visible}
 #stpCards .stp-card-aurora .stp-today{background:linear-gradient(90deg,#d6f4ff,#fff);box-shadow:0 0 6px #90cee8,0 0 10px #e5fbff}
 #stpCards .stp-card-aurora .stp-spark{box-shadow:0 0 5px 2px #8bcce8,0 0 9px 3px #d8f8ff}
+#stpCards .stp-emoji-row[hidden]{display:none!important}
 #stpCards .stp-emoji-list{display:flex;flex-direction:column;justify-content:center;gap:5px;flex:1;min-height:0;padding-top:5px}
 #stpCards .stp-emoji-row{display:flex;align-items:center;gap:7px;min-height:9px}
 #stpCards .stp-emoji{font-size:11px;line-height:1;flex:none;width:20px;text-align:center}
@@ -4058,16 +4059,19 @@ setInterval(
   function finiteViews(value){
     return value!==null&&value!==undefined&&value!==''&&Number.isFinite(Number(value))?Number(value):null;
   }
-  function phaseGoal(){
-    // JST 11/23 switches from the 2-million target to the 10-million target.
+  function phaseGoal(views){
+    // The 10-million phase begins immediately when Aurora reaches 2 million.
     const day=new Date(Date.now()+9*3600000).toISOString().slice(0,10);
-    return day<'2026-11-23'?{phase:'first',goal:2000000}:{phase:'tenmillion',goal:10000000};
+    const reached=views!==null&&views!==undefined&&Number(views)>=2000000;
+    return reached||day>='2026-11-23'
+      ?{phase:'tenmillion',goal:10000000}
+      :{phase:'first',goal:2000000};
   }
   function renderTop(){
     if(!topPayload)return;
     const aurora=topPayload.summary||{};
     const mapped=new Map((topPayload.milestones||[]).map(m=>[m.id,m]));
-    const selected=phaseGoal();
+    const selected=phaseGoal(aurora.views);
     const phase=selected.phase==='first';
     $('stpPhaseLabel').textContent=phase?'11/22までに200万回':'12/30 17時までに1,000万回';
     $('stpDayCaption').textContent='今日 0:00 起点';
@@ -4088,7 +4092,13 @@ setInterval(
       spark.style.left=clamp(percent,1,99)+'%';
       $('stpDayPercent').textContent=percent.toFixed(1)+'%';
     }
-    for(const [id] of SONGS)paintRail(miniById.get(id),mapped.get(id));
+    for(const [id] of SONGS){
+      const entry=mapped.get(id);
+      const rail=miniById.get(id);
+      const graduated=id!=='pEn9DmzsQJw'&&entry?.goal!=null&&entry?.views!=null&&Number(entry.views)>=Number(entry.goal);
+      rail.parentElement.hidden=graduated;
+      if(!graduated)paintRail(rail,entry);
+    }
     if(mode==='kiriban')renderKiriban();
     if(mode==='aurora'&&detailPayload)renderAurora();
   }
@@ -4099,7 +4109,10 @@ setInterval(
       const video=byId.get(id);
       const views=finiteViews(video?.views);
       const minimum=id==='FKtMzDOV08M'?3000000:id==='Nk3b5KnL4hg'?6000000:1000000;
-      const goal=views===null?null:Math.max(minimum,(Math.floor(views/1000000)+1)*1000000);
+      // The fallback does not know the frozen historical thresholds for the other songs.
+      // Keep those rows visible rather than incorrectly graduating them.
+      const goal=id==='zbSQaKFjyXI'?3000000:id==='FKtMzDOV08M'?3000000:id==='Nk3b5KnL4hg'?6000000
+        :(views===null?null:Math.max(minimum,(Math.floor(views/1000000)+1)*1000000));
       const base=goal===null?null:Math.max(0,goal-1000000);
       // This API starts the daily total at the first saved record after midnight,
       // which may be slightly later than 00:00 JST. Never invent a midnight value.
@@ -4107,7 +4120,7 @@ setInterval(
       const todayStart=views!==null&&change!==null?Math.min(views,Math.max(0,views-change)):null;
       return {id,name,emoji,views,goal,base,day_start_views:todayStart,today_delta:change};
     });
-    const state=phaseGoal();
+    const state=phaseGoal(byId.get('pEn9DmzsQJw')?.views);
     return {summary:{phase:state.phase,goal:state.goal,views:byId.get('pEn9DmzsQJw')?.views??null,remaining:null,
       daily_actual:finiteViews(byId.get('pEn9DmzsQJw')?.today_change?.views),daily_target:null},milestones};
   }
@@ -4116,6 +4129,7 @@ setInterval(
     const records=new Map((topPayload?.milestones||[]).map(v=>[v.id,v]));
     for(const [id,name,emoji] of SONGS){
       const entry=records.get(id);
+      if(id!=='pEn9DmzsQJw'&&entry?.goal!=null&&entry?.views!=null&&Number(entry.views)>=Number(entry.goal))continue;
       const container=document.createElement('div');container.className='stp-large-song';
       const info=document.createElement('div');info.className='stp-large-meta';
       const title=document.createElement('span');title.textContent=emoji+' '+name;
@@ -4272,4 +4286,3 @@ setInterval(
 
 </body>
 </html>
-0
