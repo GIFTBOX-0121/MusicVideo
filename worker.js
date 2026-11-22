@@ -1611,7 +1611,7 @@ async function stpFrozen(env) {
 }
 async function stpFreezeCurrent(env,latest,hourMap) {
   if(!latest)return;
-  const now=Date.now(),hour=stpHourFloor(now),phase=stpPhaseAt(hour);
+  const now=Date.now(),hour=stpHourFloor(now),phase=latest.views>=2000000?STP_PHASES[1]:stpPhaseAt(hour);
   if(!phase)return;
   // Never freeze a goal from an old snapshot; it must belong to the active hour.
   const measured=Date.parse(latest.recorded_at);
@@ -1636,12 +1636,14 @@ function stpProjection(now,latest,hourMap,frozen) {
   const currentHour=stpHourFloor(now);
   for(const phase of STP_PHASES) {
     if(now>=phase.end)continue;
+    if(latest?.views>=2000000&&phase.key==='first')continue;
     const slots=[];
-    for(let slot=phase.start;slot<phase.end;slot+=STP_HOUR) {
+    const earlySwitch=phase.key==='tenmillion'&&latest?.views>=2000000;
+    for(let slot=(earlySwitch?currentHour+STP_HOUR:phase.start);slot<phase.end;slot+=STP_HOUR) {
       if(slot>currentHour&&!frozen.has(slot))slots.push(slot);
     }
     let need=0;
-    if(now<phase.start)need=phase.goal-phase.basis;
+    if(now<phase.start&&!earlySwitch)need=phase.goal-phase.basis;
     else if(latest) {
       const current=frozen.get(currentHour);
       const actualThisHour=current?Math.max(0,latest.views-current.baseline):0;
@@ -1696,12 +1698,15 @@ async function stpMidnightSnapshots(env,now) {
   }
   return resultMap;
 }
-function stpDailyPlans(hourly,midnights,now,detailed) {
+function stpDailyPlans(hourly,midnights,now,detailed,activePhase) {
   const result=new Map();
   const currentDay=stpJstDay(now);
   const startingDay=detailed?STP_PHASES[0].start:currentDay;
   for(let day=startingDay;day<=currentDay;day+=24*STP_HOUR){
-    const phase=stpPhaseAt(day);
+    // For the active JST day, switch *the entire daily goal and all 24 hour
+    // targets* to the 10M schedule immediately upon the recorded 2M crossing.
+    // Historical days retain their previously applicable phase.
+    const phase=day===currentDay?activePhase:stpPhaseAt(day);
     if(!phase)continue;
     const midnight=midnights.get(day)??hourly.get(day)?.views??null;
     if(midnight===null)continue;
@@ -1727,11 +1732,13 @@ async function stpCore(env,detailed) {
   await stpFreezeCurrent(env,latest,hourly);
   const frozen=await stpFrozen(env);
   const projected=stpProjection(now,latest,hourly,frozen);
-  const phase=stpPhaseAt(now)|| (now>=STP_PHASES[1].end?STP_PHASES[1]:STP_PHASES[0]);
+  const phase=latest?.views>=2000000
+    ?STP_PHASES[1]
+    :(stpPhaseAt(now)|| (now>=STP_PHASES[1].end?STP_PHASES[1]:STP_PHASES[0]));
   const day=stpJstDay(now);
   // Reconstruct 00:00 from adjacent 10-minute measurements where available.
   const snapshots=await stpMidnightSnapshots(env,now);
-  const dayPlans=stpDailyPlans(hourly,snapshots,now,detailed);
+  const dayPlans=stpDailyPlans(hourly,snapshots,now,detailed,phase);
   const plan=dayPlans.get(day);
   const midnight=plan?.baseline??null;
   const dailyTarget=plan?.dailyTarget??null;
@@ -1765,7 +1772,8 @@ async function stpCore(env,detailed) {
       else if(beginning)actual=Math.max(0,latest.views-beginning.views);
       state='active';
     }
-    rows.push({date:stpJstDate(t),hour:stpJstHour(t),phase:stpPhaseAt(t)?.key||'',
+    rows.push({date:stpJstDate(t),hour:stpJstHour(t),
+      phase:dayPlans.has(dayStart)?(dayStart===day?phase.key:stpPhaseAt(t)?.key||''):'',
       average:fixed?.average??avg,
       previous_day_actual:previousDayActual,
       goal:dayPlans.get(dayStart)?.hours.get(t)??(projected.has(t)?projected.get(t):null),
@@ -1788,9 +1796,31 @@ async function stpProgress(env) {
     if(!candidates.has(r.video_id))candidates.set(r.video_id,[]);
     candidates.get(r.video_id).push(r);
   }
+  // Freeze graduation thresholds from the saved D1 snapshot at the request time.
+  // No new table or writes; thresholds cannot jump to the next million after graduation.
+  const graduationCutoff='2026-11-22T08:29:00.000Z';
+  const graduationRows=await env.DB.prepare(`
+    SELECT s.video_id,s.views FROM video_stats s
+    INNER JOIN (
+      SELECT video_id,MAX(recorded_at) AS last_recorded
+      FROM video_stats WHERE recorded_at<=?
+      GROUP BY video_id
+    ) q ON s.video_id=q.video_id AND s.recorded_at=q.last_recorded
+  `).bind(graduationCutoff).all();
+  const graduationViews=new Map((graduationRows.results||[]).map(r=>[r.video_id,Number(r.views)]));
+  const fixedGoals={
+    'zbSQaKFjyXI':3000000,
+    'FKtMzDOV08M':3000000,
+    'Nk3b5KnL4hg':6000000
+  };
   const milestones=STP_MILESTONES.map((song,i)=>{
     const latest=latestItems[i],views=latest?.views??null;
-    const goal=views===null?null:Math.max(song.minimum,(Math.floor(views/1000000)+1)*1000000);
+    const historic=graduationViews.get(song.id);
+    const frozen=Number.isFinite(historic)
+      ?Math.max(song.minimum,(Math.floor(historic/1000000)+1)*1000000):null;
+    const goal=song.id==='pEn9DmzsQJw'
+      ?(views===null?null:Math.max(song.minimum,(Math.floor(views/1000000)+1)*1000000))
+      :(fixedGoals[song.id]??frozen);
     const base=goal===null?null:Math.max(0,goal-1000000);
     const samples=candidates.get(song.id)||[];
     let before=null,after=null;
@@ -1802,6 +1832,7 @@ async function stpProgress(env) {
     else if(before)dayStart=Number(before.views);
     if(dayStart!==null&&views!==null)dayStart=Math.min(dayStart,views);
     return {id:song.id,name:song.name,emoji:song.emoji,views,goal,base,
+      graduated:song.id!=='pEn9DmzsQJw'&&goal!==null&&views!==null&&views>=goal,
       day_start_views:dayStart,today_delta:dayStart!==null&&views!==null?Math.max(0,views-dayStart):null};
   });
   return {...tracker,milestones};
@@ -2519,4 +2550,3 @@ export default {
   }
 
 };
-0
