@@ -1,3 +1,5 @@
+
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -1541,31 +1543,46 @@
 
 /* === 10 MILLION ROADMAP: isolated addition, no existing styles overridden === */
 #aurora10mRoadmap,#aurora10mRoadmap *{box-sizing:border-box}
-#aurora10mRoadmap{font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;background:#f6f9fc;color:#315d80;border-radius:12px;padding:12px 10px;margin:0 0 17px;box-shadow:0 4px 15px #0002}
+#aurora10mRoadmap{font-family:-apple-system,BlinkMacSystemFont,"Helvetica Neue",Arial,sans-serif;background:#f6f9fc;color:#315d80;border-radius:12px;padding:8px 10px;margin:0 0 17px;box-shadow:0 4px 15px #0002}
 #aurora10mRoadmap .a10-scroll{overflow-x:auto;overscroll-behavior-x:contain;-webkit-overflow-scrolling:touch}
 #aurora10mRoadmap .a10-inner{min-width:620px}
-#aurora10mRoadmap .a10-axis{display:grid;grid-template-columns:74px repeat(8,minmax(0,1fr));gap:2px;margin-bottom:9px}
+#aurora10mRoadmap .a10-axis{display:grid;grid-template-columns:74px repeat(8,minmax(0,1fr));gap:2px;margin:0 0 2px;height:16px;align-items:center}
 #aurora10mRoadmap .a10-axis span{text-align:center;font-size:10px;font-weight:800;white-space:nowrap}
-#aurora10mRoadmap .a10-line{display:grid;grid-template-columns:74px minmax(0,1fr);align-items:center;gap:2px;margin-bottom:10px}
+#aurora10mRoadmap .a10-line{display:grid;grid-template-columns:74px minmax(0,1fr);align-items:center;gap:2px;margin:0 0 5px;min-height:28px}
 #aurora10mRoadmap .a10-name{font-size:11px;font-weight:800;white-space:nowrap}
 #aurora10mRoadmap .a10-line-body{min-width:0}
 #aurora10mRoadmap .a10-track{height:10px;border-radius:99px;background:#dfe7f2;overflow:hidden}
 #aurora10mRoadmap .a10-fill{height:100%;width:0;border-radius:99px;background:#9aabd1;transition:width .4s}
 #aurora10mRoadmap .a10-line.actual .a10-track{background:#d7ebf5}
 #aurora10mRoadmap .a10-line.actual .a10-fill{background:#4dadd3}
-#aurora10mRoadmap .a10-dates{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:2px;margin-top:5px}
+#aurora10mRoadmap .a10-dates{display:grid;grid-template-columns:repeat(8,minmax(0,1fr));gap:2px;margin-top:2px}
 #aurora10mRoadmap .a10-dates span{font-size:9px;text-align:center;white-space:nowrap;color:#7289a3}
 #aurora10mRoadmap .a10-line.actual .a10-name,#aurora10mRoadmap .a10-line.actual .a10-dates span{color:#2583a3}
-#aurora10mRoadmap .a10-bottom{border-top:1px solid #e1e7ef;padding-top:9px;margin-top:3px;display:grid;grid-template-columns:minmax(0,7fr) minmax(0,3fr);gap:8px}
-#aurora10mRoadmap .a10-status,#aurora10mRoadmap .a10-prediction{min-width:0;height:48px;border-radius:9px;padding:4px 7px;display:flex;align-items:center;justify-content:center}
+#aurora10mRoadmap .a10-bottom{border-top:1px solid #e1e7ef;padding-top:5px;margin-top:0;display:grid;grid-template-columns:minmax(0,7fr) minmax(0,3fr);gap:8px}
+#aurora10mRoadmap .a10-status,#aurora10mRoadmap .a10-prediction{min-width:0;height:32px;border-radius:9px;padding:2px 6px;display:flex;align-items:center;justify-content:center}
 #aurora10mRoadmap .a10-status{background:#eaf4ff;color:#2878b0;gap:5px;font-size:clamp(9px,2.5vw,12px);font-weight:800;text-align:center}
 #aurora10mRoadmap .a10-status.ahead{background:#fff0f0;color:#ce283b}
 #aurora10mRoadmap .a10-status span:last-child{overflow-wrap:anywhere}
 #aurora10mRoadmap .a10-status-symbol{font-size:16px;flex:none}
 #aurora10mRoadmap .a10-prediction{background:#edf4fa;flex-direction:column;gap:0;text-align:center}
-#aurora10mRoadmap .a10-prediction-label{font-size:9px;color:#69849d;font-weight:700;line-height:1.3}
-#aurora10mRoadmap .a10-prediction-date{font-size:20px;font-weight:900;color:#287fa1;line-height:1.3}
+#aurora10mRoadmap .a10-prediction-label{font-size:8px;color:#69849d;font-weight:700;line-height:1.1}
+#aurora10mRoadmap .a10-prediction-date{font-size:13px;font-weight:900;color:#287fa1;line-height:1.1}
 
+
+
+#aurora10mRoadmap .a10-inner{display:flex;flex-direction:column;gap:0}
+#aurora10mRoadmap .a10-axis,#aurora10mRoadmap .a10-line{padding:0;border:0}
+#aurora10mRoadmap .a10-axis span,#aurora10mRoadmap .a10-dates span{line-height:1.15}
+
+
+/* Roadmap collapse and sticky MV shortcuts: isolated layout additions */
+#aurora10mRoadmap > .a10-toggle{display:flex;align-items:center;justify-content:space-between;gap:12px;cursor:pointer;list-style:none;min-height:30px;padding:1px 4px;color:#315d80;font-size:12px;font-weight:800;letter-spacing:.06em}
+#aurora10mRoadmap > .a10-toggle::-webkit-details-marker{display:none}
+#aurora10mRoadmap > .a10-toggle .a10-chevron{font-size:20px;line-height:1;transition:transform .15s}
+#aurora10mRoadmap[open] > .a10-toggle .a10-chevron{transform:rotate(180deg)}
+#aurora10mRoadmap > .a10-content{padding-top:5px}
+#mvQuickAccess{position:sticky;top:0;z-index:50;isolation:isolate;box-shadow:0 5px 12px #0003}
+#cards > article{scroll-margin-top:95px}
 
 /* MV QUICK ACCESS: standalone additions only */
 #mvQuickAccess{margin:0 0 17px;padding:10px 8px;border-radius:12px;background:#101d36;color:#fff}
@@ -1706,7 +1723,9 @@
 
 
   <!-- 10 MILLION ROADMAP: new self-contained homepage section -->
-  <section id="aurora10mRoadmap" aria-label="Aurora 1000万回ロードマップ">
+  <details id="aurora10mRoadmap" aria-label="Aurora 1000万回ロードマップ">
+    <summary class="a10-toggle"><span>10 MILLION ROADMAP</span><span class="a10-chevron" aria-hidden="true">⌄</span></summary>
+    <div class="a10-content">
     <div class="a10-scroll"><div class="a10-inner">
       <div class="a10-axis"><span></span><span>300万</span><span>400万</span><span>500万</span><span>600万</span><span>700万</span><span>800万</span><span>900万</span><span>1000万</span></div>
       <div class="a10-line goal"><span class="a10-name">目標通過</span><div class="a10-line-body"><div class="a10-track"><div class="a10-fill" id="a10GoalFill"></div></div><div class="a10-dates" id="a10GoalDates"></div></div></div>
@@ -1716,7 +1735,8 @@
       <div class="a10-status" id="a10Status"><span class="a10-status-symbol" id="a10Symbol">◷</span><span id="a10StatusText">再生データ取得中…</span></div>
       <div class="a10-prediction"><span class="a10-prediction-label">1000万 最新通過予想</span><span class="a10-prediction-date" id="a10Prediction">算出中</span></div>
     </div>
-  </section>
+    </div>
+  </details>
 
   <!-- MV QUICK ACCESS: jump to existing counters, no counter modifications -->
   <nav id="mvQuickAccess" aria-label="MVカウンターへのショートカット">
@@ -4451,7 +4471,11 @@ setInterval(
     const targetName=normalize(btn.dataset.title);
     const cards=document.querySelectorAll('#cards > article');
     const match=Array.from(cards).find(card=>normalize(card.querySelector('h2.title')?.textContent)===targetName);
-    if(match)match.scrollIntoView({behavior:'smooth',block:'start'});
+    if(match){
+      const offset=nav.getBoundingClientRect().height+10;
+      const top=window.scrollY+match.getBoundingClientRect().top-offset;
+      window.scrollTo({top:Math.max(0,top),behavior:'smooth'});
+    }
   });
 })();
 </script>
