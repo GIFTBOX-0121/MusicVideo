@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -4416,8 +4414,12 @@ setInterval(
    $('a10Status').classList.toggle('ahead',ahead);
    $('a10Symbol').textContent=ahead?'↗':'◷';
    $('a10StatusText').textContent=ahead?'目標より+'+fmt(diff)+'回再生中！':'目標まであと'+fmt(-diff)+'回！';
-   // Prefer the existing six-hour pace field; no guessed pace if absent.
-   const pace=Number(video?.six_hour_pace?.views_per_hour);
+   // 24-hour average pace from saved Aurora views, not the six-hour pace.
+   // Select the nearest record to 24 hours ago (within a 2-hour tolerance).
+   const referenceTime=now-24*3600000;
+   const previous=points.reduce((best,p)=>Math.abs(p.t-referenceTime)<Math.abs((best?.t??Infinity)-referenceTime)?p:best,null);
+   const hours=previous?(now-previous.t)/3600000:NaN;
+   const pace=previous&&hours>=22&&hours<=26&&views>=previous.v?(views-previous.v)/hours:NaN;
    const validPace=Number.isFinite(pace)&&pace>0;
    const predictions=TARGETS.map(n=>{
      if(views>=n){
