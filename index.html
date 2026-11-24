@@ -1,5 +1,4 @@
 
-
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -1584,6 +1583,15 @@
 #mvQuickAccess{position:sticky;top:0;z-index:50;isolation:isolate;box-shadow:0 5px 12px #0003}
 #cards > article{scroll-margin-top:95px}
 
+/* Aurora cumulative comparison: left card only */
+#stpCards #stpOpenAurora .stp-sub{margin-top:3px}
+#stpCards #stpOpenAurora .stp-total-compare{display:flex;flex-direction:column;gap:2px;margin:4px 0 3px;padding:4px 5px;border-radius:6px;background:linear-gradient(135deg,#fff,#edf0fa);color:#62768c;min-width:0;font-weight:800;line-height:1.15}
+#stpCards #stpOpenAurora .stp-total-row{display:flex;align-items:center;justify-content:space-between;gap:2px;white-space:nowrap;font-size:clamp(7px,1.8vw,10px);letter-spacing:-.04em}
+#stpCards #stpOpenAurora .stp-total-values{color:#426bb1;font-size:clamp(10px,3vw,15px);font-variant-numeric:tabular-nums}
+#stpCards #stpOpenAurora #stpTotalCompare.ahead .stp-total-values{color:#cf5578}
+#stpCards #stpOpenAurora .stp-goal-row{display:flex;align-items:baseline;justify-content:space-between;gap:3px;margin-bottom:3px}
+#stpCards #stpOpenAurora .stp-daily{min-width:0;font-size:clamp(10px,2.8vw,15px)}
+#stpCards #stpOpenAurora #stpDayPercent{flex:none;font-size:9px;font-weight:800;color:#577e99}
 /* MV QUICK ACCESS: standalone additions only */
 #mvQuickAccess{margin:0 0 17px;padding:10px 8px;border-radius:12px;background:#101d36;color:#fff}
 #mvQuickAccess .mvqa-label{font-size:10px;letter-spacing:.09em;color:#afc3e4;margin:0 0 8px 4px;font-weight:700}
@@ -1709,10 +1717,13 @@
       <button class="stp-card stp-card-aurora" id="stpOpenAurora" type="button" aria-label="Auroraの目標詳細を開く">
         <span class="stp-head"><span class="stp-head-name">✦ Aurora</span><span class="stp-arrow">›</span></span>
         <span id="stpPhaseLabel" class="stp-sub">11/22までに200万回</span>
+        <span id="stpTotalCompare" class="stp-total-compare" title="昨日と今日の0時から最新保存時刻までの累積再生増加数を比較">
+          <span class="stp-total-row"><span>前日同時刻トータル比</span><span id="stpTotalYesterday">昨日 —</span></span>
+          <span class="stp-total-row stp-total-values"><span id="stpTotalRatio">—</span><span id="stpTotalDiff">—</span></span>
+        </span>
         <span class="stp-aurora-bottom">
-          <span id="stpDayNumbers" class="stp-daily" style="display:block">取得中…</span>
+          <span class="stp-goal-row"><span id="stpDayNumbers" class="stp-daily">取得中…</span><span id="stpDayPercent">—</span></span>
           <span class="stp-rail" style="display:block"><span id="stpDayFill" class="stp-fill"></span><span id="stpDayToday" class="stp-today"></span><span id="stpDaySpark" class="stp-spark"></span></span>
-          <span class="stp-info"><span id="stpDayCaption">今日の目標進捗</span><span id="stpDayPercent">—</span></span>
         </span>
       </button>
       <button class="stp-card stp-card-kiriban" id="stpOpenKiriban" type="button" aria-label="7曲のキリ番進捗を拡大する">
@@ -4163,7 +4174,6 @@ setInterval(
     const selected=phaseGoal(aurora.views);
     const phase=selected.phase==='first';
     $('stpPhaseLabel').textContent=phase?'11/22までに200万回':'12/30 17時までに1,000万回';
-    $('stpDayCaption').textContent='今日 0:00 起点';
     const actual=finiteViews(aurora.daily_actual);
     const goal=finiteViews(aurora.daily_target);
     const fill=$('stpDayFill'),today=$('stpDayToday'),spark=$('stpDaySpark');
@@ -4416,6 +4426,36 @@ setInterval(
      .map(r=>({t:Date.parse(r.recorded_at),v:Number(r.views)}))
      .filter(p=>Number.isFinite(p.t)&&Number.isFinite(p.v))
      .sort((a,b)=>a.t-b.t);
+   // Compare both days at the same saved observation time (JST).
+   try {
+     const day=86400000, jst=9*3600000;
+     const midnight=Math.floor((Date.now()+jst)/day)*day-jst;
+     const latest=points.filter(p=>p.t>=midnight&&p.t<=Date.now()).at(-1);
+     // Interpolate only between nearby saved observations; never extrapolate missing data.
+     const valueAt=t=>{
+       const after=points.findIndex(p=>p.t>=t);
+       if(after<0)return null;
+       const b=points[after],a=points[after-1];
+       if(b.t===t)return b.v;
+       if(!a||b.t-a.t>20*60000)return null;
+       return Math.round(a.v+(b.v-a.v)*(t-a.t)/(b.t-a.t));
+     };
+     const todayBase=valueAt(midnight),yesterdayBase=valueAt(midnight-day);
+     const yesterdayEnd=latest?valueAt(latest.t-day):null;
+     const box=document.getElementById('stpTotalCompare');
+     const y=document.getElementById('stpTotalYesterday'),r=document.getElementById('stpTotalRatio'),d=document.getElementById('stpTotalDiff');
+     box.classList.remove('ahead');y.textContent='昨日 —';r.textContent='—';d.textContent='—';
+     if(latest&&todayBase!==null&&yesterdayBase!==null&&yesterdayEnd!==null){
+       const today=latest.v-todayBase,prev=yesterdayEnd-yesterdayBase,diff=today-prev;
+       if(today>=0&&prev>=0){
+         y.textContent='昨日 '+fmt(prev);
+         r.textContent=prev>0?(today/prev*100).toFixed(1)+'% '+(diff>0?'▲':diff<0?'▼':''):'—';
+         d.textContent=(diff>0?'+':diff<0?'−':'')+fmt(Math.abs(diff))+'回';
+         box.classList.toggle('ahead',diff>0);
+         box.title='0:00〜'+new Date(latest.t+jst).toISOString().slice(11,16)+'（JST） 今日 '+fmt(today)+'回 / 昨日 '+fmt(prev)+'回';
+       }
+     }
+   }catch(e){console.warn('Aurora cumulative comparison',e);}
    const firstReached=points.find(p=>p.v>=BASE);
    // Never substitute the current date for an unverified 2M crossing.
    if(!firstReached)throw Error('2M crossing not present in saved history');
