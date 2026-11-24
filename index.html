@@ -1,3 +1,6 @@
+
+
+
 <!DOCTYPE html>
 <html lang="ja">
 <head>
@@ -3896,42 +3899,6 @@ function drawHistory(history) {
    データ取得
    ======================================== */
 
-// Shared statistics request: coalesce concurrent reads and retry transient failures.
-let statsInFlight=null, statsLast=null, statsLastAt=0;
-const statsCacheKey='starsbase:stats:last-good:v1';
-function validStats(data){
-  return data && Array.isArray(data.videos) && data.videos.length>0 &&
-    Number.isFinite(Date.parse(data.updated_at)) &&
-    (data.daily_history==null || Array.isArray(data.daily_history));
-}
-async function getSharedStats(){
-  if(statsInFlight)return statsInFlight;
-  if(statsLast && Date.now()-statsLastAt<10000)return statsLast;
-  statsInFlight=(async()=>{
-    let lastError;
-    for(let attempt=0;attempt<3;attempt++){
-      if(attempt)await new Promise(resolve=>setTimeout(resolve,attempt*1500));
-      const controller=new AbortController();
-      const timeout=setTimeout(()=>controller.abort(),12000);
-      try{
-        const response=await fetch(API_URL+'/?t='+Date.now(),{cache:'no-store',signal:controller.signal});
-        if(!response.ok)throw Error('HTTP '+response.status);
-        const data=await response.json();
-        if(!validStats(data))throw Error('Invalid statistics response');
-        statsLast=data;statsLastAt=Date.now();
-        try{sessionStorage.setItem(statsCacheKey,JSON.stringify(data));}catch(e){}
-        return data;
-      }catch(e){lastError=e;}finally{clearTimeout(timeout);}
-    }
-    throw lastError;
-  })().finally(()=>{statsInFlight=null;});
-  return statsInFlight;
-}
-let mainLoading=false,mainRendered=false,mainRetry=null;
-function markStatsStale(){
-  const updated=document.getElementById('updated');
-  if(!updated.textContent.includes('更新待ち'))updated.textContent+='（更新待ち・前回データ）';
-}
 async function loadData() {
 
   const cards =
@@ -3939,19 +3906,31 @@ async function loadData() {
       "cards"
     );
 
-  if(mainLoading)return;
-  mainLoading=true;
-  let stale=false;
   try {
-    let data;
-    try{data=await getSharedStats();}
-    catch(error){
-      if(mainRendered)throw error;
-      data=statsLast;
-      if(!data){try{data=JSON.parse(sessionStorage.getItem(statsCacheKey)||'null');}catch(e){}}
-      if(!validStats(data))throw error;
-      stale=true;
+
+    const response =
+      await fetch(
+        API_URL +
+        "?t=" +
+        Date.now(),
+        {
+          cache: "no-store"
+        }
+      );
+
+    if (
+      !response.ok
+    ) {
+
+      throw new Error(
+        "API error"
+      );
+
     }
+
+    const data =
+      await response.json();
+
 
     showUpdatedTime(
       data.updated_at
@@ -3995,18 +3974,22 @@ async function loadData() {
         .join("");
 
 
-    mainRendered=true;
-    try{drawHistory(allHistory);}catch(chartError){console.warn('History chart:',chartError);}
-    if(stale){markStatsStale();if(!mainRetry)mainRetry=setTimeout(()=>{mainRetry=null;loadData();},30000);}
-    else{clearTimeout(mainRetry);mainRetry=null;}
+    drawHistory(allHistory);
+
   } catch (error) {
-    console.error(error);
-    if(mainRendered){markStatsStale();}
-    else{
-      cards.innerHTML = `<div class="error">データを取得できませんでした。<br>自動で再取得しています。</div>`;
-    }
-    if(!mainRetry)mainRetry=setTimeout(()=>{mainRetry=null;loadData();},30000);
-  } finally {mainLoading=false;}
+
+    console.error(
+      error
+    );
+
+    cards.innerHTML = `
+      <div class="error">
+        データを取得できませんでした。<br>
+        少し時間を置いて再読み込みしてください。
+      </div>
+    `;
+
+  }
 
 }
 
@@ -4356,7 +4339,9 @@ setInterval(
         // The original stats API already supplies the current Aurora views.
         // Keep the cumulative bar functional if the new route isn't available yet.
         try{
-          topPayload=makeFallbackFromExistingStats(await getSharedStats());renderTop();
+          const fallback=await fetch(ROOT+'/?t='+Date.now(),{cache:'no-store'});
+          if(!fallback.ok)throw new Error('HTTP '+fallback.status);
+          topPayload=makeFallbackFromExistingStats(await fallback.json());renderTop();
         }catch(fallbackError){
           console.warn('STARS stats fallback:',fallbackError);
           if(!topPayload)$('stpDayNumbers').textContent='取得できませんでした';
@@ -4432,12 +4417,12 @@ setInterval(
  }
  async function refresh(){
   try{
-   const [historyResponse,live]=await Promise.all([
+   const [historyResponse,liveResponse]=await Promise.all([
      fetch(ROOT+'/mv-compare-history',{cache:'no-store'}),
-     getSharedStats()
+     fetch(ROOT+'/?t='+Date.now(),{cache:'no-store'})
    ]);
-   if(!historyResponse.ok)throw Error('history HTTP error');
-   const history=await historyResponse.json();
+   if(!historyResponse.ok||!liveResponse.ok)throw Error('history/live HTTP error');
+   const history=await historyResponse.json(),live=await liveResponse.json();
    const source=(history.series||[]).find(s=>s.video_id==='pEn9DmzsQJw');
    const points=(source?.records||[])
      .map(r=>({t:Date.parse(r.recorded_at),v:Number(r.views)}))
